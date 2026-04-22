@@ -13,17 +13,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
--- STEP 2: Create enum for booking status
--- ============================================================================
-CREATE TYPE IF NOT EXISTS booking_status AS ENUM (
-  'pending',
-  'confirmed',
-  'cancelled',
-  'completed'
-);
-
--- ============================================================================
--- STEP 3: Table - users (profile for authenticated users)
+-- STEP 2: Table - users (profile for authenticated users)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -37,8 +27,9 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 
 -- ============================================================================
--- STEP 4: Table - parkings
+-- STEP 3: Table - parkings (without enum)
 -- ============================================================================
+-- Using TEXT for status instead of enum to avoid syntax issues
 CREATE TABLE IF NOT EXISTS parkings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title VARCHAR(200) NOT NULL,
@@ -70,7 +61,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   parking_id UUID NOT NULL REFERENCES parkings(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
-  status booking_status DEFAULT 'pending',
+  status TEXT DEFAULT 'pending',
   total_price INTEGER,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
