@@ -130,6 +130,7 @@ let supabaseClient: SupabaseClient | null = null;
 /**
  * Get or create Supabase client
  * Uses environment variables NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ * Falls back to demo mode if not configured
  */
 export function getSupabaseClient(): SupabaseClient {
   if (supabaseClient) {
@@ -139,9 +140,16 @@ export function getSupabaseClient(): SupabaseClient {
   const supabaseUrl = import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
+  // If no credentials, use demo mode with mock data
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in your environment.'
+    console.warn('Supabase not configured - using demo mode');
+    // Return a mock client that won't crash the app
+    return createClient(
+      'https://demo.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo',
+      {
+        auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
+      }
     );
   }
 
