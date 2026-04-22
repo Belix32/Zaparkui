@@ -1,22 +1,21 @@
 .card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  border-color: var(--color-accent);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 212, 255, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .imageWrapper {
   position: relative;
   width: 100%;
-  height: 180px;
-  background: var(--color-bg-secondary);
+  height: 160px;
+  background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,32 +29,68 @@
 }
 
 .icon {
-  font-size: 64px;
-  opacity: 0.3;
+  font-size: 48px;
+  color: var(--text-secondary);
+  opacity: 0.4;
 }
 
 .badge {
   position: absolute;
-  top: var(--spacing-md);
-  left: var(--spacing-md);
+  top: var(--spacing-sm);
+  left: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background: rgba(0, 212, 255, 0.2);
-  border: 1px solid var(--color-accent);
+  background: var(--accent);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-caption);
   font-weight: 600;
-  color: var(--color-accent);
+  color: #ffffff;
+}
+
+.favoriteButton {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: all 0.2s;
+}
+
+.favoriteButton:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.favorited {
+  color: #ef4444;
+}
+
+.mapIndicator {
+  position: absolute;
+  bottom: var(--spacing-sm);
+  left: var(--spacing-sm);
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  color: white;
 }
 
 .content {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
 }
 
 .title {
-  font-size: var(--font-size-h3);
+  font-size: var(--font-size-body);
   font-weight: 600;
-  margin-bottom: var(--spacing-sm);
-  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
 }
 
 .address {
@@ -63,13 +98,26 @@
   align-items: center;
   gap: var(--spacing-xs);
   font-size: var(--font-size-small);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
 }
 
 .address svg {
   flex-shrink: 0;
-  color: var(--color-accent);
+  color: var(--accent);
+}
+
+.metro {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+.metro svg {
+  flex-shrink: 0;
+  color: #6366f1;
 }
 
 .details {
@@ -77,26 +125,47 @@
   justify-content: space-between;
   align-items: center;
   padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--border);
 }
 
 .price {
   font-size: var(--font-size-h3);
-  font-weight: 700;
-  color: var(--color-accent);
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .price span {
   font-size: var(--font-size-small);
   font-weight: 400;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
 .spots {
   font-size: var(--font-size-small);
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
 .spots strong {
-  color: var(--color-accent-secondary);
+  color: var(--text-primary);
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--spacing-xs);
+}
+
+.stars {
+  color: #fbbf24;
+}
+
+.ratingValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reviewCount {
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
 }

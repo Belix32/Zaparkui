@@ -8,11 +8,11 @@
 
 .authCard {
   width: 100%;
-  max-width: 420px;
-  padding: var(--spacing-2xl);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  max-width: 400px;
+  padding: var(--spacing-xl);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .header {
@@ -21,8 +21,7 @@
 }
 
 .logo {
-  font-family: var(--font-accent);
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -32,25 +31,23 @@
 }
 
 .logoIcon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
+  color: var(--accent);
 }
 
 .logo span {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent);
 }
 
 .title {
   font-size: var(--font-size-h3);
   font-weight: 600;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
 .subtitle {
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-size: var(--font-size-small);
 }
 
@@ -62,10 +59,10 @@
 
 .error {
   padding: var(--spacing-md);
-  background: rgba(255, 107, 107, 0.1);
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-md);
-  color: var(--color-error);
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-sm);
+  color: var(--error);
   font-size: var(--font-size-small);
   text-align: center;
 }
@@ -74,11 +71,11 @@
   margin-top: var(--spacing-lg);
   text-align: center;
   font-size: var(--font-size-small);
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
 .footer a {
-  color: var(--color-accent);
+  color: var(--accent);
   font-weight: 500;
 }
 
@@ -87,7 +84,7 @@
   align-items: center;
   gap: var(--spacing-md);
   margin: var(--spacing-lg) 0;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-size: var(--font-size-small);
 }
 
@@ -96,5 +93,5 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--color-border);
+  background: var(--border);
 }

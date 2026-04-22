@@ -1,5 +1,5 @@
 .catalog {
-  padding-top: 120px;
+  padding-top: 100px;
   min-height: 100vh;
 }
 
@@ -12,13 +12,13 @@
 }
 
 .subtitle {
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
-.filters {
+.controls {
   display: flex;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
   flex-wrap: wrap;
 }
 
@@ -33,38 +33,114 @@
   left: var(--spacing-md);
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   pointer-events: none;
 }
 
 .search {
   width: 100%;
-  padding: var(--spacing-md);
-  padding-left: 44px;
-  background: var(--color-bg-secondary);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  padding-left: 40px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
   font-size: var(--font-size-body);
 }
 
 .search:focus {
-  border-color: var(--color-accent);
+  border-color: var(--accent);
 }
 
-.filterSelect {
-  padding: var(--spacing-md);
-  background: var(--color-bg-secondary);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-body);
-  min-width: 180px;
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 500;
   cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.filterSelect:focus {
-  border-color: var(--color-accent);
+.actionButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.actionButton.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-secondary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.locationError {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  color: #dc2626;
+  font-size: var(--font-size-small);
+  margin-bottom: var(--spacing-lg);
+}
+
+.filtersWrapper {
+  margin-bottom: var(--spacing-lg);
+}
+
+.mapWrapper {
+  margin-bottom: var(--spacing-xl);
+}
+
+.map {
+  height: 500px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+}
+
+.sortedByDistance {
+  color: var(--accent);
 }
 
 .grid {
@@ -77,12 +153,13 @@
   grid-column: span 3;
   text-align: center;
   padding: var(--spacing-3xl);
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
 .emptyIcon {
-  font-size: 64px;
+  font-size: 48px;
   margin-bottom: var(--spacing-md);
+  opacity: 0.4;
 }
 
 .pagination {
@@ -93,28 +170,28 @@
 }
 
 .pageButton {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-weight: 500;
   transition: all var(--transition-fast);
 }
 
 .pageButton:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .pageButtonActive {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-bg-primary);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
 }
 
 @media (max-width: 1024px) {
@@ -136,7 +213,17 @@
     grid-column: span 1;
   }
   
-  .filters {
+  .controls {
     flex-direction: column;
+  }
+  
+  .actions {
+    width: 100%;
+  justify-content: stretch;
+  }
+  
+  .actionButton {
+    flex: 1;
+    justify-content: center;
   }
 }
