@@ -105,6 +105,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = async () => {
       try {
         const supabaseClient = getSupabaseClient();
+        
+        // If Supabase is not configured, use demo mode
+        if (!supabaseClient) {
+          // Load from localStorage in demo mode
+          const storedUser = localStorage.getItem(USER_KEY);
+          if (storedUser) {
+            try {
+              const parsed = JSON.parse(storedUser);
+              setUser(parsed);
+            } catch (e) {
+              localStorage.removeItem(USER_KEY);
+            }
+          }
+          setIsLoading(false);
+          return;
+        }
 
         // Get initial session
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -191,9 +207,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Введите пароль' };
     }
 
-    try {
+try {
       const supabaseClient = getSupabaseClient();
       
+      // Demo mode - use localStorage
+      if (!supabaseClient) {
+        const mockUser: User = {
+          id: generateSecureToken().substring(0, 16),
+          name: email.toLowerCase().split('@')[0],
+          email: email.toLowerCase().trim(),
+          phone: '+7 (999) 000-00-00',
+        };
+        setUser(mockUser);
+        localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+        return { success: true };
+      }
+        
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
         password,
@@ -262,6 +291,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const supabaseClient = getSupabaseClient();
       const normalizedEmail = email.toLowerCase().trim();
+      
+      // Demo mode - create mock user
+      if (!supabaseClient) {
+        const mockUser: User = {
+          id: generateSecureToken().substring(0, 16),
+          name: name.trim(),
+          email: normalizedEmail,
+          phone: phone.trim(),
+        };
+        setUser(mockUser);
+        localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+        
+        // Also save to localStorage for parkings demo
+        localStorage.setItem(AUTH_TOKEN_KEY, generateSecureToken());
+        
+        return { success: true };
+      }
 
       // Sign up with Supabase Auth
       const { data, error } = await supabaseClient.auth.signUp({
