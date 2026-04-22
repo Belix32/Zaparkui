@@ -20,77 +20,110 @@ export interface Parking {
   reviewCount?: number;
 }
 
-// Demo parking data
-const DEMO_PARKINGS: Parking[] = [
-  {
-    id: '1',
-    title: 'ЖК Северный',
-    address: 'Москва, ул. Ленина, 25',
-    price: 8000,
-    spots: 5,
-    image: null,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    title: 'ЖК Парковый',
-    address: 'Москва, пр-т Мира, 42',
-    price: 12000,
-    spots: 2,
-    image: null,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    title: 'ЖК Речной',
-    address: 'Москва, ул. Набережная, 18',
-    price: 9500,
-    spots: 8,
-    image: null,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    title: 'ЖК Центральный',
-    address: 'Москва, ул. Тверская, 15',
-    price: 15000,
-    spots: 3,
-    image: null,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '5',
-    title: 'ЖК Южный',
-    address: 'Москва, ул. Южная, 33',
-    price: 7000,
-    spots: 12,
-    image: null,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '6',
-    title: 'ЖК Звездный',
-    address: 'Москва, ул. Космонавтов, 7',
-    price: 11000,
-    spots: 4,
-    image: null,
-    created_at: new Date().toISOString(),
-  },
-];
+export interface ParkingInsert {
+  title: string;
+  address: string;
+  price: number;
+  spots: number;
+  image?: string | null;
+  description?: string;
+  district?: string;
+  metro?: string;
+  parkingType?: 'ground' | 'underground' | 'roof' | 'covered';
+  amenities?: string[];
+  latitude?: number;
+  longitude?: number;
+}
 
-// User type for auth
+export interface ParkingUpdate {
+  title?: string;
+  address?: string;
+  price?: number;
+  spots?: number;
+  image?: string | null;
+  description?: string;
+  district?: string;
+  metro?: string;
+  parkingType?: 'ground' | 'underground' | 'roof' | 'covered';
+  amenities?: string[];
+  latitude?: number;
+  longitude?: number;
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  phone?: string;
+  phone: string | null;
+  created_at: string;
+}
+
+export interface Booking {
+  id: string;
+  user_id: string;
+  parking_id: string;
+  start_date: string;
+  end_date: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  created_at: string;
+}
+
+export interface BookingInsert {
+  user_id: string;
+  parking_id: string;
+  start_date: string;
+  end_date: string;
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+}
+
+export interface BookingUpdate {
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+}
+
+export interface ParkingFilters {
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minSpots?: number;
+  maxSpots?: number;
+  district?: string;
+  metro?: string;
+  parkingType?: 'ground' | 'underground' | 'roof' | 'covered';
+  minRating?: number;
+  maxDistance?: number;
+  userLatitude?: number;
+  userLongitude?: number;
+}
+
+export interface Review {
+  id: string;
+  parking_id: string;
+  user_id: string;
+  user_name?: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
+export interface ReviewInsert {
+  parking_id: string;
+  user_id: string;
+  rating: number;
+  comment: string;
+}
+
+export interface Favorite {
+  id: string;
+  user_id: string;
+  parking_id: string;
+  created_at: string;
 }
 
 // Supabase client singleton
 let supabaseClient: SupabaseClient | null = null;
 
 /**
- * Check if Supabase is configured
+ * Check if Supabase is properly configured
  */
 export function isSupabaseConfigured(): boolean {
   return !!(
@@ -100,9 +133,9 @@ export function isSupabaseConfigured(): boolean {
 }
 
 /**
- * Get Supabase client - returns null if not configured
+ * Get or create Supabase client
  */
-export function getSupabaseClient(): SupabaseClient | null {
+export function getSupabaseClient(): SupabaseClient {
   if (supabaseClient) {
     return supabaseClient;
   }
@@ -111,7 +144,9 @@ export function getSupabaseClient(): SupabaseClient | null {
   const supabaseAnonKey = import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return null;
+    throw new Error(
+      'Supabase not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in environment variables.'
+    );
   }
 
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -120,37 +155,32 @@ export function getSupabaseClient(): SupabaseClient | null {
       persistSession: true,
       detectSessionInUrl: true,
     },
+    global: {
+      headers: {
+        'x-client-info': 'zaparkyi-web',
+      },
+    },
   });
 
   return supabaseClient;
 }
 
 /**
- * Fetch all parkings - uses demo data if Supabase not configured
+ * Fetch all parkings from database
  */
 export async function fetchParkings(): Promise<Parking[]> {
   const supabase = getSupabaseClient();
-  
-  if (!supabase) {
-    return DEMO_PARKINGS;
+  const { data, error } = await supabase
+    .from('parkings')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching parkings:', error);
+    throw new Error(error.message);
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('parkings')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching parkings:', error);
-      return DEMO_PARKINGS;
-    }
-
-    return (data as Parking[]) || DEMO_PARKINGS;
-  } catch (e) {
-    console.error('Error:', e);
-    return DEMO_PARKINGS;
-  }
+  return (data as Parking[]) || [];
 }
 
 /**
@@ -158,62 +188,35 @@ export async function fetchParkings(): Promise<Parking[]> {
  */
 export async function getParkingById(id: string): Promise<Parking | null> {
   const supabase = getSupabaseClient();
-  
-  if (!supabase) {
-    return DEMO_PARKINGS.find(p => p.id === id) || null;
-  }
+  const { data, error } = await supabase
+    .from('parkings')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-  try {
-    const { data, error } = await supabase
-      .from('parkings')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error || !data) {
-      return DEMO_PARKINGS.find(p => p.id === id) || null;
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
     }
-
-    return data as Parking;
-  } catch (e) {
-    return DEMO_PARKINGS.find(p => p.id === id) || null;
+    console.error('Error fetching parking:', error);
+    throw new Error(error.message);
   }
+
+  return data as Parking;
 }
 
 /**
- * Search parkings
+ * Search parkings with filters
  */
-export async function searchParkings(filters: {
-  search?: string;
-  minPrice?: number;
-  maxPrice?: number;
-}): Promise<Parking[]> {
+export async function searchParkings(filters: ParkingFilters): Promise<Parking[]> {
   const supabase = getSupabaseClient();
-  
-  if (!supabase) {
-    let results = [...DEMO_PARKINGS];
-    if (filters.search) {
-      const s = filters.search.toLowerCase();
-      results = results.filter(p => 
-        p.title.toLowerCase().includes(s) || 
-        p.address.toLowerCase().includes(s)
-      );
-    }
-    if (filters.minPrice) {
-      results = results.filter(p => p.price >= filters.minPrice!);
-    }
-    if (filters.maxPrice) {
-      results = results.filter(p => p.price <= filters.maxPrice!);
-    }
-    return results;
-  }
-
   let query = supabase.from('parkings').select('*');
 
   if (filters.search) {
     const searchTerm = `%${filters.search}%`;
     query = query.or(`title.ilike.${searchTerm},address.ilike.${searchTerm}`);
   }
+
   if (filters.minPrice !== undefined) {
     query = query.gte('price', filters.minPrice);
   }
@@ -221,78 +224,379 @@ export async function searchParkings(filters: {
     query = query.lte('price', filters.maxPrice);
   }
 
-  try {
-    const { data, error } = await query.order('created_at', { ascending: false });
+  if (filters.minSpots !== undefined) {
+    query = query.gte('spots', filters.minSpots);
+  }
+  if (filters.maxSpots !== undefined) {
+    query = query.lte('spots', filters.maxSpots);
+  }
 
-    if (error) {
-      console.error('Error searching parkings:', error);
-      return DEMO_PARKINGS;
-    }
+  if (filters.district) {
+    const districtTerm = `%${filters.district}%`;
+    query = query.ilike('district', districtTerm);
+  }
 
-    return (data as Parking[]) || DEMO_PARKINGS;
-  } catch (e) {
-    return DEMO_PARKINGS;
+  if (filters.metro) {
+    const metroTerm = `%${filters.metro}%`;
+    query = query.ilike('metro', metroTerm);
+  }
+
+  if (filters.parkingType) {
+    query = query.eq('parking_type', filters.parkingType);
+  }
+
+  if (filters.minRating !== undefined) {
+    query = query.gte('rating', filters.minRating);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error searching parkings:', error);
+    throw new Error(error.message);
+  }
+
+  // Calculate distances and filter if user location provided
+  let results = (data as Parking[]) || [];
+  
+  if (filters.userLatitude && filters.userLongitude && filters.maxDistance) {
+    results = results.filter(p => {
+      if (!p.latitude || !p.longitude) return true;
+      const distance = calculateDistance(
+        filters.userLatitude!,
+        filters.userLongitude!,
+        p.latitude,
+        p.longitude
+      );
+      return distance <= filters.maxDistance!;
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Calculate distance between two coordinates in km
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRad(deg: number): number {
+  return deg * (Math.PI / 180);
+}
+
+/**
+ * Create a new parking (admin)
+ */
+export async function createParking(parking: ParkingInsert): Promise<Parking> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('parkings')
+    .insert(parking as any)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating parking:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Parking;
+}
+
+/**
+ * Update a parking
+ */
+export async function updateParking(id: string, parking: ParkingUpdate): Promise<Parking> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('parkings')
+    .update(parking as any)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating parking:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Parking;
+}
+
+/**
+ * Delete a parking
+ */
+export async function deleteParking(id: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.from('parkings').delete().eq('id', id);
+
+  if (error) {
+    console.error('Error deleting parking:', error);
+    throw new Error(error.message);
   }
 }
 
 /**
  * Create a new booking
  */
-export async function createBooking(booking: {
-  user_id: string;
-  parking_id: string;
-  start_date: string;
-  end_date: string;
-}): Promise<{ success: boolean; error?: string }> {
+export async function createBooking(booking: BookingInsert): Promise<Booking> {
   const supabase = getSupabaseClient();
-  
-  if (!supabase) {
-    // Demo mode - save to localStorage
-    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    bookings.push({ ...booking, id: Date.now().toString(), status: 'confirmed' });
-    localStorage.setItem('bookings', JSON.stringify(bookings));
-    return { success: true };
+  const { data, error } = await supabase
+    .from('bookings')
+    .insert(booking as any)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating booking:', error);
+    throw new Error(error.message);
   }
 
-  try {
-    const { error } = await supabase
-      .from('bookings')
-      .insert(booking);
+  return data as Booking;
+}
 
-    if (error) {
-      return { success: false, error: error.message };
+/**
+ * Get bookings by user ID
+ */
+export async function getUserBookings(userId: string): Promise<Booking[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user bookings:', error);
+    throw new Error(error.message);
+  }
+
+  return (data as Booking[]) || [];
+}
+
+/**
+ * Get bookings by parking ID
+ */
+export async function getParkingBookings(parkingId: string): Promise<Booking[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('parking_id', parkingId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching parking bookings:', error);
+    throw new Error(error.message);
+  }
+
+  return (data as Booking[]) || [];
+}
+
+/**
+ * Update booking status
+ */
+export async function updateBookingStatus(
+  id: string,
+  status: Booking['status']
+): Promise<Booking> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating booking:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Booking;
+}
+
+/**
+ * Create a new user profile
+ */
+export async function createUser(user: { email: string; name: string; phone?: string }): Promise<User> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('users')
+    .insert(user as any)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating user:', error);
+    throw new Error(error.message);
+  }
+
+  return data as User;
+}
+
+/**
+ * Get user by ID
+ */
+export async function getUserById(id: string): Promise<User | null> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
     }
+    console.error('Error fetching user:', error);
+    throw new Error(error.message);
+  }
 
-    return { success: true };
-  } catch (e: unknown) {
-    return { success: false, error: (e as Error).message };
+  return data as User;
+}
+
+/**
+ * Get user by email
+ */
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email.toLowerCase())
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+    console.error('Error fetching user by email:', error);
+    throw new Error(error.message);
+  }
+
+  return data as User;
+}
+
+/**
+ * Get reviews for a parking
+ */
+export async function getParkingReviews(parkingId: string): Promise<Review[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*')
+    .eq('parking_id', parkingId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching reviews:', error);
+    throw new Error(error.message);
+  }
+
+  return (data as Review[]) || [];
+}
+
+/**
+ * Create a new review
+ */
+export async function createReview(review: ReviewInsert): Promise<Review> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('reviews')
+    .insert(review as any)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating review:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Review;
+}
+
+/**
+ * Get user's favorite parkings
+ */
+export async function getUserFavorites(userId: string): Promise<Favorite[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching favorites:', error);
+    throw new Error(error.message);
+  }
+
+  return (data as Favorite[]) || [];
+}
+
+/**
+ * Add a favorite
+ */
+export async function addFavorite(userId: string, parkingId: string): Promise<Favorite> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('favorites')
+    .insert({ user_id: userId, parking_id: parkingId } as any)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding favorite:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Favorite;
+}
+
+/**
+ * Remove a favorite
+ */
+export async function removeFavorite(userId: string, parkingId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('favorites')
+    .delete()
+    .eq('user_id', userId)
+    .eq('parking_id', parkingId);
+
+  if (error) {
+    console.error('Error removing favorite:', error);
+    throw new Error(error.message);
   }
 }
 
 /**
- * Get user bookings
+ * Check if parking is favorited by user
  */
-export async function getUserBookings(userId: string): Promise<unknown[]> {
+export async function isFavorite(userId: string, parkingId: string): Promise<boolean> {
   const supabase = getSupabaseClient();
-  
-  if (!supabase) {
-    return JSON.parse(localStorage.getItem('bookings') || '[]');
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('parking_id', parkingId)
+    .single();
+
+  if (error) {
+    return false;
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (error) {
-      return [];
-    }
-
-    return data || [];
-  } catch (e) {
-    return [];
-  }
+  return !!data;
 }
-
-export { DEMO_PARKINGS };

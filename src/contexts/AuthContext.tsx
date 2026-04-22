@@ -34,6 +34,8 @@ export interface ParkingItem {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const USER_KEY = 'zaparkyi_user';
+const AUTH_TOKEN_KEY = 'zaparkyi_token';
 const PARKING_KEY = 'zaparkyi_parkings';
 
 // Security: Generate a secure random token
