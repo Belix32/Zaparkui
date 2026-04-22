@@ -5,8 +5,6 @@ import { searchParkings, Parking, ParkingFilters } from '../../lib/supabase';
 import { useGeolocation, useSearchHistory, sortByDistance } from '../../hooks';
 import styles from './Catalog.module.css';
 
-type PriceFilter = 'all' | 'low' | 'medium' | 'high';
-
 const defaultFilters: FilterValues = {
   price: 'all',
   district: '',

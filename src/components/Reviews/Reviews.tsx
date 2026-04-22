@@ -49,7 +49,6 @@ export function Reviews({ parkingId }: ReviewsProps) {
     averageRating,
     totalReviews,
     addReview,
-    removeReview,
   } = useReviews(parkingId);
   
   const [userRating, setUserRating] = useState(0);

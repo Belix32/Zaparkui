@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,15 +13,15 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon.src || markerIcon,
-  iconRetinaUrl: markerIcon2x.src || markerIcon2x,
-  shadowUrl: markerShadow.src || markerShadow,
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
 });
 
 // Fix for Vite/Rollup asset imports
 const fixMarkerUrls = () => {
   const markerBase = 'https://unpkg.com/leaflet@1.9.4/dist/images/';
-  if (!L.Icon.Default.prototype._getIconUrl) {
+  if (!(L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl) {
     L.Icon.Default.mergeOptions({
       iconUrl: markerBase + 'marker-icon.png',
       iconRetinaUrl: markerBase + 'marker-icon-2x.png',
@@ -74,7 +74,6 @@ export function ParkingMap({
   onSelectParking,
   className,
 }: ParkingMapProps) {
-  const mapRef = useRef<L.Map>(null);
   
   // Determine center
   let center: [number, number] = defaultCenter;
@@ -169,11 +168,9 @@ export function ParkingMap({
 export function ParkingLocationMap({
   latitude,
   longitude,
-  title,
 }: {
   latitude?: number;
   longitude?: number;
-  title?: string;
 }) {
   if (!latitude || !longitude) {
     return (

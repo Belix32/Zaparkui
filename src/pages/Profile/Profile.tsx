@@ -4,7 +4,6 @@ import { parkings as staticParkings } from '../../data/parkings';
 import { Parking } from '../../lib/supabase';
 import { useFavorites, useSearchHistory } from '../../hooks';
 import { Button } from '../../components/Button/Button';
-import { Reviews } from '../../components/Reviews/Reviews';
 import styles from './Profile.module.css';
 
 /**
