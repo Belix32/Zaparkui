@@ -10,76 +10,86 @@ export function Home() {
     <>
       {/* Hero Section */}
       <section className={styles.hero}>
-        <div className={styles.heroBg} />
-        <div className={styles.heroGrid} />
+        <div className={styles.heroPattern} />
         <div className="container">
-          <div className={styles.heroContent}>
-            <div className={styles.badge}>
-              ✨ Запаркуй — парковки в каждом ЖК
+          <div className={styles.heroInner}>
+            <div className={styles.heroContent}>
+              <span className={styles.badge}>Запаркуй</span>
+              <h1 className={styles.title}>
+                Парковки в&nbsp;жилых
+                <br />
+                <span className={styles.titleAccent}>комплексах</span>
+              </h1>
+              <p className={styles.subtitle}>
+                Арендуйте или сдавайте парковочные места напрямую.
+                Без посредников, с гарантией безопасности сделки.
+              </p>
+              <div className={styles.actions}>
+                <Link to="/catalog" className={styles.actionLink}>
+                  <Button variant="primary" size="large">Найти парковку</Button>
+                </Link>
+                <Link to="/register" className={styles.actionLink}>
+                  <Button variant="secondary" size="large">Сдать место</Button>
+                </Link>
+              </div>
             </div>
-            <h1 className={styles.title}>
-              Найдите идеальное<br />
-              <span className={styles.titleAccent}>парковочное место</span>
-            </h1>
-            <p className={styles.subtitle}>
-              Арендуйте или сдавайте парковочные места в жилых комплексах. 
-              Без посредников, быстро и с гарантией безопасности сделки.
-            </p>
-            <div className={styles.actions}>
-              <Link to="/catalog">
-                <Button variant="primary" size="large">Найти парковку</Button>
-              </Link>
-              <Link to="/register">
-                <Button variant="secondary" size="large">Сдать место</Button>
-              </Link>
+
+            <div className={styles.heroStats}>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>500+</span>
+                <span className={styles.statLabel}>парковок</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>120</span>
+                <span className={styles.statLabel}>ЖК</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>98%</span>
+                <span className={styles.statLabel}>довольных</span>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className={styles.heroStats}>
-          <div className={styles.stat}>
-            <div className={styles.statValue}>500+</div>
-            <div className={styles.statLabel}>Парковок</div>
-          </div>
-          <div className={styles.stat}>
-            <div className={styles.statValue}>120</div>
-            <div className={styles.statLabel}>ЖК</div>
-          </div>
-          <div className={styles.stat}>
-            <div className={styles.statValue}>98%</div>
-            <div className={styles.statLabel}>Довольных</div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className={`section ${styles.features}`}>
+      <section className={styles.features}>
         <div className="container">
-          <div className={styles.sectionHeader}>
-            <h2 className={`title-h2 ${styles.sectionTitle}`}>Почему выбирают нас</h2>
-            <p className={styles.sectionSubtitle}>
-              Мы делаем поиск и аренду парковок простым и безопасным
-            </p>
-          </div>
           <div className={styles.featuresGrid}>
             <div className={styles.feature}>
-              <div className={styles.featureIcon}>🔍</div>
-              <h3 className={styles.featureTitle}>Быстрый поиск</h3>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+              </div>
+              <h3 className={styles.featureTitle}>Умный поиск</h3>
               <p className={styles.featureDesc}>
-                Найдите парковку в своём ЖК за несколько минут с помощью умного поиска
+                Найдите парковку в своём ЖК за несколько минут. Фильтры по локации, цене и типу.
               </p>
             </div>
+
             <div className={styles.feature}>
-              <div className={styles.featureIcon}>🛡️</div>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
               <h3 className={styles.featureTitle}>Безопасность</h3>
               <p className={styles.featureDesc}>
-                Все сделки защищены. Верификация пользователей и проверка объектов
+                Верификация пользователей. Все сделки защищены. Проверка объектов перед размещением.
               </p>
             </div>
+
             <div className={styles.feature}>
-              <div className={styles.featureIcon}>💰</div>
-              <h3 className={styles.featureTitle}>Выгодные цены</h3>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <h3 className={styles.featureTitle}>Прямые сделки</h3>
               <p className={styles.featureDesc}>
-                Работаем напрямую без посредников — поэтому цены ниже рыночных
+                Работаем без посредников — поэтому цены ниже рыночных на 20-30%.
               </p>
             </div>
           </div>
@@ -87,12 +97,12 @@ export function Home() {
       </section>
 
       {/* Popular Section */}
-      <section className="section">
+      <section className={styles.popular}>
         <div className="container">
           <div className={styles.sectionHeader}>
-            <h2 className={`title-h2 ${styles.sectionTitle}`}>Популярные парковки</h2>
+            <h2 className={styles.sectionTitle}>Популярные парковки</h2>
             <p className={styles.sectionSubtitle}>
-              Самые востребованные парковочные места в жилых комплексах
+              Самые востребованные места в жилых комплексах
             </p>
           </div>
           <div className={styles.popularGrid}>
@@ -100,26 +110,58 @@ export function Home() {
               <ParkingCard key={parking.id} parking={parking} />
             ))}
           </div>
-          <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <div className={styles.popularAction}>
             <Link to="/catalog">
-              <Button variant="secondary">Смотреть все</Button>
+              <Button variant="secondary">Все парковки</Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className={`section ${styles.cta}`}>
+      {/* How It Works */}
+      <section className={styles.howItWorks}>
         <div className="container">
-          <div className={styles.ctaContent}>
-            <h2 className={`title-h2 ${styles.sectionTitle}`}>Готовы найти парковку?</h2>
-            <p className={styles.ctaText}>
-              Присоединяйтесь к тысячам пользователей, которые уже нашли 
-              идеальное парковочное место через Запаркуй
-            </p>
-            <Link to="/catalog">
-              <Button variant="accent" size="large">Выбрать парковку</Button>
-            </Link>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Как это работает</h2>
+          </div>
+          <div className={styles.stepsGrid}>
+            <div className={styles.step}>
+              <div className={styles.stepNumber}>01</div>
+              <h3 className={styles.stepTitle}>Поиск</h3>
+              <p className={styles.stepDesc}>Выберите ЖК и тип парковки в каталоге</p>
+            </div>
+            <div className={styles.stepConnector} />
+            <div className={styles.step}>
+              <div className={styles.stepNumber}>02</div>
+              <h3 className={styles.stepTitle}>Бронирование</h3>
+              <p className={styles.stepDesc}>Оставьте заявку на аренду или покупку</p>
+            </div>
+            <div className={styles.stepConnector} />
+            <div className={styles.step}>
+              <div className={styles.stepNumber}>03</div>
+              <h3 className={styles.stepTitle}>Сделка</h3>
+              <p className={styles.stepDesc}>Встретитесь с собственником и оформите договор</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className={styles.cta}>
+        <div className="container">
+          <div className={styles.ctaInner}>
+            <div className={styles.ctaContent}>
+              <h2 className={styles.ctaTitle}>Нужна парковка?</h2>
+              <p className={styles.ctaText}>
+                Присоединяйтесь к 10 000+ пользователей, которые нашли идеальное место через Запаркуй
+              </p>
+            </div>
+            <div className={styles.ctaActions}>
+              <Link to="/catalog">
+                <Button variant="accent" size="large">Выбрать парковку</Button>
+              </Link>
+              <span className={styles.ctaNote}>Это бесплатно</span>
+            </div>
           </div>
         </div>
       </section>

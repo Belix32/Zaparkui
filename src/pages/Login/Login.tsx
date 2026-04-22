@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
@@ -46,8 +46,15 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isLoading: authLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +101,26 @@ export function Login() {
     setPassword(e.target.value);
   }, []);
 
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className={styles.authPage}>
+        <div className={styles.authCard}>
+          <div className={styles.header}>
+            <div className={styles.logo}>
+              <img src="/vite.svg" alt="Logo" className={styles.logoIcon} />
+              <span>Запаркуй</span>
+            </div>
+          </div>
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+            <p>Загрузка...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.authPage}>
       <div className={styles.authCard}>
@@ -116,6 +143,7 @@ export function Login() {
             onChange={handleEmailChange}
             autoComplete="email"
             required
+            disabled={loading}
           />
           <Input
             type="password"
@@ -126,6 +154,7 @@ export function Login() {
             autoComplete="current-password"
             required
             minLength={8}
+            disabled={loading}
           />
           <Button type="submit" variant="primary" fullWidth disabled={loading}>
             {loading ? 'Вход...' : 'Войти'}

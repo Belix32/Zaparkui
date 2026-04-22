@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
@@ -45,13 +45,22 @@ export function Register() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, isLoading: authLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     // Security: Sanitize inputs
@@ -89,7 +98,21 @@ export function Register() {
     const result = await register(sanitizedName, sanitizedEmail, sanitizedPhone, password);
     
     if (result.success) {
-      navigate('/dashboard');
+      // Check if verification is needed (handle both old and new response formats)
+      const needsVerification = 'needsVerification' in result && result.needsVerification;
+      
+      if (needsVerification) {
+        // Email verification required
+        setSuccessMessage('Проверьте вашу почту для подтверждения регистрации');
+        // Clear form after successful registration with verification
+        setName('');
+        setEmail('');
+        setPhone('');
+        setPassword('');
+      } else {
+        // Auto-login successful
+        navigate('/dashboard');
+      }
     } else {
       registerAttempts.set(sanitizedEmail, {
         count: (registerAttempts.get(sanitizedEmail)?.count || 0) + 1,
@@ -120,6 +143,26 @@ export function Register() {
     setPassword(e.target.value.substring(0, 128));
   }, []);
 
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className={styles.authPage}>
+        <div className={styles.authCard}>
+          <div className={styles.header}>
+            <div className={styles.logo}>
+              <img src="/vite.svg" alt="Logo" className={styles.logoIcon} />
+              <span>Запаркуй</span>
+            </div>
+          </div>
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+            <p>Загрузка...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.authPage}>
       <div className={styles.authCard}>
@@ -134,6 +177,7 @@ export function Register() {
 
         <form className={styles.form} onSubmit={handleSubmit}>
           {error && <div className={styles.error}>{error}</div>}
+          {successMessage && <div className={styles.success}>{successMessage}</div>}
           <Input
             type="text"
             label="Имя"
@@ -144,6 +188,7 @@ export function Register() {
             required
             minLength={2}
             maxLength={50}
+            disabled={loading}
           />
           <Input
             type="email"
@@ -154,6 +199,7 @@ export function Register() {
             autoComplete="email"
             required
             maxLength={254}
+            disabled={loading}
           />
           <Input
             type="tel"
@@ -165,6 +211,7 @@ export function Register() {
             required
             minLength={10}
             maxLength={20}
+            disabled={loading}
           />
           <Input
             type="password"
@@ -176,6 +223,7 @@ export function Register() {
             required
             minLength={8}
             maxLength={128}
+            disabled={loading}
           />
           <Button type="submit" variant="primary" fullWidth disabled={loading}>
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}

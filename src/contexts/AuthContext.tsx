@@ -1,18 +1,24 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { 
+  getSupabaseClient,
+  User as SupabaseUser 
+} from '../lib/supabase';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   phone: string;
+  created_at?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   addParking: (parking: Omit<ParkingItem, 'id'>) => void;
   myParkings: ParkingItem[];
 }
@@ -28,10 +34,7 @@ export interface ParkingItem {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const STORAGE_KEY = 'zaparkyi_auth';
-const USER_KEY = 'zaparkyi_user';
 const PARKING_KEY = 'zaparkyi_parkings';
-const AUTH_TOKEN_KEY = 'zaparkyi_token';
 
 // Security: Generate a secure random token
 function generateSecureToken(): string {
@@ -48,14 +51,8 @@ function isValidEmail(email: string): boolean {
 
 // Security: Validate password strength
 function isValidPassword(password: string): { valid: boolean; error: string } {
-  if (password.length < 8) {
-    return { valid: false, error: 'Пароль должен быть не менее 8 символов' };
-  }
-  if (!/[A-Za-z]/.test(password)) {
-    return { valid: false, error: 'Пароль должен содержать латинские буквы' };
-  }
-  if (!/[0-9]/.test(password)) {
-    return { valid: false, error: 'Пароль должен содержать цифры' };
+  if (password.length < 6) {
+    return { valid: false, error: 'Пароль должен быть не менее 6 символов' };
   }
   return { valid: true, error: '' };
 }
@@ -66,24 +63,13 @@ function isValidPhone(phone: string): boolean {
   return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10;
 }
 
-// Security: Simple hash function for demo purposes (in production use bcrypt)
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(16);
-}
-
 // Security: Validate and sanitize parking data
 function sanitizeInput(input: string): string {
   return input
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: URLs
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .substring(0, 500); // Limit length
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .substring(0, 500);
 }
 
 // Security: Validate numeric values
@@ -92,181 +78,278 @@ function safeParseNumber(value: string): { valid: boolean; value: number } {
   if (isNaN(num) || num < 0) {
     return { valid: false, value: 0 };
   }
-  // Check for reasonable limits
   if (num > 1000000) {
     return { valid: false, value: 0 };
   }
   return { valid: true, value: Math.floor(num) };
 }
 
-// Security: Hash sensitive data before storage
-function hashData(data: string): string {
-  return simpleHash(data + 'salt_value_do_not_use_in_production');
+// Convert Supabase user to App User
+function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): User {
+  return {
+    id: supabaseUser.id,
+    name: supabaseUser.name,
+    email: supabaseUser.email,
+    phone: supabaseUser.phone || '',
+    created_at: supabaseUser.created_at,
+  };
 }
-
-// Mock user database (in production this would be a real backend)
-const MOCK_USERS: Record<string, { passwordHash: string; user: User }> = {};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [myParkings, setMyParkings] = useState<ParkingItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Security: Verify stored data integrity
-    const stored = localStorage.getItem(USER_KEY);
-    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
-    
-    if (stored && storedToken) {
+    // Initialize Supabase client and set up auth listener
+    const initializeAuth = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        const expectedHash = hashData(parsed.email + parsed.id);
+        const supabaseClient = getSupabaseClient();
+
+        // Get initial session
+        const { data: { session } } = await supabaseClient.auth.getSession();
         
-        // Security: Verify data integrity
-        if (storedToken === expectedHash) {
-          setUser(parsed);
-        } else {
-          // Data was tampered - clear storage
-          localStorage.removeItem(USER_KEY);
-          localStorage.removeItem(AUTH_TOKEN_KEY);
+        if (session?.user) {
+          // Fetch user profile from users table
+          const { data: userData, error: userError } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (userError) {
+            console.error('Error fetching user profile:', userError);
+          } else if (userData) {
+            setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+          }
         }
-      } catch (e) {
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-      }
-    }
-    
-    const storedParkings = localStorage.getItem(PARKING_KEY);
-    if (storedParkings) {
-      try {
-        const parsed = JSON.parse(storedParkings);
-        // Security: Validate parking data structure
-        if (Array.isArray(parsed)) {
-          setMyParkings(parsed);
+
+        // Load parking data from localStorage (local backup)
+        const storedParkings = localStorage.getItem(PARKING_KEY);
+        if (storedParkings) {
+          try {
+            const parsed = JSON.parse(storedParkings);
+            if (Array.isArray(parsed)) {
+              setMyParkings(parsed);
+            }
+          } catch (e) {
+            localStorage.removeItem(PARKING_KEY);
+          }
         }
-      } catch (e) {
-        localStorage.removeItem(PARKING_KEY);
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    initializeAuth();
+
+    // Set up auth state change listener
+    let authListener: (() => void) | undefined;
+
+    try {
+      const supabaseClient = getSupabaseClient();
+      const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+        async (_event, session) => {
+          if (session?.user) {
+            // Fetch user profile from users table
+            const { data: userData } = await supabaseClient
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (userData) {
+              setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+            }
+          } else {
+            setUser(null);
+          }
+        }
+      );
+      authListener = () => subscription.unsubscribe();
+    } catch (error) {
+      console.error('Error setting up auth listener:', error);
     }
+
+    return () => {
+      if (authListener) {
+        authListener();
+      }
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Security: Validate email format
+    // Validate email format
     if (!email || !isValidEmail(email)) {
       return { success: false, error: 'Неверный формат email' };
     }
-    
-    // Security: Validate password
+
+    // Validate password
     if (!password || password.length < 1) {
       return { success: false, error: 'Введите пароль' };
     }
-    
-    const normalizedEmail = email.toLowerCase().trim();
-    
-    // In production: validate credentials against database
-    // const userData = MOCK_USERS[normalizedEmail];
-    // const passwordHash = simpleHash(password);
-    
-    // Mock login - in production validate against database
-    // For demo purposes, allow login with valid email format
-    const mockUser: User = {
-      id: generateSecureToken().substring(0, 16),
-      name: normalizedEmail.split('@')[0],
-      email: normalizedEmail,
-      phone: '+7 (999) 000-00-00',
-    };
-    
-    // Security: Generate authentication token
-    const authToken = hashData(mockUser.email + mockUser.id);
-    
-    setUser(mockUser);
-    localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-    localStorage.setItem(AUTH_TOKEN_KEY, authToken);
-    
-    return { success: true };
+
+    try {
+      const supabaseClient = getSupabaseClient();
+      
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email.toLowerCase().trim(),
+        password,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data?.user) {
+        // Fetch user profile from users table
+        const { data: userData, error: userError } = await supabaseClient
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user profile:', userError);
+          // Still allow login even if profile fetch fails
+          setUser({
+            id: data.user.id,
+            name: data.user.email?.split('@')[0] || 'User',
+            email: data.user.email || email,
+            phone: '',
+          });
+        } else if (userData) {
+          setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+        }
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: 'Ошибка входа. Попробуйте позже.' };
+    }
   };
 
   const register = async (
-    name: string, 
-    email: string, 
-    phone: string, 
+    name: string,
+    email: string,
+    phone: string,
     password: string
   ): Promise<{ success: boolean; error?: string }> => {
-    // Security: Validate name
+    // Validate name
     if (!name || name.trim().length < 2) {
       return { success: false, error: 'Имя должно быть не менее 2 символов' };
     }
-    
-    // Security: Validate email
+
+    // Validate email
     if (!isValidEmail(email)) {
       return { success: false, error: 'Неверный формат email' };
     }
-    
-    // Security: Validate phone
+
+    // Validate phone
     if (!isValidPhone(phone)) {
       return { success: false, error: 'Неверный формат телефона' };
     }
-    
-    // Security: Validate password strength
+
+    // Validate password strength
     const passwordCheck = isValidPassword(password);
     if (!passwordCheck.valid) {
       return { success: false, error: passwordCheck.error };
     }
-    
-    const normalizedEmail = email.toLowerCase().trim();
-    const passwordHash = simpleHash(password);
-    
-    // Store user in mock database
-    const newUser: User = {
-      id: generateSecureToken().substring(0, 16),
-      name: sanitizeInput(name.trim()),
-      email: normalizedEmail,
-      phone: phone.trim(),
-    };
-    
-    MOCK_USERS[normalizedEmail] = { passwordHash, user: newUser };
-    
-    // Security: Generate authentication token
-    const authToken = hashData(newUser.email + newUser.id);
-    
-    setUser(newUser);
-    localStorage.setItem(USER_KEY, JSON.stringify(newUser));
-    localStorage.setItem(AUTH_TOKEN_KEY, authToken);
-    
-    return { success: true };
+
+    try {
+      const supabaseClient = getSupabaseClient();
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Sign up with Supabase Auth
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: {
+            name: sanitizeInput(name.trim()),
+            phone: phone.trim(),
+          },
+        },
+      });
+
+      if (error) {
+        // Handle specific error codes
+        if (error.message.includes('already registered')) {
+          return { success: false, error: 'Пользователь с таким email уже существует' };
+        }
+        return { success: false, error: error.message };
+      }
+
+      if (data?.user) {
+        // Create user profile in users table
+        const { error: profileError } = await supabaseClient
+          .from('users')
+          .insert({
+            id: data.user.id,
+            email: normalizedEmail,
+            name: sanitizeInput(name.trim()),
+            phone: phone.trim(),
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // Continue anyway - user is registered in auth
+        }
+
+        // Set the user in state
+        setUser({
+          id: data.user.id,
+          name: sanitizeInput(name.trim()),
+          email: normalizedEmail,
+          phone: phone.trim(),
+        });
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, error: 'Ошибка регистрации. Попробуйте позже.' };
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(STORAGE_KEY);
+  const logout = async () => {
+    try {
+      const supabaseClient = getSupabaseClient();
+      await supabaseClient.auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const addParking = (parking: Omit<ParkingItem, 'id'>) => {
-    // Security: Validate all inputs
+    // Validate all inputs
     if (!parking.title || parking.title.trim().length < 2) {
       console.error('Invalid title');
       return;
     }
-    
+
     if (!parking.address || parking.address.trim().length < 5) {
       console.error('Invalid address');
       return;
     }
-    
-    // Security: Validate and sanitize numeric values
+
+    // Validate and sanitize numeric values
     const priceCheck = safeParseNumber(String(parking.price));
     if (!priceCheck.valid) {
       console.error('Invalid price');
       return;
     }
-    
+
     const spotsCheck = safeParseNumber(String(parking.spots));
     if (!spotsCheck.valid || spotsCheck.value === 0) {
       console.error('Invalid spots');
       return;
     }
-    
+
     const newParking: ParkingItem = {
       id: generateSecureToken().substring(0, 16),
       title: sanitizeInput(parking.title.trim()),
@@ -275,7 +358,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       spots: spotsCheck.value,
       description: parking.description ? sanitizeInput(parking.description.trim()) : undefined,
     };
-    
+
     const updated = [...myParkings, newParking];
     setMyParkings(updated);
     localStorage.setItem(PARKING_KEY, JSON.stringify(updated));
@@ -286,6 +369,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         login,
         register,
         logout,
