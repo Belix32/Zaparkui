@@ -1,0 +1,134 @@
+/* Mobile Design Tokens - Оптимизировано для мобильных устройств */
+/* Адаптировано из vars: colors, typography, spacing, shadows */
+
+:root {
+  /* === Цветовая палитра === */
+  /* Primary - основной бренд цвет */
+  --mobile-primary: #2563eb;
+  --mobile-primary-dark: #1d4ed8;
+  --mobile-primary-light: #3b82f6;
+  
+  /* Secondary - вторичный цвет */
+  --mobile-secondary: #64748b;
+  --mobile-secondary-dark: #475569;
+  --mobile-secondary-light: #94a3b8;
+  
+  /* Accent - акцентный цвет */
+  --mobile-accent: #f59e0b;
+  --mobile-accent-dark: #d97706;
+  --mobile-accent-light: #fbbf24;
+  
+  /* Background - фоны */
+  --mobile-bg-primary: #ffffff;
+  --mobile-bg-secondary: #f8fafc;
+  --mobile-bg-card: #ffffff;
+  --mobile-bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Text - текст */
+  --mobile-text-primary: #1e293b;
+  --mobile-text-secondary: #64748b;
+  --mobile-text-tertiary: #94a3b8;
+  --mobile-text-inverse: #ffffff;
+  
+  /* Status цвета */
+  --mobile-success: #10b981;
+  --mobile-error: #ef4444;
+  --mobile-warning: #f59e0b;
+  --mobile-info: #3b82f6;
+  
+  /* === Типографика === */
+  /* System fonts - оптимизировано для мобильных */
+  --mobile-font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+  
+  /* Font sizes - адаптировано для мобильных */
+  --mobile-font-h1: 28px;
+  --mobile-font-h2: 24px;
+  --mobile-font-h3: 20px;
+  --mobile-font-body: 16px;
+  --mobile-font-body-sm: 14px;
+  --mobile-font-caption: 12px;
+  --mobile-font-button: 16px;
+  
+  /* Line heights */
+  --mobile-line-tight: 1.2;
+  --mobile-line-normal: 1.5;
+  --mobile-line-relaxed: 1.75;
+  
+  /* Font weights */
+  --mobile-font-regular: 400;
+  --mobile-font-medium: 500;
+  --mobile-font-semibold: 600;
+  --mobile-font-bold: 700;
+  
+  /* === Spacing === */
+  --mobile-space-xs: 4px;
+  --mobile-space-sm: 8px;
+  --mobile-space-md: 16px;
+  --mobile-space-lg: 24px;
+  --mobile-space-xl: 32px;
+  --mobile-space-2xl: 48px;
+  
+  /* Touch-friendly spacing - увеличенные отступы */
+  --mobile-space-touch: 12px;
+  --mobile-space-tap: 16px;
+  
+  /* === Border Radius === */
+  --mobile-radius-sm: 4px;
+  --mobile-radius-md: 8px;
+  --mobile-radius-lg: 12px;
+  --mobile-radius-xl: 16px;
+  --mobile-radius-full: 9999px;
+  
+  /* === Тени === */
+  --mobile-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --mobile-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --mobile-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --mobile-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.16);
+  
+  /* === Touch Targets - >= 44px по рекомендациям Apple === */
+  --mobile-touch-min: 44px;
+  --mobile-touch-medium: 48px;
+  --mobile-touch-large: 56px;
+  
+  /* === Breakpoints === */
+  --mobile-breakpoint-sm: 480px;
+  --mobile-breakpoint-md: 768px;
+  --mobile-breakpoint-lg: 1024px;
+  
+  /* === Transitions === */
+  --mobile-transition-fast: 0.15s ease;
+  --mobile-transition-normal: 0.25s ease;
+  --mobile-transition-slow: 0.4s ease;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --mobile-bg-primary: #0f0f0f;
+  --mobile-bg-secondary: #1a1a1a;
+  --mobile-bg-card: #252525;
+  --mobile-text-primary: #f1f5f9;
+  --mobile-text-secondary: #94a3b8;
+  --mobile-text-tertiary: #64748b;
+  --mobile-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --mobile-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* iOS Safe Area */
+@supports (padding: max(0px)) {
+  :root {
+    --mobile-safe-top: max(0px, env(safe-area-inset-top));
+    --mobile-safe-bottom: max(0px, env(safe-area-inset-bottom));
+    --mobile-safe-left: max(0px, env(safe-area-inset-left));
+    --mobile-safe-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Android safe area (for future use) */
+@supports (padding: env(safe-area-inset-top)) {
+  :root {
+    --mobile-safe-top: env(safe-area-inset-top);
+    --mobile-safe-bottom: env(safe-area-inset-bottom);
+    --mobile-safe-left: env(safe-area-inset-left);
+    --mobile-safe-right: env(safe-area-inset-right);
+  }
+}
