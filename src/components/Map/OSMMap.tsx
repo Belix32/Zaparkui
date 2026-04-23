@@ -2,9 +2,29 @@ import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Geolocation } from '@capacitor/geolocation';
 import { Parking } from '../../lib/supabase';
 import styles from './OSMMap.module.css';
+
+// Check if running in Capacitor native environment
+const isNative = typeof window !== 'undefined' && 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Capacitor?.isNativePlatform?.();
+
+// Lazy-loaded Capacitor Geolocation (only in native apps)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Geolocation: any = null;
+
+async function loadGeolocation() {
+  if (!Geolocation && isNative) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      Geolocation = require('@capacitor/geolocation');
+    } catch {
+      console.log('[OSMMap] Geolocation not available');
+    }
+  }
+  return Geolocation;
+}
 
 // Fix Leaflet default icon issue
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,24 +127,67 @@ function LocationTracker({
   useEffect(() => {
     const watchLocation = async () => {
       try {
-        // Request permission first
-        const permission = await Geolocation.requestPermissions();
-        if (permission.location !== 'granted') {
-          console.log('Location permission not granted');
-          return;
+        // Try Capacitor first in native apps
+        const geoModule = await loadGeolocation();
+        
+        if (geoModule) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const permission = await (geoModule as any).requestPermissions();
+          if (permission.location !== 'granted') {
+            console.log('Location permission not granted');
+          } else {
+            // Get current position first
+            const position = await (geoModule as any).getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0,
+            });
+
+            onLocationUpdate({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+            
+            // Set up watch (the watchId is stored internally by Capacitor)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            await (geoModule as any).watchPosition(
+              {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 30000,
+              },
+              (position: { coords: { latitude: number; longitude: number } }, error: unknown) => {
+                if (error) {
+                  console.error('Watch position error:', error);
+                  return;
+                }
+                if (position) {
+                  onLocationUpdate({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                  });
+                }
+              }
+            );
+            return;
+          }
         }
-
-        // Get current position
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
-
-        onLocationUpdate({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
+        
+        // Fallback to browser Geolocation API
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              onLocationUpdate({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
+            },
+            (error) => {
+              console.error('Error getting location:', error.message);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+          );
+        }
       } catch (error) {
         console.error('Error getting location:', error);
       }
@@ -132,39 +195,26 @@ function LocationTracker({
 
     watchLocation();
 
-    // Set up watching position
-    let watchId: string = '';
-    const setupWatch = async () => {
-      try {
-        watchId = await Geolocation.watchPosition(
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 30000,
-          },
-          (position, error) => {
-            if (error) {
-              console.error('Watch position error:', error);
-              return;
-            }
-            if (position) {
-              onLocationUpdate({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-              });
-            }
-          }
-        );
-      } catch (err) {
-        console.error('Watch setup error:', err);
-      }
-    };
-
-    setupWatch();
+    let watchId: number | null = null;
+    
+    if ('geolocation' in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          onLocationUpdate({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error('Watch position error:', error.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
+    }
 
     return () => {
-      if (watchId) {
-        Geolocation.clearWatch({ id: watchId });
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
       }
     };
   }, [map, onLocationUpdate]);
@@ -271,16 +321,39 @@ export function OSMMap({
   const requestUserLocation = async () => {
     setIsLocating(true);
     try {
-      const permission = await Geolocation.requestPermissions();
-      if (permission.location === 'granted') {
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 10000,
-        });
-        setUserLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
+      // Try Capacitor first in native apps
+      const geoModule = await loadGeolocation();
+      
+      if (geoModule) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const permission = await (geoModule as any).requestPermissions();
+        if (permission.location === 'granted') {
+          const position = await (geoModule as any).getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 10000,
+          });
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          return;
+        }
+      }
+      
+      // Fallback to browser Geolocation API
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          (error) => {
+            console.error('Error getting location:', error.message);
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
       }
     } catch (error) {
       console.error('Error getting location:', error);

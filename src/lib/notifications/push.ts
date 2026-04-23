@@ -1,9 +1,28 @@
 /**
- * Push Notifications - Заглушка push-уведомлений через Capacitor
- * Симулирует локальные уведомления
+ * Push Notifications - Web-compatible stub for push notifications
+ * Falls back to browser APIs or no-ops in web environment
  */
 
-import { LocalNotifications } from '@capacitor/local-notifications';
+// Check if running in Capacitor native environment
+const isNative = typeof window !== 'undefined' && 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Capacitor?.isNativePlatform?.();
+
+// Lazy-loaded Capacitor module (only in native apps)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let LocalNotifications: any = null;
+
+async function loadLocalNotifications() {
+  if (!LocalNotifications && isNative) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      LocalNotifications = require('@capacitor/local-notifications');
+    } catch {
+      console.log('[Push] LocalNotifications not available');
+    }
+  }
+  return LocalNotifications;
+}
 
 export interface PushSubscription {
   id: string;
@@ -30,16 +49,20 @@ export interface PermissionState {
  */
 export async function requestPermission(): Promise<PermissionState> {
   try {
-    const result = await LocalNotifications.requestPermissions();
-    if (result && 'granted' in result) {
-      return {
-        granted: Boolean((result as { granted: boolean }).granted),
-        canSchedule: Boolean((result as { granted: boolean }).granted),
-      };
+    const module = await loadLocalNotifications();
+    if (module) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (module as any).requestPermissions();
+      if (result && 'granted' in result) {
+        return {
+          granted: Boolean((result as { granted: boolean }).granted),
+          canSchedule: Boolean((result as { granted: boolean }).granted),
+        };
+      }
     }
     return { granted: true, canSchedule: true };
   } catch (error) {
-    console.log('[Push Mock] Разрешение уже предоставлено (Cordova):', error);
+    console.log('[Push] Разрешение уже предоставлено (web mode):', error);
     return { granted: true, canSchedule: true };
   }
 }
@@ -50,12 +73,16 @@ export async function requestPermission(): Promise<PermissionState> {
  */
 export async function checkPermission(): Promise<PermissionState> {
   try {
-    const result = await LocalNotifications.checkPermissions();
-    if (result && 'receive' in result) {
-      return {
-        granted: result.receive === 'granted',
-        canSchedule: result.receive === 'granted',
-      };
+    const module = await loadLocalNotifications();
+    if (module) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (module as any).checkPermissions();
+      if (result && 'receive' in result) {
+        return {
+          granted: result.receive === 'granted',
+          canSchedule: result.receive === 'granted',
+        };
+      }
     }
     return { granted: true, canSchedule: true };
   } catch {
@@ -114,37 +141,48 @@ export async function sendLocal(payload: NotificationPayload): Promise<number> {
 
   const notificationId = Date.now();
   
-  // Create notification object
-  const notification: {
-    title: string;
-    body: string;
-    id: number;
-    extra?: Record<string, string>;
-    schedule?: { at: Date };
-  } = {
-    title: payload.title,
-    body: payload.body,
-    id: notificationId,
-    extra: payload.data,
-  };
-
-  if (payload.schedule) {
-    notification.schedule = {
-      at: payload.schedule,
+  // In native app, use LocalNotifications
+  const module = await loadLocalNotifications();
+  if (module) {
+    const notification: {
+      title: string;
+      body: string;
+      id: number;
+      extra?: Record<string, string>;
+      schedule?: { at: Date };
+    } = {
+      title: payload.title,
+      body: payload.body,
+      id: notificationId,
+      extra: payload.data,
     };
+
+    if (payload.schedule) {
+      notification.schedule = {
+        at: payload.schedule,
+      };
+    }
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (module as any).schedule({
+        notifications: [notification],
+      });
+      console.log('[Push] Уведомление отправлено (native):', notification.title);
+      return notificationId;
+    } catch (error) {
+      console.log('[Push] Ошибка отправки:', error);
+      return notificationId;
+    }
   }
 
-  try {
-    await LocalNotifications.schedule({
-      notifications: [notification],
-    });
-    console.log('[Push Mock] Уведомление отправлено:', notification.title);
-    return notificationId;
-  } catch (error) {
-    console.log('[Push Mock] Ошибка отправки (ожидаемо в dev):', error);
-    // В dev режиме возвращаем mock ID
-    return notificationId;
+  // Web fallback: show browser notification if permitted
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new window.Notification(payload.title, { body: payload.body });
   }
+  
+  console.log('[Push] Уведомление (mock/web):', payload.title);
+  return notificationId;
 }
 
 /**
@@ -152,10 +190,14 @@ export async function sendLocal(payload: NotificationPayload): Promise<number> {
  */
 export async function clearAll(): Promise<void> {
   try {
-    await LocalNotifications.cancel({ notifications: [] });
-    console.log('[Push Mock] Все уведомления удалены');
+    const module = await loadLocalNotifications();
+    if (module) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (module as any).cancel({ notifications: [] });
+    }
+    console.log('[Push] Все уведомления удалены');
   } catch (error) {
-    console.log('[Push Mock] Очистка (ожидаемо в dev):', error);
+    console.log('[Push] Очистка (web mode):', error);
   }
 }
 
@@ -164,8 +206,13 @@ export async function clearAll(): Promise<void> {
  */
 export async function getScheduled(): Promise<unknown[]> {
   try {
-    const result = await LocalNotifications.getPending();
-    return result.notifications || [];
+    const module = await loadLocalNotifications();
+    if (module) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (module as any).getPending();
+      return result.notifications || [];
+    }
+    return [];
   } catch {
     return [];
   }
@@ -178,23 +225,22 @@ export async function getScheduled(): Promise<unknown[]> {
 export function onForegroundNotification(
   callback: (notification: unknown) => void
 ): () => void {
-  // Добавляем listener для foreground уведомлений
-  try {
-    LocalNotifications.addListener('localNotificationReceived', (notification) => {
-      callback(notification);
-    });
-  } catch {
-    console.log('[Push Mock] Foreground listener (mock mode)');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plugin = isNative ? (window as any).Capacitor?.Plugins?.LocalNotifications : null;
+  
+  if (plugin) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      plugin.addListener('localNotificationReceived', (notification: any) => {
+        callback(notification);
+      });
+    } catch {
+      console.log('[Push] Foreground listener unavailable');
+    }
   }
 
-  // Возвращаем функцию для удаления listener
-  return () => {
-    try {
-      // Cleanup если необходимо
-    } catch {
-      // Игнорируем
-    }
-  };
+  return () => {};
 }
 
 /**
@@ -204,21 +250,22 @@ export function onForegroundNotification(
 export function onNotificationTapped(
   callback: (notification: unknown) => void
 ): () => void {
-  try {
-    LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
-      callback(notification);
-    });
-  } catch {
-    console.log('[Push Mock] Notification tap listener (mock mode)');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plugin = isNative ? (window as any).Capacitor?.Plugins?.LocalNotifications : null;
+  
+  if (plugin) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      plugin.addListener('localNotificationActionPerformed', (notification: any) => {
+        callback(notification);
+      });
+    } catch {
+      console.log('[Push] Notification tap listener unavailable');
+    }
   }
 
-  return () => {
-    try {
-      // Cleanup
-    } catch {
-      // Игнорируем
-    }
-  };
+  return () => {};
 }
 
 /**

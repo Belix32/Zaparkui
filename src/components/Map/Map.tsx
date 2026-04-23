@@ -2,9 +2,29 @@ import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Geolocation } from '@capacitor/geolocation';
 import { Parking } from '../../lib/supabase';
 import styles from './Map.module.css';
+
+// Check if running in Capacitor native environment
+const isNative = typeof window !== 'undefined' && 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Capacitor?.isNativePlatform?.();
+
+// Lazy-loaded Capacitor Geolocation (only in native apps)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Geolocation: any = null;
+
+async function loadGeolocation() {
+  if (!Geolocation && isNative) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      Geolocation = require('@capacitor/geolocation');
+    } catch {
+      console.log('[Map] Geolocation not available');
+    }
+  }
+  return Geolocation;
+}
 
 // Fix Leaflet default icon issue
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,7 +118,8 @@ function MapController({
   return null;
 }
 
-// Component to handle user location tracking via Capacitor
+// Component to handle user location tracking
+// Uses Capacitor in native apps, browser Geolocation API in web
 function LocationTracker({
   onLocationUpdate,
   enabled,
@@ -111,22 +132,44 @@ function LocationTracker({
 
     const getLocation = async () => {
       try {
-        const permission = await Geolocation.requestPermissions();
-        if (permission.location !== 'granted') {
-          console.log('Location permission denied');
-          return;
+        // Try Capacitor first in native apps
+        const geoModule = await loadGeolocation();
+        
+        if (geoModule) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const permission = await (geoModule as any).requestPermissions();
+          if (permission.location !== 'granted') {
+            console.log('Capacitor location permission denied');
+          } else {
+            const position = await (geoModule as any).getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0,
+            });
+
+            onLocationUpdate({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+            return;
+          }
         }
-
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
-
-        onLocationUpdate({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
+        
+        // Fallback to browser Geolocation API
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              onLocationUpdate({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
+            },
+            (error) => {
+              console.error('Browser geolocation error:', error.message);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+          );
+        }
       } catch (error) {
         console.error('Error getting location:', error);
       }
@@ -134,39 +177,27 @@ function LocationTracker({
 
     getLocation();
 
-    // Watch position
-    let watchId: string = '';
-    const startWatching = async () => {
-      try {
-        watchId = await Geolocation.watchPosition(
-          {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 30000,
-          },
-          (position, error) => {
-            if (error) {
-              console.error('Watch error:', error);
-              return;
-            }
-            if (position) {
-              onLocationUpdate({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-              });
-            }
-          }
-        );
-      } catch (err) {
-        console.error('Watch setup error:', err);
-      }
-    };
-
-    startWatching();
+    // Watch position using browser API
+    let watchId: number | null = null;
+    
+    if ('geolocation' in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          onLocationUpdate({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error('Watch error:', error.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+      );
+    }
 
     return () => {
-      if (watchId) {
-        Geolocation.clearWatch({ id: watchId });
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
       }
     };
   }, [enabled, onLocationUpdate]);

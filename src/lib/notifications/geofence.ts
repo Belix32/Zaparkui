@@ -1,11 +1,30 @@
 /**
- * Geofence - Геолокационные уведомления
- * Заглушка, использующая Capacitor Geolocation для мониторинга зон
+ * Geofence - Web-compatible geolocation notifications
+ * Uses browser Geolocation API in web, Capacitor in native apps
  */
-
-import { Geolocation } from '@capacitor/geolocation';
 import { calculateDistance } from '../../hooks/useGeolocation';
 import { sendLocal } from './push';
+
+// Check if running in Capacitor native environment
+const isNative = typeof window !== 'undefined' && 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Capacitor?.isNativePlatform?.();
+
+// Lazy-loaded Capacitor Geolocation (only in native apps)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Geolocation: any = null;
+
+async function loadGeolocation() {
+  if (!Geolocation && isNative) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      Geolocation = require('@capacitor/geolocation');
+    } catch {
+      console.log('[Geofence] Geolocation not available');
+    }
+  }
+  return Geolocation;
+}
 
 export interface GeofenceZone {
   id: string;
@@ -111,21 +130,48 @@ export function onExit(zoneId: string, callback: GeofenceCallback): () => void {
  * @returns Координаты или null
  */
 export async function getCurrentPosition(): Promise<{ latitude: number; longitude: number } | null> {
-  try {
-    const position = await Geolocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 10000,
-    });
+  // In native app, use Capacitor Geolocation
+  const geoModule = await loadGeolocation();
+  
+  if (geoModule) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const position = await (geoModule as any).getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+      });
 
-    return {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-    };
-  } catch (error) {
-    console.log('[Geofence] Ошибка получения позиции (mock mode):', error);
-    // Fallback to Moscow center for development
-    return { latitude: 55.7558, longitude: 37.6173 };
+      return {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      };
+    } catch (error) {
+      console.log('[Geofence] Capacitor error, falling back to browser:', error);
+    }
   }
+  
+  // Web fallback: use browser Geolocation API
+  return new Promise((resolve) => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.log('[Geofence] Browser geolocation error:', error.message);
+          // Fallback to Moscow center for development
+          resolve({ latitude: 55.7558, longitude: 37.6173 });
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      // Fallback if no geolocation available
+      resolve({ latitude: 55.7558, longitude: 37.6173 });
+    }
+  });
 }
 
 /**
