@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getSupabaseClient, Booking, Parking, updateBooking, getParkingById } from '../../lib/supabase';
-import { createPayment, getAvailablePaymentMethods, PaymentMethod } from '../../lib/payments/yookassa';
+import { getSupabaseClient, Booking, Parking, getParkingById } from '../../lib/supabase';
+import { createPayment, PaymentMethod } from '../../lib/payments/yookassa';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingConfirm.module.css';
@@ -22,7 +22,8 @@ export function BookingConfirm() {
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<'card' | 'sbp' | 'qiwi'>('card');
-  const [availableMethods] = useState(() => getAvailablePaymentMethods());
+  
+  // Load booking and parking data
 
   // Load booking and parking data
   useEffect(() => {
@@ -119,15 +120,6 @@ export function BookingConfirm() {
       setProcessingPayment(false);
     }
   }, [booking, user, selectedPayment, navigate]);
-
-  // Generate mock payment link for ЮKassa
-  const generatePaymentLink = useCallback(() => {
-    if (!booking || !parking) return '';
-    
-    // In production, this would be a real ЮKassa payment link
-    // For demo purposes, we simulate the payment flow
-    return `https://payment.yookassa.ru/?amount=${booking.total_price}&currency=RUB`;
-  }, [booking, parking]);
 
   // Format date for display
   const formatDate = (dateStr: string) => {
@@ -335,24 +327,6 @@ export function BookingConfirm() {
       </div>
     </div>
   );
-}
-
-// Helper function to update booking (add to supabase.ts if needed)
-async function updateBooking(id: string, data: Partial<Booking>): Promise<Booking> {
-  const supabase = getSupabaseClient();
-  const { data: result, error } = await supabase
-    .from('bookings')
-    .update(data)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating booking:', error);
-    throw new Error(error.message);
-  }
-
-  return result as Booking;
 }
 
 export default BookingConfirm;

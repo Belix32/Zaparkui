@@ -135,7 +135,7 @@ function LocationTracker({
     getLocation();
 
     // Watch position
-    let watchId: number | undefined;
+    let watchId: string = '';
     const startWatching = async () => {
       try {
         watchId = await Geolocation.watchPosition(
@@ -165,7 +165,7 @@ function LocationTracker({
     startWatching();
 
     return () => {
-      if (watchId !== undefined) {
+      if (watchId) {
         Geolocation.clearWatch({ id: watchId });
       }
     };

@@ -5,15 +5,6 @@
 
 import { LocalNotifications } from '@capacitor/local-notifications';
 
-// Capacitor v5 types compatibility
-interface NotificationPermissionResult {
-  granted: boolean;
-}
-
-interface NotificationCheckResult {
-  receive?: string;
-}
-
 export interface PushSubscription {
   id: string;
   token: string;

@@ -201,7 +201,7 @@ export function BookingSuccess() {
           
           <div className={styles.qrActions}>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="small" 
               onClick={downloadQR}
               className={styles.qrButton}
@@ -214,7 +214,7 @@ export function BookingSuccess() {
               Скачать
             </Button>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="small" 
               onClick={shareBooking}
               className={styles.qrButton}
@@ -336,7 +336,7 @@ export function BookingSuccess() {
             Мои бронирования
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => navigate('/catalog')}
             className={styles.actionButton}
           >

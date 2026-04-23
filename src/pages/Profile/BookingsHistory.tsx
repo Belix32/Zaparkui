@@ -322,7 +322,7 @@ export function BookingsHistory() {
                   )}
                   {booking.status === 'completed' && (
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="small"
                       onClick={() => handleDownloadReceipt(booking)}
                     >

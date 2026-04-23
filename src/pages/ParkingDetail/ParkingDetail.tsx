@@ -6,8 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Button, MobileButton } from '../../components';
 import { Parking, getParkingById } from '../../lib/supabase';
-import { useGeofence } from '../../hooks';
-import { calculateDistance } from '../../hooks/useGeofence';
+import { useGeofence, calculateDistance } from '../../hooks';
 import styles from './ParkingDetail.module.css';
 
 export function ParkingDetail() {
@@ -22,14 +21,12 @@ export function ParkingDetail() {
 
   // Geofence hook
   const {
-    loading: geofenceLoading,
     isNearParking,
     distanceToParking,
     addParkingZone,
     removeParkingZone,
-    checkProximity,
-    refreshPosition,
     userPosition,
+    loading: geofenceLoading,
   } = useGeofence({
     radius: 500,
     autoNotify: true,
@@ -98,7 +95,7 @@ export function ParkingDetail() {
   }, [parking, navigate]);
 
   // Calculate distance if we have user position
-  const distance = (parking && userPosition)
+  const distance = (parking && userPosition && parking.latitude && parking.longitude)
     ? calculateDistance(
         userPosition.latitude,
         userPosition.longitude,

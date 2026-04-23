@@ -449,6 +449,29 @@ export async function updateBookingStatus(
 }
 
 /**
+ * Update a booking with partial data
+ */
+export async function updateBooking(
+  id: string,
+  data: Partial<Booking>
+): Promise<Booking> {
+  const supabase = getSupabaseClient();
+  const { data: result, error } = await supabase
+    .from('bookings')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating booking:', error);
+    throw new Error(error.message);
+  }
+
+  return result as Booking;
+}
+
+/**
  * Create a new user profile
  */
 export async function createUser(user: { email: string; name: string; phone?: string }): Promise<User> {

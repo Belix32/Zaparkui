@@ -5,8 +5,6 @@ import {
 } from '../lib/supabase';
 import {
   subscribe,
-  sendLocal,
-  notifyBookingConfirmed,
 } from '../lib/notifications/push';
 
 export interface User {

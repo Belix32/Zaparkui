@@ -14,8 +14,8 @@ interface SearchResult {
   title: string;
   address: string;
   price: number;
-  parkingType: string;
-  district: string;
+  parkingType?: string;
+  district?: string;
 }
 
 // Debounce hook
@@ -279,7 +279,7 @@ export function SearchAutocomplete({
                   </div>
                   <div className={styles.dropdownMeta}>
                     <span className={styles.dropdownBadge}>
-                      {getParkingTypeLabel(result.parkingType)}
+                      {getParkingTypeLabel(result.parkingType || '')}
                     </span>
                     {result.district && (
                       <span className={styles.dropdownBadge}>

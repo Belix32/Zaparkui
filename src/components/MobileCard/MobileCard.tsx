@@ -1,7 +1,7 @@
 import { ReactNode, HTMLAttributes } from 'react';
 import styles from './MobileCard.module.css';
 
-interface MobileCardProps extends HTMLAttributes<HTMLDivElement> {
+export interface MobileCardProps extends HTMLAttributes<HTMLDivElement> {
   /** Вариант карточки */
   variant?: 'default' | 'elevated' | 'outlined' | 'ghost';
   /** Размер */

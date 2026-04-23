@@ -157,8 +157,8 @@ export function Catalog() {
     }
   }, [search, filters, addToHistory]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
   };
 
   const handleFilterChange = (newFilters: FilterValues) => {

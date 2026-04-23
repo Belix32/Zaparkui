@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '../Button/Button';
 import styles from './ReviewForm.module.css';
 
@@ -22,18 +22,24 @@ function StarRatingInput({
     setIsTouchDevice(true);
   }, []);
 
-  const handleClickOutside = useCallback((e: MouseEvent) => {
-    if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-      setHoverRating(0);
-    }
-  }, []);
-
   // Close hover state on scroll for mobile
-  const handleScroll = useCallback(() => {
-    if (isTouchDevice) {
-      setHoverRating(0);
-    }
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    const handleScroll = () => setHoverRating(0);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [isTouchDevice]);
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setHoverRating(0);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   return (
     <div ref={containerRef} className={styles.starRating}>

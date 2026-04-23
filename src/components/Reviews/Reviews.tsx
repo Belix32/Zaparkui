@@ -81,7 +81,6 @@ export function Reviews({ parkingId }: ReviewsProps) {
     reviews,
     averageRating,
     totalReviews,
-    addReview,
   } = useReviews(parkingId);
 
   // Pagination state

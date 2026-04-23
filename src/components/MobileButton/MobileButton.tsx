@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import styles from './MobileButton.module.css';
 
-interface MobileButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface MobileButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Вариант кнопки */
   variant?: 'primary' | 'secondary' | 'accent' | 'ghost' | 'danger';
   /** Размер кнопки */

@@ -4,4 +4,6 @@
     <string name="title_activity_main">Запаркуй</string>
     <string name="package_name">com.zaparkyi.app</string>
     <string name="custom_url_scheme">com.zaparkyi.app</string>
+    <string name="app_description">Аренда парковочных мест в жилых комплексах Москвы. Находите свободные места, бронируйте и экономьте время.</string>
+    <string name="app_version">1.0.0</string>
 </resources>
