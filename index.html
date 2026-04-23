@@ -16,18 +16,20 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
+    <!-- OneSignal - only on production domain -->
     <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "dc870f5d-0703-4be3-b38b-3972b75f9e82",
-          safari_web_id: "web.onesignal.auto.4f832ce8-c167-4c63-9514-5546a8912edb",
-          notifyButton: {
-            enable: true,
-          },
-        });
-      });
+      (function() {
+        const host = window.location.hostname;
+        // Only init on zaparkyi.ru (not vercel preview/dev)
+        if (host === 'zaparkyi.ru' || host === 'www.zaparkyi.ru') {
+          var OneSignal = window.OneSignal || [];
+          OneSignal.push(function() {
+            OneSignal.init({
+              appId: "dc870f5d-0703-4be3-b38b-3972b75f9e82",
+              notifyButton: { enable: false }
+});
+      })();
     </script>
   </body>
 </html>
