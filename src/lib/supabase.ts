@@ -64,7 +64,18 @@ export interface Booking {
   parking_id: string;
   start_date: string;
   end_date: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  start_time?: string;
+  end_time?: string;
+  booking_type?: 'hourly' | 'daily' | 'monthly';
+  car_brand?: string;
+  car_model?: string;
+  car_number?: string;
+  total_price?: number;
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_method?: string;
+  payment_id?: string;
+  qr_code?: string;
+  status: 'pending' | 'confirmed' | 'active' | 'cancelled' | 'completed';
   created_at: string;
 }
 
@@ -73,11 +84,21 @@ export interface BookingInsert {
   parking_id: string;
   start_date: string;
   end_date: string;
+  start_time?: string;
+  end_time?: string;
+  booking_type?: 'hourly' | 'daily' | 'monthly';
+  car_brand?: string;
+  car_model?: string;
+  car_number?: string;
+  total_price?: number;
   status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
 }
 
 export interface BookingUpdate {
-  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status?: 'pending' | 'confirmed' | 'active' | 'cancelled' | 'completed';
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_id?: string;
+  qr_code?: string;
 }
 
 export interface ParkingFilters {

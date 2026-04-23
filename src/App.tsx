@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Pages / Страницы
-import { Home, Catalog, Login, Register, Dashboard, Profile } from './pages';
+import { Home, Catalog, Login, Register, Dashboard, Profile, BookingPage, BookingConfirm, BookingSuccess } from './pages';
 
 // Auth Context / Контекст аутентификации
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -121,6 +121,30 @@ function WebApp() {
           element={
             <PageWrapper showFooter={true} showHeader={true}>
               <Profile />
+            </PageWrapper>
+          } 
+        />
+        <Route 
+          path="/booking" 
+          element={
+            <PageWrapper showFooter={false} showHeader={false}>
+              <BookingPage />
+            </PageWrapper>
+          } 
+        />
+        <Route 
+          path="/booking/confirm" 
+          element={
+            <PageWrapper showFooter={false} showHeader={false}>
+              <BookingConfirm />
+            </PageWrapper>
+          } 
+        />
+        <Route 
+          path="/booking/success" 
+          element={
+            <PageWrapper showFooter={false} showHeader={false}>
+              <BookingSuccess />
             </PageWrapper>
           } 
         />

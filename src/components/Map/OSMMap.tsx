@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Geolocation } from '@capacitor/geolocation';
 import { Parking } from '../../lib/supabase';
-import styles from './Map.module.css';
+import styles from './OSMMap.module.css';
 
 // Fix Leaflet default icon issue
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,21 +57,19 @@ const userIcon = L.divIcon({
   iconAnchor: [12, 12],
 });
 
-// OSM tile layer - primary
+// OSM tile layer with proper attribution
 const OSM_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-interface ParkingMapProps {
+interface OSMMapProps {
   parkings: Parking[];
-  userLatitude?: number;
-  userLongitude?: number;
   selectedParking?: Parking | null;
   onSelectParking?: (parking: Parking) => void;
   className?: string;
   height?: string;
   showUserLocation?: boolean;
   centerOnUser?: boolean;
-  fullscreen?: boolean;
+  zoom?: number;
 }
 
 interface UserLocation {
@@ -79,8 +77,8 @@ interface UserLocation {
   longitude: number;
 }
 
-// Component to recenter map
-function MapController({
+// Component to handle map center updates
+function MapCenterController({
   center,
   zoom,
 }: {
@@ -98,25 +96,25 @@ function MapController({
   return null;
 }
 
-// Component to handle user location tracking via Capacitor
+// Component to handle user location tracking
 function LocationTracker({
   onLocationUpdate,
-  enabled,
 }: {
   onLocationUpdate: (location: UserLocation) => void;
-  enabled: boolean;
 }) {
-  useEffect(() => {
-    if (!enabled) return;
+  const map = useMap();
 
-    const getLocation = async () => {
+  useEffect(() => {
+    const watchLocation = async () => {
       try {
+        // Request permission first
         const permission = await Geolocation.requestPermissions();
         if (permission.location !== 'granted') {
-          console.log('Location permission denied');
+          console.log('Location permission not granted');
           return;
         }
 
+        // Get current position
         const position = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
           timeout: 10000,
@@ -132,21 +130,21 @@ function LocationTracker({
       }
     };
 
-    getLocation();
+    watchLocation();
 
-    // Watch position
+    // Set up watching position
     let watchId: number | undefined;
-    const startWatching = async () => {
+    const setupWatch = async () => {
       try {
         watchId = await Geolocation.watchPosition(
           {
             enableHighAccuracy: true,
-            timeout: 15000,
+            timeout: 10000,
             maximumAge: 30000,
           },
           (position, error) => {
             if (error) {
-              console.error('Watch error:', error);
+              console.error('Watch position error:', error);
               return;
             }
             if (position) {
@@ -162,14 +160,14 @@ function LocationTracker({
       }
     };
 
-    startWatching();
+    setupWatch();
 
     return () => {
       if (watchId !== undefined) {
         Geolocation.clearWatch({ id: watchId });
       }
     };
-  }, [enabled, onLocationUpdate]);
+  }, [map, onLocationUpdate]);
 
   return null;
 }
@@ -178,37 +176,33 @@ const defaultCenter: [number, number] = [55.7558, 37.6173]; // Moscow
 const defaultZoom = 12;
 
 /**
- * Map component with Leaflet for searching and displaying parkings
- * P1 feature - Поиск по карте
- * Mobile-optimized version with OSM tiles
+ * OSMMap - OpenStreetMap based map component with parking markers
+ * Features:
+ * - OpenStreetMap tiles (no API key needed)
+ * - User geolocation via Capacitor
+ * - Custom brand icons
  */
-export function ParkingMap({
+export function OSMMap({
   parkings,
-  userLatitude,
-  userLongitude,
   selectedParking,
   onSelectParking,
   className,
   height = '400px',
   showUserLocation = true,
   centerOnUser = true,
-  fullscreen = false,
-}: ParkingMapProps) {
+  zoom = defaultZoom,
+}: OSMMapProps) {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Determine center
+  // Determine map center
   let center: [number, number] = defaultCenter;
-  const hasUserCoords = userLatitude && userLongitude;
-  
   if (centerOnUser && userLocation) {
     center = [userLocation.latitude, userLocation.longitude];
-  } else if (hasUserCoords) {
-    center = [userLatitude!, userLongitude!];
   } else if (selectedParking?.latitude && selectedParking?.longitude) {
     center = [selectedParking.latitude, selectedParking.longitude];
   } else if (parkings.length > 0) {
-    const pWithCoords = parkings.find(p => p.latitude && p.longitude);
+    const pWithCoords = parkings.find((p) => p.latitude && p.longitude);
     if (pWithCoords) {
       center = [pWithCoords.latitude!, pWithCoords.longitude!];
     }
@@ -217,10 +211,9 @@ export function ParkingMap({
   // Memoize parking markers
   const parkingMarkers = useMemo(() => {
     return parkings
-      .filter(p => p.latitude && p.longitude)
+      .filter((p) => p.latitude && p.longitude)
       .map((parking) => {
         const isSelected = selectedParking?.id === parking.id;
-        
         return (
           <Marker
             key={parking.id}
@@ -236,19 +229,28 @@ export function ParkingMap({
               <div className={styles.popup}>
                 <strong className={styles.popupTitle}>{parking.title}</strong>
                 <p className={styles.popupAddress}>{parking.address}</p>
-                <p className={styles.popupPrice}>
+                <div className={styles.popupPrice}>
                   {parking.price.toLocaleString('ru-RU')} ₽/мес
-                </p>
+                </div>
                 {parking.rating && (
-                  <p className={styles.popupRating}>
-                    ★ {parking.rating} ({parking.reviewCount})
-                  </p>
+                  <div className={styles.popupRating}>
+                    <span className={styles.starIcon}>★</span>
+                    <span>{parking.rating}</span>
+                    <span className={styles.reviewCount}>
+                      ({parking.reviewCount})
+                    </span>
+                  </div>
                 )}
                 <div className={styles.popupSpots}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H6L4 10l-2.5 1.1C.7 11.3 0 12.1 0 13v3c0 .6.4 1 1 1h2"/>
-                    <circle cx="7" cy="17" r="2"/>
-                    <circle cx="17" cy="17" r="2"/>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H6L4 10l-2.5 1.1C.7 11.3 0 12.1 0 13v3c0 .6.4 1 1 1h2" />
+                    <circle cx="7" cy="17" r="2" />
+                    <circle cx="17" cy="17" r="2" />
                   </svg>
                   <span>{parking.spots} мест</span>
                 </div>
@@ -265,7 +267,7 @@ export function ParkingMap({
     setIsLocating(false);
   };
 
-  // Request user location manually
+  // Request user location
   const requestUserLocation = async () => {
     setIsLocating(true);
     try {
@@ -288,11 +290,11 @@ export function ParkingMap({
   };
 
   return (
-    <div 
-      className={`${styles.mapWrapper} ${fullscreen ? styles.fullscreen : ''} ${className || ''}`}
+    <div
+      className={`${styles.mapWrapper} ${className || ''}`}
       style={{ height }}
     >
-      {/* Mobile location button */}
+      {/* Location button */}
       {showUserLocation && (
         <button
           className={`${styles.locationButton} ${userLocation ? styles.locationButtonActive : ''} ${isLocating ? styles.locating : ''}`}
@@ -303,9 +305,17 @@ export function ParkingMap({
           {isLocating ? (
             <span className={styles.spinner}></span>
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="3" />
               <path d="M12 2v2m0 16v2M2 12h2m16 0h2" />
+              <path d="M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
             </svg>
           )}
         </button>
@@ -313,37 +323,24 @@ export function ParkingMap({
 
       <MapContainer
         center={center}
-        zoom={defaultZoom}
+        zoom={zoom}
         className={styles.map}
         scrollWheelZoom={true}
-        zoomControl={false}
+        zoomControl={true}
       >
-        {/* OSM Tiles - free, no API key */}
-        <TileLayer
-          attribution={OSM_ATTRIBUTION}
-          url={OSM_TILE_URL}
-        />
-        
-        {/* Zoom control positioned for mobile */}
-        <ZoomControl position="bottomright" />
+        <TileLayer attribution={OSM_ATTRIBUTION} url={OSM_TILE_URL} />
 
-        {/* Map controller */}
-        <MapController center={center} zoom={defaultZoom} />
+        {/* Map center controller */}
+        <MapCenterController center={center} zoom={zoom} />
 
         {/* User location tracking */}
         {showUserLocation && centerOnUser && (
-          <LocationTracker onLocationUpdate={handleLocationUpdate} enabled={!!centerOnUser} />
+          <LocationTracker onLocationUpdate={handleLocationUpdate} />
         )}
 
         {/* User location marker */}
-        {(userLocation || (userLatitude && userLongitude)) && (
-          <Marker
-            position={[
-              userLocation?.latitude ?? userLatitude ?? 0,
-              userLocation?.longitude ?? userLongitude ?? 0
-            ]}
-            icon={userIcon}
-          >
+        {userLocation && (
+          <Marker position={[userLocation.latitude, userLocation.longitude]} icon={userIcon}>
             <Popup>
               <div className={styles.userPopup}>Ваше местоположение</div>
             </Popup>
@@ -357,38 +354,4 @@ export function ParkingMap({
   );
 }
 
-/**
- * Simple map for single parking location display
- * Optimized for mobile with compact view
- */
-export function ParkingLocationMap({
-  latitude,
-  longitude,
-}: {
-  latitude?: number;
-  longitude?: number;
-}) {
-  if (!latitude || !longitude) {
-    return (
-      <div className={styles.noLocation}>
-        <p>Местоположение не указано</p>
-      </div>
-    );
-  }
-  
-  return (
-    <div className={styles.mapWrapper}>
-      <MapContainer
-        center={[latitude, longitude]}
-        zoom={15}
-        className={styles.miniMap}
-        scrollWheelZoom={false}
-        dragging={true}
-        zoomControl={false}
-      >
-        <TileLayer url={OSM_TILE_URL} attribution={OSM_ATTRIBUTION} />
-        <Marker position={[latitude, longitude]} icon={createParkingIcon(1, true)} />
-      </MapContainer>
-    </div>
-  );
-}
+export default OSMMap;
