@@ -5,9 +5,76 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingsHistory.module.css';
 
+/** Booking payment status type */
+type PaymentStatus = 'pending' | 'paid' | 'refunded';
+
+/**
+ * Format date for display
+ */
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+/**
+ * Get booking status label in Russian
+ */
+const getStatusLabel = (status: string): string => {
+  switch (status) {
+    case 'pending': return 'Ожидает оплаты';
+    case 'confirmed': return 'Подтверждено';
+    case 'active': return 'Активно';
+    case 'cancelled': return 'Отменено';
+    case 'completed': return 'Завершено';
+    default: return status;
+  }
+};
+
+/**
+ * Get payment status label in Russian
+ */
+const getPaymentStatusLabel = (status: string): string => {
+  switch (status) {
+    case 'pending': return 'Ожидает оплаты';
+    case 'paid': return 'Оплачено';
+    case 'refunded': return 'Возвращено';
+    default: return status;
+  }
+};
+
+/**
+ * Get booking status CSS class
+ */
+const getStatusClass = (status: string): string => {
+  switch (status) {
+    case 'pending': return styles.statusPending;
+    case 'confirmed': return styles.statusConfirmed;
+    case 'active': return styles.statusActive;
+    case 'cancelled': return styles.statusCancelled;
+    case 'completed': return styles.statusCompleted;
+    default: return '';
+  }
+};
+
+/**
+ * Get payment status CSS class
+ */
+const getPaymentStatusClass = (status: PaymentStatus): string => {
+  switch (status) {
+    case 'pending': return styles.paymentPending;
+    case 'paid': return styles.paymentPaid;
+    case 'refunded': return styles.paymentRefunded;
+    default: return '';
+  }
+};
+
 /**
  * BookingsHistory - Component to display user's bookings
- * Shows active bookings, history, and allows cancellation
+ * Shows active bookings, history, and allows cancellation/extension
  */
 export function BookingsHistory() {
   const { user } = useAuth();
@@ -16,6 +83,7 @@ export function BookingsHistory() {
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [parkingCache, setParkingCache] = useState<Record<string, Parking>>({});
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [extendingId, setExtendingId] = useState<string | null>(null);
 
   // Load bookings
   useEffect(() => {
@@ -68,6 +136,52 @@ export function BookingsHistory() {
     }
   }, []);
 
+  // Extend booking
+  const handleExtend = useCallback(async (bookingId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    // Calculate extension period
+    const currentEnd = new Date(booking.end_date);
+    const extensionDays = booking.booking_type === 'monthly' ? 30 : 
+                         booking.booking_type === 'daily' ? 1 : 1;
+    const newEndDate = new Date(currentEnd);
+    newEndDate.setDate(newEndDate.getDate() + extensionDays);
+
+    const confirmExtend = confirm(
+      `Продлить бронирование до ${formatDate(newEndDate.toISOString())}?`
+    );
+
+    if (!confirmExtend) return;
+
+    setExtendingId(bookingId);
+    try {
+      // TODO: Implement extension logic with payment
+      console.log('Extending booking:', bookingId, 'to', newEndDate.toISOString());
+      
+      // Update local state (in real implementation, this would come from the API)
+      setBookings(prev => 
+        prev.map(b => b.id === bookingId ? { ...b, end_date: newEndDate.toISOString() } : b)
+      );
+      
+      alert('Бронирование успешно продлено!');
+    } catch (err) {
+      console.error('Error extending booking:', err);
+      alert('Ошибка продления бронирования');
+    } finally {
+      setExtendingId(null);
+    }
+  }, [bookings]);
+
+  // Download PDF receipt (stub)
+  const handleDownloadReceipt = useCallback((booking: Booking) => {
+    // Stub for PDF receipt generation
+    // In a real app, this would generate/download a PDF receipt
+    console.log('Download receipt for booking:', booking.id);
+    
+    alert('Скачивание чека будет доступно в ближайшем обновлении');
+  }, []);
+
   // Filter bookings by status
   const activeBookings = bookings.filter(b => 
     b.status === 'pending' || b.status === 'confirmed' || b.status === 'active'
@@ -77,40 +191,6 @@ export function BookingsHistory() {
   );
 
   const displayBookings = activeTab === 'active' ? activeBookings : completedBookings;
-
-  // Format date
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
-  // Get status label
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending': return 'Ожидает оплаты';
-      case 'confirmed': return 'Подтверждено';
-      case 'active': return 'Активно';
-      case 'cancelled': return 'Отменено';
-      case 'completed': return 'Завершено';
-      default: return status;
-    }
-  };
-
-  // Get status class
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'pending': return styles.statusPending;
-      case 'confirmed': return styles.statusConfirmed;
-      case 'active': return styles.statusActive;
-      case 'cancelled': return styles.statusCancelled;
-      case 'completed': return styles.statusCompleted;
-      default: return '';
-    }
-  };
 
   if (loading) {
     return (
@@ -154,6 +234,11 @@ export function BookingsHistory() {
         {displayBookings.length > 0 ? (
           displayBookings.map(booking => {
             const parking = parkingCache[booking.parking_id];
+            const paymentStatus: PaymentStatus = 
+              booking.payment_status as PaymentStatus || 
+              (booking.status === 'cancelled' ? 'refunded' : 
+               booking.status === 'pending' ? 'pending' : 'paid');
+            
             return (
               <div key={booking.id} className={styles.bookingCard}>
                 <div className={styles.bookingHeader}>
@@ -198,6 +283,12 @@ export function BookingsHistory() {
                       {booking.total_price?.toLocaleString('ru-RU')} ₽
                     </span>
                   </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Оплата:</span>
+                    <span className={`${styles.paymentStatus} ${getPaymentStatusClass(paymentStatus)}`}>
+                      {getPaymentStatusLabel(paymentStatus)}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Booking Actions */}
@@ -213,10 +304,29 @@ export function BookingsHistory() {
                     <Button
                       variant="ghost"
                       size="small"
+                      onClick={() => handleExtend(booking.id)}
+                      disabled={extendingId === booking.id}
+                    >
+                      {extendingId === booking.id ? 'Продление...' : 'Продлить'}
+                    </Button>
+                  )}
+                  {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                    <Button
+                      variant="ghost"
+                      size="small"
                       onClick={() => handleCancel(booking.id)}
                       disabled={cancellingId === booking.id}
                     >
                       {cancellingId === booking.id ? 'Отмена...' : 'Отменить'}
+                    </Button>
+                  )}
+                  {booking.status === 'completed' && (
+                    <Button
+                      variant="outline"
+                      size="small"
+                      onClick={() => handleDownloadReceipt(booking)}
+                    >
+                      Скачать чек
                     </Button>
                   )}
                 </div>

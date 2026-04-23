@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getSupabaseClient, Booking, Parking, getParkingById } from '../../lib/supabase';
+import { getSupabaseClient, Booking, Parking, getParkingById, getUserById } from '../../lib/supabase';
+import { sendConfirmation } from '../../lib/notifications/email';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingSuccess.module.css';
 
@@ -18,6 +19,7 @@ export function BookingSuccess() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [emailSent, setEmailSent] = useState(false);
 
   // Load booking and parking data
   useEffect(() => {
@@ -61,6 +63,23 @@ export function BookingSuccess() {
         if (bookingData.parking_id) {
           const parkingData = await getParkingById(bookingData.parking_id);
           setParking(parkingData);
+
+          // Send confirmation email (stub - only send once)
+          if (!emailSent && bookingData.user_id && parkingData) {
+            try {
+              const user = await getUserById(bookingData.user_id);
+              if (user?.email) {
+                await sendConfirmation(
+                  bookingData as Booking,
+                  parkingData,
+                  user.email
+                );
+                setEmailSent(true);
+              }
+            } catch (emailErr) {
+              console.error('Error sending confirmation email:', emailErr);
+            }
+          }
         }
       } catch (err) {
         console.error('Error loading booking:', err);

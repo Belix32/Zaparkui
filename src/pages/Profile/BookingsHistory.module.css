@@ -137,6 +137,28 @@
   color: #666;
 }
 
+.paymentStatus {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.paymentPending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.paymentPaid {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.paymentRefunded {
+  background: #f5f5f5;
+  color: #666;
+}
+
 .bookingDetails {
   display: flex;
   flex-direction: column;
