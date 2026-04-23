@@ -1,0 +1,46 @@
+platform :ios, '13.0'
+use_frameworks!
+include! '../node_modules/@capacitor/ios/scripts/cocoapods/helpers.rb'
+
+target 'App' do
+  # Capacitor
+  pod 'Capacitor', :path => '../node_modules/@capacitor/core'
+  pod 'CapacitorApp', :path => '../node_modules/@capacitor/app'
+  pod 'CapacitorBrowser', :path => '../node_modules/@capacitor/browser'
+  pod 'CapacitorCamera', :path => '../node_modules/@capacitor/camera'
+  pod 'CapacitorGeolocation', :path => '../node_modules/@capacitor/geolocation'
+  pod 'CapacitorKeyboard', :path => '../node_modules/@capacitor/keyboard'
+  pod 'CapacitorLocalNotifications', :path => '../node_modules/@capacitor/local-notifications'
+  pod 'CapacitorStatusBar', :path => '../node_modules/@capacitor/status-bar'
+  pod 'CapacitorHaptics', :path => '../node_modules/@capacitor/haptics'
+  pod 'CapacitorSplashScreen', :path => '../node_modules/@capacitor/splash-screen'
+  pod 'CapacitorNetwork', :path => '../node_modules/@capacitor/network'
+  pod 'CapacitorPreferences', :path => '../node_modules/@capacitor/preferences'
+  pod 'CapacitorPushNotifications', :path => '../node_modules/@capacitor/push-notifications'
+  
+  # Supabase (native if available)
+  pod 'Supabase', :path => '../node_modules/@supabase/supabase-js'
+  
+  # Leaflet maps
+  pod 'Leaflet', :git => 'https://github.com/Leaflet/Leaflet.git', :tag => 'v1.9.4'
+  
+  # Testing
+  target 'AppTests' do
+    inherit! :search_paths
+    pod 'Quick', '~> 5.0'
+    pod 'Nimble', '~> 9.0'
+  end
+end
+
+post_install do |installer|
+  # Capacitor post-install
+  capacitor_post_install(installer)
+  
+  # iOS configuration
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+    end
+  end
+end
