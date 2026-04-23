@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getSupabaseClient, Booking, Parking, updateBooking, getParkingById } from '../../lib/supabase';
+import { createPayment, getAvailablePaymentMethods, PaymentMethod } from '../../lib/payments/yookassa';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingConfirm.module.css';
@@ -20,7 +21,8 @@ export function BookingConfirm() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<'card' | 'sbp'>('card');
+  const [selectedPayment, setSelectedPayment] = useState<'card' | 'sbp' | 'qiwi'>('card');
+  const [availableMethods] = useState(() => getAvailablePaymentMethods());
 
   // Load booking and parking data
   useEffect(() => {
@@ -65,7 +67,7 @@ export function BookingConfirm() {
     loadData();
   }, [bookingId]);
 
-  // Handle payment with ЮKassa
+  // Handle payment with YooKassa mock
   const handlePayment = useCallback(async () => {
     if (!booking || !user) return;
 
@@ -73,32 +75,43 @@ export function BookingConfirm() {
     setError(null);
 
     try {
-      // In a real implementation, you would call your backend to create a ЮKassa payment
-      // For now, we'll simulate a successful payment
-      
-      // Update booking status to confirmed
-      const supabase = getSupabaseClient();
-      
-      // Generate QR code data (in production, this would come from the backend)
-      const qrData = `ZAPARKYI:${booking.id}:${booking.parking_id}`;
-      
-      const { error: updateError } = await supabase
-        .from('bookings')
-        .update({
-          status: 'confirmed',
-          payment_status: 'paid',
-          payment_method: selectedPayment === 'card' ? 'card' : 'sbp',
-          payment_id: `pay_${Date.now()}`,
-          qr_code: qrData,
-        })
-        .eq('id', booking.id);
+      // Create payment via YooKassa mock
+      const payment = await createPayment({
+        amount: {
+          value: booking.total_price || 0,
+          currency: 'RUB',
+        },
+        paymentMethod: selectedPayment as PaymentMethod,
+        description: `Бронирование #${booking.id}`,
+        bookingId: booking.id,
+        userId: user.id,
+      });
 
-      if (updateError) {
-        throw new Error('Ошибка обновления бронирования');
+      // If payment successful (always true in mock), update booking
+      if (payment.status === 'success') {
+        const supabase = getSupabaseClient();
+        
+        // Generate QR code data
+        const qrData = `ZAPARKYI:${booking.id}:${booking.parking_id}`;
+        
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            status: 'confirmed',
+            payment_status: 'paid',
+            payment_method: selectedPayment,
+            payment_id: payment.id,
+            qr_code: qrData,
+          })
+          .eq('id', booking.id);
+
+        if (updateError) {
+          throw new Error('Ошибка обновления бронирования');
+        }
+
+        // Navigate to success page
+        navigate(`/booking/success?bookingId=${booking.id}`);
       }
-
-      // Navigate to success page
-      navigate(`/booking/success?bookingId=${booking.id}`);
     } catch (err) {
       console.error('Payment error:', err);
       setError('Ошибка оплаты. Попробуйте снова.');
@@ -251,6 +264,23 @@ export function BookingConfirm() {
               <div className={styles.paymentInfo}>
                 <span className={styles.paymentName}>СБП</span>
                 <span className={styles.paymentDesc}>Система Быстрых Платежей</span>
+              </div>
+            </button>
+            
+            <button
+              type="button"
+              className={`${styles.paymentMethod} ${selectedPayment === 'qiwi' ? styles.paymentActive : ''}`}
+              onClick={() => setSelectedPayment('qiwi')}
+            >
+              <div className={styles.paymentIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9 9h.01M15 9h.01M9 15c1 1 2.5 2 6 2s5-1 6-2"/>
+                </svg>
+              </div>
+              <div className={styles.paymentInfo}>
+                <span className={styles.paymentName}>QIWI Кошелек</span>
+                <span className={styles.paymentDesc}>Оплата через QIWI</span>
               </div>
             </button>
           </div>

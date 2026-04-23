@@ -3,6 +3,11 @@ import {
   getSupabaseClient,
   User as SupabaseUser 
 } from '../lib/supabase';
+import {
+  subscribe,
+  sendLocal,
+  notifyBookingConfirmed,
+} from '../lib/notifications/push';
 
 export interface User {
   id: string;
@@ -222,6 +227,15 @@ try {
         };
         setUser(mockUser);
         localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+        
+        // Register for push notifications on login
+        try {
+          await subscribe(mockUser.id);
+          console.log('[AuthContext] Push subscription created on login');
+        } catch (pushErr) {
+          console.log('[AuthContext] Push registration skipped:', pushErr);
+        }
+        
         return { success: true };
       }
         
@@ -253,6 +267,14 @@ try {
           });
         } else if (userData) {
           setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+          
+          // Register for push notifications on login
+          try {
+            await subscribe(userData.id);
+            console.log('[AuthContext] Push subscription created on login');
+          } catch (pushErr) {
+            console.log('[AuthContext] Push registration skipped:', pushErr);
+          }
         }
       }
 
