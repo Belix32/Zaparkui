@@ -1,0 +1,1 @@
+export { ParkingDetail } from './ParkingDetail';
