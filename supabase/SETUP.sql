@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS parkings (
 );
 
 -- ============================================================================
--- STEP 5: Table - bookings (Enhanced with booking_type, car info, payment)
+-- STEP 5: Table - bookings
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS bookings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -61,18 +61,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   parking_id UUID NOT NULL REFERENCES parkings(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
-  start_time TIME DEFAULT '00:00:00',
-  end_time TIME DEFAULT '23:59:59',
-  booking_type VARCHAR(20) DEFAULT 'monthly' CHECK (booking_type IN ('hourly', 'daily', 'monthly')),
-  car_brand VARCHAR(100),
-  car_model VARCHAR(100),
-  car_number VARCHAR(20),
+  status TEXT DEFAULT 'pending',
   total_price INTEGER,
-  payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed', 'refunded')),
-  payment_method VARCHAR(50),
-  payment_id VARCHAR(100),
-  qr_code TEXT,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'active', 'cancelled', 'completed')),
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

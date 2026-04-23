@@ -3,20 +3,16 @@
   height: 400px;
   border-radius: 12px;
   overflow: hidden;
-  position: relative;
 }
 
 .map {
   width: 100%;
   height: 100%;
-  z-index: 1;
 }
 
-/* Mini map for parking details */
 .miniMap {
   width: 100%;
   height: 200px;
-  border-radius: 8px;
 }
 
 .noLocation {
@@ -30,449 +26,55 @@
   color: #666;
 }
 
-/* Location button */
-.locationButton {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1000;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  transition: all 0.2s ease;
+.popup {
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.locationButton:hover {
-  background: #f8f8f8;
-  transform: scale(1.05);
+.popup strong {
+  display: block;
+  margin-bottom: 4px;
 }
 
-.locationButton:active {
-  transform: scale(0.95);
-}
-
-.locationButton:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-.locationButtonActive {
-  color: #4285f4;
-  background: #e8f0fe;
-}
-
-.locating .spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #e0e0e0;
-  border-top-color: #4285f4;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.popup p {
+  margin: 4px 0;
 }
 
 /* User location marker */
 .userMarker {
   background: transparent;
-  border: none;
 }
 
-.userMarkerIcon {
-  width: 20px;
-  height: 20px;
+:global(.user-marker-icon) {
+  width: 24px;
+  height: 24px;
   background: #4285f4;
   border: 3px solid white;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.5);
-  position: relative;
-}
-
-.userMarkerPulse {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background: rgba(66, 133, 244, 0.3);
-  border-radius: 50%;
-  animation: pulse 2s ease-out infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(3);
-    opacity: 0;
-  }
-}
-
-.userPopup {
-  font-size: 14px;
-  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Parking marker */
 .parkingMarker {
   background: transparent;
-  border: none;
 }
 
-.markerContainer {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.markerIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+:global(.parking-marker-icon) {
+  width: 32px;
+  height: 32px;
+  background: #22c55e;
   border: 3px solid white;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.parkingMarkerSelected .markerIcon {
-  transform: scale(1.2);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45);
-}
-
-.markerLabel {
-  margin-top: 3px;
-  background: white;
-  padding: 2px 8px;
-  border-radius: 6px;
   font-size: 12px;
-  font-weight: 600;
-  color: #1a1a1a;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  white-space: nowrap;
-}
-
-/* Cluster marker */
-.clusterMarker {
-  background: transparent;
-  border: none;
-}
-
-.clusterIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  border: 3px solid white;
-  box-shadow: 0 3px 12px rgba(34, 197, 94, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
   font-weight: 700;
   color: white;
-  transition: transform 0.2s ease;
 }
 
-.clusterIcon.small {
-  width: 38px;
-  height: 38px;
-  font-size: 13px;
-}
-
-.clusterIcon.medium {
-  width: 44px;
-  height: 44px;
-}
-
-.clusterIcon.large {
-  width: 52px;
-  height: 52px;
-  font-size: 16px;
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-}
-
-.clusterIcon:hover {
-  transform: scale(1.15);
-}
-
-/* Popup styles */
-.popup {
-  font-size: 14px;
-  line-height: 1.5;
-  min-width: 160px;
-}
-
-.popupTitle {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.popupAddress {
-  margin: 4px 0;
-  color: #666;
-  font-size: 13px;
-}
-
-.popupPrice {
-  font-size: 18px;
-  font-weight: 700;
-  color: #22c55e;
-  margin: 8px 0;
-}
-
-.popupRating {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 8px 0;
-  color: #fbbf24;
-  font-weight: 500;
-}
-
-.popupSpots {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  color: #666;
-  font-size: 13px;
-}
-
-.popupSpots svg {
-  color: #888;
-}
-
-/* Fullscreen mode */
-.fullscreen {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  height: 100vh !important;
-  width: 100vw !important;
-  border-radius: 0 !important;
-  z-index: 10000;
-}
-
-/* ============================================
-   Mobile Responsive Styles
-   ============================================ */
-
-/* Tablet */
-@media (max-width: 1024px) {
-  .mapWrapper {
-    height: 350px;
-  }
-}
-
-/* Mobile landscape */
-@media (max-width: 768px) {
-  .mapWrapper {
-    height: 280px;
-    border-radius: 0;
-    margin-left: -16px;
-    margin-right: -16px;
-    width: calc(100% + 32px);
-  }
-
-  .locationButton {
-    top: 10px;
-    right: 10px;
-    width: 40px;
-    height: 40px;
-  }
-
-  .markerIcon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .markerIcon svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .markerLabel {
-    font-size: 11px;
-    padding: 1px 6px;
-  }
-
-  .clusterIcon {
-    width: 38px;
-    height: 38px;
-    font-size: 12px;
-  }
-
-  .clusterIcon.large {
-    width: 44px;
-    height: 44px;
-    font-size: 14px;
-  }
-
-  .popupTitle {
-    font-size: 15px;
-  }
-
-  .popupPrice {
-    font-size: 16px;
-  }
-}
-
-/* Small mobile */
-@media (max-width: 480px) {
-  .mapWrapper {
-    height: 250px;
-  }
-
-  .locationButton {
-    top: 8px;
-    right: 8px;
-    width: 38px;
-    height: 38px;
-  }
-
-  .locationButton svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .markerContainer {
-    transform: scale(0.9);
-  }
-
-  .miniMap {
-    height: 180px;
-  }
-
-  .noLocation {
-    height: 180px;
-  }
-}
-
-/* Touch-friendly improvements */
-@media (hover: none) and (pointer: coarse) {
-  .locationButton {
-    width: 48px;
-    height: 48px;
-  }
-
-  .markerIcon {
-    width: 40px;
-    height: 40px;
-  }
-
-  /* Larger touch targets */
-  .leaflet-popup-content-wrapper {
-    padding: 12px;
-  }
-
-  .leaflet-popup-close-button {
-    width: 32px;
-    height: 32px;
-    padding: 8px;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .locationButton {
-    background: #2d2d2d;
-    color: #aaa;
-  }
-
-  .locationButton:hover {
-    background: #3d3d3d;
-  }
-
-  .locationButtonActive {
-    color: #4285f4;
-    background: #1a2a4a;
-  }
-
-  .markerLabel {
-    background: #2d2d2d;
-    color: #fff;
-  }
-
-  .popupTitle {
-    color: #fff;
-  }
-
-  .popupAddress {
-    color: #aaa;
-  }
-
-  .popupSpots {
-    color: #aaa;
-  }
-
-  .noLocation {
-    background-color: #2d2d2d;
-    color: #aaa;
-  }
-
-  .clusterIcon {
-    background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
-  }
-}
-
-/* Landscape mobile - maximize map width */
-@media (max-height: 500px) and (orientation: landscape) {
-  .mapWrapper {
-    height: calc(100vh - 60px);
-    max-height: 400px;
-  }
-}
-
-/* High DPI displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .markerIcon {
-    border-width: 2px;
-  }
-
-  .clusterIcon {
-    border-width: 2px;
-  }
-
-  .userMarkerIcon {
-    border-width: 2px;
-  }
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .locationButton,
-  .markerIcon,
-  .clusterIcon,
-  .userMarkerPulse {
-    transition: none;
-    animation: none;
-  }
-
-  .userMarkerPulse {
-    display: none;
-  }
+.parkingMarkerSelected :global(.parking-marker-icon) {
+  background: #ef4444;
+  transform: scale(1.2);
 }

@@ -7,7 +7,7 @@
     <title>Запаркуй - Аренда парковочных мест в ЖК</title>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="Запаркуй — приложение для аренды парковочных мест в ЖК Москвы. Бронируйте место заранее, получайте уведомления о прибытии и экономьте до 30% времени на поиске парковки." />
+    <meta name="description" content="Аренда парковочных мест в жилых комплексах Москвы" />
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,20 +16,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- OneSignal - only on production domain -->
-    <script>
-      (function() {
-        const host = window.location.hostname;
-        // Only init on zaparkyi.ru (not vercel preview/dev)
-        if (host === 'zaparkyi.ru' || host === 'www.zaparkyi.ru') {
-          var OneSignal = window.OneSignal || [];
-          OneSignal.push(function() {
-            OneSignal.init({
-              appId: "dc870f5d-0703-4be3-b38b-3972b75f9e82",
-              notifyButton: { enable: false }
-});
-      })();
-    </script>
   </body>
 </html>

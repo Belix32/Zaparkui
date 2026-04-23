@@ -1,18 +1,41 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { parkings as staticParkings } from '../../data/parkings';
+import { Parking } from '../../lib/supabase';
 import { useFavorites, useSearchHistory } from '../../hooks';
 import { Button } from '../../components/Button/Button';
-import { BookingsHistory } from './BookingsHistory';
 import styles from './Profile.module.css';
 
 /**
- * User profile page with favorites, booking history, and search history
- * P1 feature - История поиска, Избранное, Бронирования
+ * User profile page with favorites and booking history
+ * P1 feature - История поиска, Избранное
  */
 export function Profile() {
   const { favorites, loading: favoritesLoading, clearFavorites, removeFavorite } = useFavorites();
   const { history, loading: historyLoading, clearHistory, removeFromHistory } = useSearchHistory();
-  const [activeTab, setActiveTab] = useState<'favorites' | 'bookings' | 'history'>('bookings');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'history'>('favorites');
+  
+  // Get favorite parkings data
+  const [favoriteParkings, setFavoriteParkings] = useState<Parking[]>([]);
+  
+  useEffect(() => {
+    if (favorites.length > 0) {
+      const parkingData = favorites
+        .map(f => {
+          // Check static data first
+          const staticParking = staticParkings.find(p => p.id === f.parkingId);
+          if (staticParking) return staticParking;
+          
+          // Check if it's in database (would require Supabase)
+          return null;
+        })
+        .filter(Boolean) as Parking[];
+      
+      setFavoriteParkings(parkingData);
+    } else {
+      setFavoriteParkings([]);
+    }
+  }, [favorites]);
 
   const handleRemoveFavorite = useCallback((parkingId: string) => {
     removeFavorite(parkingId);
@@ -37,18 +60,6 @@ export function Profile() {
 
         {/* Tabs */}
         <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${activeTab === 'bookings' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('bookings')}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            Бронирования
-          </button>
           <button
             className={`${styles.tab} ${activeTab === 'favorites' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('favorites')}
@@ -76,11 +87,6 @@ export function Profile() {
           </button>
         </div>
 
-        {/* Bookings tab */}
-        {activeTab === 'bookings' && (
-          <BookingsHistory />
-        )}
-
         {/* Favorites tab */}
         {activeTab === 'favorites' && (
           <div className={styles.content}>
@@ -89,7 +95,7 @@ export function Profile() {
                 <span className={styles.spinner} />
                 Загрузка...
               </div>
-            ) : favorites.length > 0 ? (
+            ) : favoriteParkings.length > 0 ? (
               <>
                 <div className={styles.actions}>
                   <Button
@@ -102,14 +108,27 @@ export function Profile() {
                 </div>
                 
                 <div className={styles.list}>
-                  {favorites.map((fav) => (
-                    <div key={fav.parkingId} className={styles.item}>
+                  {favoriteParkings.map((parking) => (
+                    <div key={parking.id} className={styles.item}>
                       <div className={styles.itemInfo}>
-                        <h3 className={styles.itemTitle}>{fav.parkingId}</h3>
-                        <p className={styles.itemAddress}>ID: {fav.parkingId}</p>
+                        <h3 className={styles.itemTitle}>{parking.title}</h3>
+                        <p className={styles.itemAddress}>{parking.address}</p>
+                        <div className={styles.itemDetails}>
+                          <span className={styles.itemPrice}>
+                            {parking.price.toLocaleString('ru-RU')} ₽/мес
+                          </span>
+                          <span className={styles.itemSpots}>
+                            {parking.spots} мест
+                          </span>
+                          {parking.rating && (
+                            <span className={styles.itemRating}>
+                              ★ {parking.rating.toFixed(1)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className={styles.itemActions}>
-                        <Link to={`/catalog/${fav.parkingId}`}>
+                        <Link to={`/catalog/${parking.id}`}>
                           <Button variant="primary" size="small">
                             Арендовать
                           </Button>
@@ -117,7 +136,7 @@ export function Profile() {
                         <button
                           type="button"
                           className={styles.removeButton}
-                          onClick={() => handleRemoveFavorite(fav.parkingId)}
+                          onClick={() => handleRemoveFavorite(parking.id)}
                           aria-label="Удалить из избранного"
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

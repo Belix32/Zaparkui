@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ParkingCard, FilterPanel, FilterValues, ParkingMap, SearchAutocomplete } from '../../components';
+import { ParkingCard, FilterPanel, FilterValues, ParkingMap } from '../../components';
 import { parkings as staticParkings } from '../../data/parkings';
 import { searchParkings, Parking, ParkingFilters } from '../../lib/supabase';
 import { useGeolocation, useSearchHistory, sortByDistance } from '../../hooks';
@@ -157,8 +157,8 @@ export function Catalog() {
     }
   }, [search, filters, addToHistory]);
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
   };
 
   const handleFilterChange = (newFilters: FilterValues) => {
@@ -192,11 +192,19 @@ export function Catalog() {
         </div>
 
         <div className={styles.controls}>
-          <SearchAutocomplete
-            value={search}
-            onChange={handleSearchChange}
-            placeholder="Поиск по ЖК или адресу..."
-          />
+          <div className={styles.searchWrapper}>
+            <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              className={styles.search}
+              placeholder="Поиск по ЖК или адресу..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+          </div>
           
           <div className={styles.actions}>
             {/* Geolocation button */}

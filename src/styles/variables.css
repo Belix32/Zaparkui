@@ -44,12 +44,6 @@
   /* Container */
   --container-max: 1200px;
   --container-padding: 20px;
-  
-  /* Touch-friendly: min 44px для кнопок (Apple рекомендация) */
-  --button-min-height: 48px;
-  --button-min-width: 44px;
-  --input-min-height: 48px;
-  --icon-touch-size: 44px;
 }
 
 /* Dark Theme */
@@ -66,51 +60,11 @@
   --error: #ef4444;
 }
 
-/* Mobile-First Breakpoints */
-@media (min-width: 480px) {
+@media (max-width: 768px) {
   :root {
-    --container-max: 460px;
-  }
-}
-
-@media (min-width: 768px) {
-  :root {
-    --container-max: 720px;
-    --font-size-h1: 40px;
+    --font-size-h1: 36px;
     --font-size-h2: 28px;
     --font-size-h3: 18px;
     --font-size-body: 15px;
-    --button-min-height: 40px;
-  }
-}
-
-@media (min-width: 1024px) {
-  :root {
-    --container-max: 960px;
-    --font-size-h1: 44px;
-    --font-size-h2: 30px;
-    --font-size-h3: 20px;
-    --font-size-body: 16px;
-    --button-min-height: 44px;
-  }
-}
-
-@media (min-width: 1200px) {
-  :root {
-    --container-max: 1100px;
-  }
-}
-
-/* Mobile-First: Default styles (для экранов < 480px) */
-@media (max-width: 479px) {
-  :root {
-    --font-size-h1: 26px;
-    --font-size-h2: 22px;
-    --font-size-h3: 18px;
-    --font-size-body: 15px;
-    --font-size-small: 13px;
-    --font-size-caption: 11px;
-    --container-padding: 16px;
-    --button-min-height: 48px;
   }
 }

@@ -64,19 +64,20 @@ export interface Booking {
   parking_id: string;
   start_date: string;
   end_date: string;
-  start_time?: string;
-  end_time?: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'active';
+  created_at: string;
+  // New fields
   booking_type?: 'hourly' | 'daily' | 'monthly';
   car_brand?: string;
   car_model?: string;
   car_number?: string;
   total_price?: number;
-  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_status?: 'pending' | 'paid' | 'refunded';
   payment_method?: string;
   payment_id?: string;
   qr_code?: string;
-  status: 'pending' | 'confirmed' | 'active' | 'cancelled' | 'completed';
-  created_at: string;
+  start_time?: string;
+  end_time?: string;
 }
 
 export interface BookingInsert {
@@ -84,21 +85,23 @@ export interface BookingInsert {
   parking_id: string;
   start_date: string;
   end_date: string;
-  start_time?: string;
-  end_time?: string;
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'active';
+  // New fields
   booking_type?: 'hourly' | 'daily' | 'monthly';
   car_brand?: string;
   car_model?: string;
   car_number?: string;
   total_price?: number;
-  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_status?: 'pending' | 'paid' | 'refunded';
+  payment_method?: string;
+  start_time?: string;
+  end_time?: string;
 }
 
 export interface BookingUpdate {
-  status?: 'pending' | 'confirmed' | 'active' | 'cancelled' | 'completed';
-  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
-  payment_id?: string;
-  qr_code?: string;
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'active';
+  payment_status?: 'pending' | 'paid' | 'refunded';
+  total_price?: number;
 }
 
 export interface ParkingFilters {
@@ -446,29 +449,6 @@ export async function updateBookingStatus(
   }
 
   return data as Booking;
-}
-
-/**
- * Update a booking with partial data
- */
-export async function updateBooking(
-  id: string,
-  data: Partial<Booking>
-): Promise<Booking> {
-  const supabase = getSupabaseClient();
-  const { data: result, error } = await supabase
-    .from('bookings')
-    .update(data)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating booking:', error);
-    throw new Error(error.message);
-  }
-
-  return result as Booking;
 }
 
 /**
