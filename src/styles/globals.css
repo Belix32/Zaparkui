@@ -22,9 +22,27 @@ body {
 }
 
 #root {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Prevent any fixed overlays from covering content */
+body {
+  overflow-x: hidden;
+}
+
+/* Main content area - positioned below fixed header */
+.main-content {
+  flex: 1;
+  margin-top: 80px;
+}
+
+/* Ensure main content is above fixed header initially */
+main,
+.section {
+  position: relative;
 }
 
 a {

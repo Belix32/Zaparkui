@@ -5,7 +5,9 @@
   align-items: center;
   position: relative;
   padding: 120px 0 80px;
+  padding-top: 150px;
   overflow: hidden;
+  background: var(--bg-primary);
 }
 
 .heroPattern {
