@@ -16,3 +16,12 @@ dist/
 
 # Vercel
 .vercel
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
