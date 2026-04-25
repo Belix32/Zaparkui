@@ -6,4 +6,5 @@ export { Footer } from './Footer/Footer';
 export { ParkingMap, ParkingLocationMap } from './Map';
 export { Reviews } from './Reviews';
 export { FilterPanel } from './FilterPanel';
+export { ErrorBoundary } from './ErrorBoundary';
 export type { FilterValues } from './FilterPanel';

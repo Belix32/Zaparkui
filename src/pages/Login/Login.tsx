@@ -4,31 +4,44 @@ import { Button, Input } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from '../Auth.module.css';
 
-// Security: Rate limiting utility
-const loginAttempts = new Map<string, { count: number; timestamp: number }>();
+// Security: Rate limiting utility (max 5 attempts per minute)
+const loginAttempts = new Map<string, { count: number; timestamp: number; firstAttempt: number }>();
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
+const WINDOW_TIME = 60 * 1000; // 1 minute window
 
 function checkRateLimit(email: string): { allowed: boolean; remainingTime?: number } {
   const attempts = loginAttempts.get(email);
+  const now = Date.now();
+  
   if (!attempts) return { allowed: true };
   
-  if (attempts.count >= MAX_ATTEMPTS) {
-    const elapsed = Date.now() - attempts.timestamp;
-    if (elapsed < LOCKOUT_TIME) {
-      return { allowed: false, remainingTime: Math.ceil((LOCKOUT_TIME - elapsed) / 1000) };
-    }
-    // Reset after lockout period
+  // Check if we're in the 1-minute window
+  const windowElapsed = now - attempts.firstAttempt;
+  if (windowElapsed >= WINDOW_TIME) {
+    // Reset the window
     loginAttempts.delete(email);
+    return { allowed: true };
+  }
+  
+  if (attempts.count >= MAX_ATTEMPTS) {
+    const remainingTime = Math.ceil((WINDOW_TIME - windowElapsed) / 1000);
+    return { allowed: false, remainingTime };
   }
   return { allowed: true };
 }
 
 function recordFailedAttempt(email: string): void {
-  const attempts = loginAttempts.get(email) || { count: 0, timestamp: 0 };
-  attempts.count++;
-  attempts.timestamp = Date.now();
-  loginAttempts.set(email, attempts);
+  const now = Date.now();
+  const attempts = loginAttempts.get(email);
+  
+  if (!attempts || (now - attempts.firstAttempt) >= WINDOW_TIME) {
+    // Start new tracking window
+    loginAttempts.set(email, { count: 1, timestamp: now, firstAttempt: now });
+  } else {
+    attempts.count++;
+    attempts.timestamp = now;
+    loginAttempts.set(email, attempts);
+  }
 }
 
 // Security: Sanitize input
