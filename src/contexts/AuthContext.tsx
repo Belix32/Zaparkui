@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   getSupabaseClient,
-  User as SupabaseUser 
+  User as SupabaseUser,
+  isSupabaseConfigured
 } from '../lib/supabase';
 
 export interface User {
@@ -210,22 +211,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Введите пароль' };
     }
 
+    // Check if Supabase is configured - if not, use demo mode
+    if (!isSupabaseConfigured()) {
+      const mockUser: User = {
+        id: generateSecureToken().substring(0, 16),
+        name: email.toLowerCase().split('@')[0],
+        email: email.toLowerCase().trim(),
+        phone: '+7 (999) 000-00-00',
+      };
+      setUser(mockUser);
+      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+      return { success: true };
+    }
+        
 try {
       const supabaseClient = getSupabaseClient();
-      
-      // Demo mode - use localStorage
-      if (!supabaseClient) {
-        const mockUser: User = {
-          id: generateSecureToken().substring(0, 16),
-          name: email.toLowerCase().split('@')[0],
-          email: email.toLowerCase().trim(),
-          phone: '+7 (999) 000-00-00',
-        };
-        setUser(mockUser);
-        localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-        return { success: true };
-      }
-        
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
         password,
@@ -291,10 +291,24 @@ try {
       return { success: false, error: passwordCheck.error };
     }
 
+    // Check if Supabase is configured - if not, use demo mode
+    if (!isSupabaseConfigured()) {
+      const mockUser: User = {
+        id: generateSecureToken().substring(0, 16),
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone.trim(),
+      };
+      setUser(mockUser);
+      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+      localStorage.setItem(AUTH_TOKEN_KEY, generateSecureToken());
+      return { success: true };
+    }
+
     try {
       const supabaseClient = getSupabaseClient();
       const normalizedEmail = email.toLowerCase().trim();
-      
+        
       // Demo mode - create mock user
       if (!supabaseClient) {
         const mockUser: User = {

@@ -109,7 +109,7 @@ export function ParkingCard({ parking: rawParking, onSelect }: ParkingCardProps)
   }, [rawParking, onSelect]);
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={() => window.location.href = `/parking/${rawParking.id}`} style={{ cursor: 'pointer' }}>
       <div className={styles.imageWrapper}>
         {safeImageUrl ? (
           <img 
