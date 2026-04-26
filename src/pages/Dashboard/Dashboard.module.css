@@ -170,6 +170,28 @@
   max-width: 480px;
 }
 
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.select {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.label {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 .formActions {
   display: flex;
   gap: var(--spacing-md);

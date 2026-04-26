@@ -69,6 +69,9 @@ export function Dashboard() {
   const [spots, setSpots] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [district, setDistrict] = useState('');
+  const [metro, setMetro] = useState('');
+  const [parkingType, setParkingType] = useState('');
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" />;
@@ -131,6 +134,11 @@ export function Dashboard() {
     setSpots('');
     setDescription('');
     setImageUrl('');
+    setDistrict('');
+    setMetro('');
+    setParkingType('');
+    setDescription('');
+    setImageUrl('');
     setActiveTab('parkings');
     
     setTimeout(() => setSuccess(''), 3000);
@@ -163,6 +171,18 @@ export function Dashboard() {
 
   const handleImageUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value.trim().substring(0, 500));
+  }, []);
+  
+  const handleDistrictChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDistrict(sanitizeInput(e.target.value));
+  }, []);
+  
+  const handleMetroChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setMetro(sanitizeInput(e.target.value));
+  }, []);
+  
+  const handleParkingTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setParkingType(e.target.value);
   }, []);
 
   return (
@@ -286,6 +306,34 @@ export function Dashboard() {
                     min={1}
                     max={1000}
                   />
+                  <div className={styles.formRow}>
+                    <Input
+                      label="Район"
+                      placeholder="ЦАО"
+                      value={district}
+                      onChange={handleDistrictChange}
+                    />
+                    <Input
+                      label="Метро"
+                      placeholder="Площадь Революции"
+                      value={metro}
+                      onChange={handleMetroChange}
+                    />
+                  </div>
+                  <div className={styles.formRow}>
+                    <label className={styles.label}>Тип парковки</label>
+                    <select 
+                      className={styles.select}
+                      value={parkingType}
+                      onChange={handleParkingTypeChange}
+                    >
+                      <option value="">Выберите тип</option>
+                      <option value="ground">Наземная</option>
+                      <option value="underground">Подземная</option>
+                      <option value="roof">На крыше</option>
+                      <option value="covered">Крытая</option>
+                    </select>
+                  </div>
                   <Textarea
                     label="Описание (необязательно)"
                     placeholder="Дополнительная информация о парковке..."
