@@ -192,6 +192,81 @@
   color: var(--text-primary);
 }
 
+/* Image Upload */
+.imageUpload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.imageLabel {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.imageUploadArea {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  text-align: center;
+  transition: border-color var(--transition-fast);
+}
+
+.imageUploadArea:hover {
+  border-color: var(--accent);
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.fileLabel span {
+  font-size: var(--font-size-small);
+}
+
+.imageHint {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+}
+
+.imagePreview {
+  position: relative;
+  margin-top: var(--spacing-sm);
+}
+
+.previewImage {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.removeImage {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background: var(--error);
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-small);
+}
+
 .formActions {
   display: flex;
   gap: var(--spacing-md);

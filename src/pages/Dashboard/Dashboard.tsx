@@ -69,6 +69,8 @@ export function Dashboard() {
   const [spots, setSpots] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [district, setDistrict] = useState('');
   const [metro, setMetro] = useState('');
   const [parkingType, setParkingType] = useState('');
@@ -171,6 +173,44 @@ export function Dashboard() {
 
   const handleImageUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value.trim().substring(0, 500));
+  }, []);
+  
+  // Handle file upload - convert to base64
+  const handleImageFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setFormError('Выберите изображение');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFormError('Изображение должно быть меньше 5MB');
+      return;
+    }
+    
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setImagePreview(base64);
+      setImageFile(file);
+      // Also set as URL for compatibility
+      setImageUrl(base64);
+    };
+    reader.onerror = () => {
+      setFormError('Ошибка при чтении файла');
+    };
+    reader.readAsDataURL(file);
+  }, []);
+  
+  const removeImage = useCallback(() => {
+    setImageFile(null);
+    setImagePreview('');
+    setImageUrl('');
   }, []);
   
   const handleDistrictChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,26 +381,35 @@ export function Dashboard() {
                     onChange={handleDescriptionChange}
                     maxLength={500}
                   />
-                  <Input
-                    label="Ссылка на изображение (необязательно)"
-                    placeholder="https://example.com/parking.jpg"
-                    value={imageUrl}
-                    onChange={handleImageUrlChange}
-                    type="url"
-                  />
-                  {imageUrl && (
-                    <div className={styles.imagePreview}>
-                      <p className={styles.previewLabel}>Превью:</p>
-                      <img
-                        src={imageUrl}
-                        alt="Превью парковки"
-                        className={styles.previewImage}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                  <div className={styles.imageUpload}>
+                    <label className={styles.imageLabel}>Фото парковки</label>
+                    <div className={styles.imageUploadArea}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileChange}
+                        className={styles.fileInput}
+                        id="parking-image"
                       />
+                      <label htmlFor="parking-image" className={styles.fileLabel}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span>Выбрать фото</span>
+                      </label>
+                      <span className={styles.imageHint}>или перетащите файл</span>
                     </div>
-                  )}
+                    {imagePreview && (
+                      <div className={styles.imagePreview}>
+                        <img src={imagePreview} alt="Превью" className={styles.previewImage} />
+                        <button type="button" onClick={removeImage} className={styles.removeImage}>
+                          Удалить
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <div className={styles.formActions}>
                     <Button type="submit" variant="primary">
                       Добавить парковку
