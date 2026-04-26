@@ -40,11 +40,47 @@ const USER_KEY = 'zaparkyi_user';
 const AUTH_TOKEN_KEY = 'zaparkyi_token';
 const PARKING_KEY = 'zaparkyi_parkings';
 
+// Session expires in 30 days
+const SESSION_EXPIRY_DAYS = 30;
+const SESSION_EXPIRY_MS = SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+
 // Security: Generate a secure random token
 function generateSecureToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+// Save user with timestamp for session expiry
+function saveUserSession(user: User): void {
+  const sessionData = {
+    user,
+    timestamp: Date.now(),
+  };
+  localStorage.setItem(USER_KEY, JSON.stringify(sessionData));
+  localStorage.setItem(AUTH_TOKEN_KEY, generateSecureToken());
+}
+
+// Load user if session not expired
+function loadUserSession(): User | null {
+  try {
+    const stored = localStorage.getItem(USER_KEY);
+    if (!stored) return null;
+    
+    const sessionData = JSON.parse(stored);
+    const { user, timestamp } = sessionData;
+    
+    // Check if session expired (30 days)
+    if (Date.now() - timestamp > SESSION_EXPIRY_MS) {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      return null;
+    }
+    
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 // Security: Validate email format
@@ -108,24 +144,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initialize Supabase client and set up auth listener
     const initializeAuth = async () => {
       try {
-        const supabaseClient = getSupabaseClient();
-        
-        // If Supabase is not configured, use demo mode
-        if (!supabaseClient) {
-          // Load from localStorage in demo mode
-          const storedUser = localStorage.getItem(USER_KEY);
-          if (storedUser) {
-            try {
-              const parsed = JSON.parse(storedUser);
-              setUser(parsed);
-            } catch (e) {
-              localStorage.removeItem(USER_KEY);
-            }
+        // Check FIRST if Supabase is configured
+        if (!isSupabaseConfigured()) {
+          // Load from localStorage in demo mode - with session expiry check
+          const sessionUser = loadUserSession();
+          if (sessionUser) {
+            setUser(sessionUser);
           }
           setIsLoading(false);
           return;
         }
-
+        
+        const supabaseClient = getSupabaseClient();
+        
         // Get initial session
         const { data: { session } } = await supabaseClient.auth.getSession();
         
@@ -213,17 +244,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check if Supabase is configured - if not, use demo mode
     if (!isSupabaseConfigured()) {
-      // Check if user with this email exists
-      const storedUser = localStorage.getItem(USER_KEY);
-      if (storedUser) {
-        try {
-          const existingUser = JSON.parse(storedUser);
-          if (existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
-            setUser(existingUser);
-            localStorage.setItem(USER_KEY, JSON.stringify(existingUser));
-            return { success: true };
-          }
-        } catch {}
+      // Check if user with this email exists - check session not expired
+      const existingUser = loadUserSession();
+      if (existingUser && existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
+        setUser(existingUser);
+        // Refresh session timestamp
+        saveUserSession(existingUser);
+        return { success: true };
       }
       
       // New demo user
@@ -234,7 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: '+7 (999) 000-00-00',
       };
       setUser(mockUser);
-      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+      saveUserSession(mockUser);
       return { success: true };
     }
         
@@ -307,15 +334,10 @@ try {
 
     // Check if Supabase is configured - if not, use demo mode
     if (!isSupabaseConfigured()) {
-      // Check if email already exists in demo mode
-      const storedUsers = localStorage.getItem(USER_KEY);
-      if (storedUsers) {
-        try {
-          const existingUser = JSON.parse(storedUsers);
-          if (existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
-            return { success: false, error: 'Пользователь с таким email уже существует' };
-          }
-        } catch {}
+      // Check if email already exists - loadUserSession checks expiry too
+      const existingUser = loadUserSession();
+      if (existingUser && existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
+        return { success: false, error: 'Пользователь с таким email уже существует' };
       }
       
       const mockUser: User = {
@@ -325,8 +347,7 @@ try {
         phone: phone.trim(),
       };
       setUser(mockUser);
-      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-      localStorage.setItem(AUTH_TOKEN_KEY, generateSecureToken());
+      saveUserSession(mockUser);
       return { success: true };
     }
 
