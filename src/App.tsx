@@ -5,7 +5,10 @@ import { BookingsHistory } from './pages/Profile';
 
 function App() {
   return (
-    <Routes>
+    <>
+      <a href="#main" className="skipLink">Перейти к основному контенту</a>
+      <main id="main" role="main">
+        <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/catalog" element={<Catalog />} />
       <Route path="/catalog/:id" element={<Catalog />} />
@@ -19,7 +22,9 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<Profile />} />
-    </Routes>
+        </Routes>
+      </main>
+    </>
   );
 }
 

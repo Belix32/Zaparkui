@@ -116,6 +116,7 @@ export function ParkingCard({ parking: rawParking, onSelect }: ParkingCardProps)
             src={safeImageUrl} 
             alt={safeTitle} 
             className={styles.image}
+            loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}

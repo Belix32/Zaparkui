@@ -191,7 +191,7 @@ export function ParkingDetail() {
           {/* Left column - Images */}
           <div className={styles.gallery}>
             <div className={styles.mainImage}>
-              <img src={getImageUrl()} alt={parking.title} />
+              <img src={getImageUrl()} alt={parking.title} loading="lazy" />
             </div>
           </div>
 

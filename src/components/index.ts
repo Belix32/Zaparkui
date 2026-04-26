@@ -7,4 +7,5 @@ export { ParkingMap, ParkingLocationMap } from './Map';
 export { Reviews } from './Reviews';
 export { FilterPanel } from './FilterPanel';
 export { ErrorBoundary } from './ErrorBoundary';
+export { OfflineBanner } from './OfflineBanner/OfflineBanner';
 export type { FilterValues } from './FilterPanel';

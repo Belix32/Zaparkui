@@ -30,10 +30,10 @@ export function Header() {
             <span>Запаркуй</span>
           </Link>
 
-          <nav className={styles.nav}>
-            <NavLink to="/" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Главная</NavLink>
-            <NavLink to="/catalog" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Каталог</NavLink>
-          </nav>
+<nav className={styles.nav} aria-label="Главное меню">
+        <NavLink to="/" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Главная</NavLink>
+        <NavLink to="/catalog" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Каталог</NavLink>
+      </nav>
 
           <div className={styles.actions}>
             <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle theme">
