@@ -30,6 +30,7 @@ export interface ParkingItem {
   price: number;
   spots: number;
   description?: string;
+  image?: string;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

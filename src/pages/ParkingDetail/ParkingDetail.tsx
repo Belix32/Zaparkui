@@ -7,6 +7,19 @@ import { Button } from '../../components/Button/Button';
 import { Reviews } from '../../components/Reviews/Reviews';
 import styles from './ParkingDetail.module.css';
 
+// Security: Validate image URL
+function isValidImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+// Placeholder image for missing images
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?w=800&h=400&fit=crop';
+
 /**
  * Parking detail page - shows full parking information
  * P0 feature - Просмотр карточки парковки
@@ -20,6 +33,7 @@ export function ParkingDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   
   const { isFavorite: checkIsFavorite, toggleFavorite: toggleFav, addFavorite, removeFavorite } = useFavorites();
   const [addedToFavorites, setAddedToFavorites] = useState(false);
@@ -125,13 +139,34 @@ export function ParkingDetail() {
     return type ? types[type] || type : '';
   };
 
-  const getImageUrl = () => {
-    if (parking?.image) {
-      return parking.image;
+  // Get all images for gallery
+  const getAllImages = (): string[] => {
+    const images: string[] = [];
+    
+    // Add main image first if exists
+    if (parking?.image && isValidImageUrl(parking.image)) {
+      images.push(parking.image);
     }
-    // Placeholder image
-    return 'https://images.unsplash.com/photo/1573348722427-f1d6819fdf98?w=800&h=400&fit=crop';
+    
+    // Add additional images from images array
+    if (parking?.images && parking.images.length > 0) {
+      parking.images.forEach(img => {
+        if (isValidImageUrl(img) && !images.includes(img)) {
+          images.push(img);
+        }
+      });
+    }
+    
+    // Return placeholder if no images
+    if (images.length === 0) {
+      images.push(PLACEHOLDER_IMAGE);
+    }
+    
+    return images;
   };
+
+  const allImages = getAllImages();
+  const currentImage = allImages[selectedImageIndex] || PLACEHOLDER_IMAGE;
 
   // Loading state
   if (loading) {
@@ -191,8 +226,24 @@ export function ParkingDetail() {
           {/* Left column - Images */}
           <div className={styles.gallery}>
             <div className={styles.mainImage}>
-              <img src={getImageUrl()} alt={parking.title} loading="lazy" />
+              <img src={currentImage} alt={parking.title} loading="lazy" />
             </div>
+            {/* Thumbnail grid */}
+            {allImages.length > 1 && (
+              <div className={styles.thumbnails}>
+                {allImages.map((img, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`${styles.thumbnail} ${index === selectedImageIndex ? styles.thumbnailActive : ''}`}
+                    onClick={() => setSelectedImageIndex(index)}
+                    aria-label={`Показать изображение ${index + 1}`}
+                  >
+                    <img src={img} alt={`Миниатюра ${index + 1}`} loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right column - Info */}

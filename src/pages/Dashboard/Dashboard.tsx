@@ -68,6 +68,7 @@ export function Dashboard() {
   const [price, setPrice] = useState('');
   const [spots, setSpots] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" />;
@@ -118,6 +119,7 @@ export function Dashboard() {
       price: priceCheck.value,
       spots: spotsCheck.value,
       description: sanitizedDescription || undefined,
+      image: imageUrl || undefined,
     });
     
     recordParkingAddition(user.id);
@@ -128,6 +130,7 @@ export function Dashboard() {
     setPrice('');
     setSpots('');
     setDescription('');
+    setImageUrl('');
     setActiveTab('parkings');
     
     setTimeout(() => setSuccess(''), 3000);
@@ -156,6 +159,10 @@ export function Dashboard() {
 
   const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(sanitizeInput(e.target.value));
+  }, []);
+
+  const handleImageUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageUrl(e.target.value.trim().substring(0, 500));
   }, []);
 
   return (
@@ -286,6 +293,26 @@ export function Dashboard() {
                     onChange={handleDescriptionChange}
                     maxLength={500}
                   />
+                  <Input
+                    label="Ссылка на изображение (необязательно)"
+                    placeholder="https://example.com/parking.jpg"
+                    value={imageUrl}
+                    onChange={handleImageUrlChange}
+                    type="url"
+                  />
+                  {imageUrl && (
+                    <div className={styles.imagePreview}>
+                      <p className={styles.previewLabel}>Превью:</p>
+                      <img
+                        src={imageUrl}
+                        alt="Превью парковки"
+                        className={styles.previewImage}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                   <div className={styles.formActions}>
                     <Button type="submit" variant="primary">
                       Добавить парковку

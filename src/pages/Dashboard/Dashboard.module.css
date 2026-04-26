@@ -186,6 +186,26 @@
   margin-bottom: var(--spacing-md);
 }
 
+.imagePreview {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.previewLabel {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.previewImage {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 .error {
   padding: var(--spacing-md);
   background: rgba(220, 38, 38, 0.1);

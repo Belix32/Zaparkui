@@ -8,6 +8,7 @@ export interface Parking {
   price: number;
   spots: number;
   image: string | null;
+  images?: string[];
   created_at: string;
   description?: string;
   district?: string;
@@ -26,6 +27,7 @@ export interface ParkingInsert {
   price: number;
   spots: number;
   image?: string | null;
+  images?: string[];
   description?: string;
   district?: string;
   metro?: string;
@@ -41,6 +43,7 @@ export interface ParkingUpdate {
   price?: number;
   spots?: number;
   image?: string | null;
+  images?: string[];
   description?: string;
   district?: string;
   metro?: string;
