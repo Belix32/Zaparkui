@@ -138,24 +138,14 @@ export function Header() {
             Каталог
           </NavLink>
           {user && (
-            <NavLink to="/profile" className={({ isActive }) => isActive ? `${styles.mobileNavLink} ${styles.mobileNavLinkActive}` : styles.mobileNavLink}>
+<NavLink to="/profile" className={({ isActive }) => isActive ? `${styles.mobileNavLink} ${styles.mobileNavLinkActive}` : styles.mobileNavLink}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
               Профиль
             </NavLink>
-          )}
-          <NavLink to="/favorites" className={({ isActive }) => isActive ? `${styles.mobileNavLink} ${styles.mobileNavLinkActive}` : styles.mobileNavLink}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            Избранное
-            {favorites.length > 0 && (
-              <span className={styles.mobileFavoritesBadge}>{favorites.length}</span>
-            )}
-          </NavLink>
-        </nav>
+          </nav>
         <div className={styles.mobileAuth}>
           {user ? (
             <Button variant="secondary" fullWidth onClick={handleLogout}>
