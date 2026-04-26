@@ -56,6 +56,13 @@ export function Profile() {
       <div className="container">
         <div className={styles.header}>
           <h1 className={`title-h1 ${styles.title}`}>Личный кабинет</h1>
+          <Button 
+            variant="ghost" 
+            size="small"
+            onClick={() => alert('Редактирование профиля: скоро!')}
+          >
+            Редактировать
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -85,6 +92,15 @@ export function Profile() {
               <span className={styles.badge}>{history.length}</span>
             )}
           </button>
+          <Link to="/my-bookings" className={styles.tab}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Мои бронирования
+          </Link>
         </div>
 
         {/* Favorites tab */}

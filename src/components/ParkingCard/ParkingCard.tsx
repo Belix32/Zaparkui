@@ -197,7 +197,7 @@ export function ParkingCard({ parking: rawParking, onSelect }: ParkingCardProps)
         )}
         
         <Link 
-          to={`/catalog/${rawParking.id}`} 
+          to={`/parking/${rawParking.id}`} 
           style={{ marginTop: '16px', display: 'block' }}
           onClick={handleCardClick}
         >
