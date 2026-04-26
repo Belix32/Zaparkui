@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { getParkingById, Parking, createBooking, Booking } from '../../lib/supabase';
+import { parkings } from '../../data/parkings';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingPage.module.css';
@@ -10,11 +11,14 @@ import styles from './BookingPage.module.css';
  * Allows user to select date, time, booking type, and car for parking reservation
  */
 export function BookingPage() {
+  // Get parking ID from route params or search params
+  const params = useParams<{ id?: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const parkingId = searchParams.get('parkingId');
+  // Support both 'id' param and 'parkingId' query param
+  const parkingId = params.id || searchParams.get('id') || searchParams.get('parkingId');
   const [parking, setParking] = useState<Parking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,22 +46,43 @@ export function BookingPage() {
       }
 
       try {
+        // Try to get from Supabase first
         const data = await getParkingById(parkingId);
-        if (!data) {
-          setError('Парковка не найдена');
-        } else {
+        
+        if (data) {
           setParking(data);
+        } else {
+          // Fallback to static data if not found in Supabase
+          const staticParking = parkings.find(p => p.id === parkingId);
+          if (staticParking) {
+            setParking(staticParking);
+          } else {
+            setError('Парковка не найдена');
+          }
+        }
+        
+        // Set default dates
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        setStartDate(today.toISOString().split('T')[0]);
+        setEndDate(tomorrow.toISOString().split('T')[0]);
+      } catch (err) {
+        console.error('Error loading parking:', err);
+        // Try static fallback on error
+        const staticParking = parkings.find(p => p.id === parkingId);
+        if (staticParking) {
+          setParking(staticParking);
           // Set default dates
           const today = new Date();
           const tomorrow = new Date(today);
           tomorrow.setDate(tomorrow.getDate() + 1);
-          
           setStartDate(today.toISOString().split('T')[0]);
           setEndDate(tomorrow.toISOString().split('T')[0]);
+        } else {
+          setError('Ошибка загрузки данных парковки');
         }
-      } catch (err) {
-        console.error('Error loading parking:', err);
-        setError('Ошибка загрузки данных парковки');
       } finally {
         setLoading(false);
       }

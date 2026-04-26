@@ -1,38 +1,38 @@
 .container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 16px;
+  padding: var(--spacing-md);
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--bg-secondary);
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .backButton {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  color: #333;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .backButton:hover {
-  background: #e0e0e0;
+  background: var(--bg-card);
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--font-size-h2);
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -42,15 +42,15 @@
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  gap: 16px;
-  color: #666;
+  gap: var(--spacing-md);
+  color: var(--text-secondary);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e0e0e0;
-  border-top-color: #4CAF50;
+  border: 3px solid var(--border);
+  border-top-color: var(--success);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -67,98 +67,98 @@
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  gap: 16px;
-  color: #666;
+  gap: var(--spacing-md);
+  color: var(--text-secondary);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--spacing-lg);
 }
 
 .parkingCard {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .parkingTitle {
-  font-size: 18px;
+  font-size: var(--font-size-h3);
   font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 8px;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm);
 }
 
 .parkingAddress {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 12px;
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-md);
 }
 
 .parkingDetails {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .priceTag {
-  background: #4CAF50;
+  background: var(--success);
   color: #fff;
-  padding: 4px 12px;
+  padding: var(--spacing-xs) var(--spacing-md);
   border-radius: 20px;
-  font-size: 14px;
+  font-size: var(--font-size-small);
   font-weight: 600;
 }
 
 .spotsTag {
-  background: #f0f0f0;
-  color: #333;
-  padding: 4px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: var(--spacing-xs) var(--spacing-md);
   border-radius: 20px;
-  font-size: 14px;
+  font-size: var(--font-size-small);
 }
 
 .section {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .sectionTitle {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 16px;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md);
 }
 
 .bookingTypeGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .typeButton {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 8px;
-  background: #f5f5f5;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-sm);
+  background: var(--bg-secondary);
   border: 2px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .typeButton:hover {
-  background: #e8e8e8;
+  background: var(--border);
 }
 
 .typeActive {
-  border-color: #4CAF50;
-  background: #e8f5e9;
+  border-color: var(--success);
+  background: var(--bg-secondary);
 }
 
 .typeIcon {
@@ -166,21 +166,21 @@
 }
 
 .typeName {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .typePrice {
-  font-size: 12px;
-  color: #666;
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
 }
 
 .dateGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .dateField {
@@ -190,41 +190,42 @@
 }
 
 .dateField label {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .dateField input {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: #fff;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-body);
+  background: var(--bg-primary);
   width: 100%;
   box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .dateField input:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: var(--accent);
 }
 
 .periodInfo {
-  font-size: 14px;
-  color: #666;
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .periodInfo strong {
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .carGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .carField {
@@ -234,30 +235,31 @@
 }
 
 .carField label {
-  font-size: 14px;
+  font-size: var(--font-size-small);
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .carField input {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: #fff;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-body);
+  background: var(--bg-primary);
   width: 100%;
   box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .carField input:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: var(--accent);
 }
 
 .summary {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -265,14 +267,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: #666;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
 }
 
 .summaryRow span:last-child {
-  color: #1a1a1a;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
@@ -280,42 +282,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 16px;
-  margin-top: 8px;
-  border-top: 2px solid #e0e0e0;
-  font-size: 18px;
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  border-top: 2px solid var(--border);
+  font-size: var(--font-size-h3);
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .totalAmount {
-  color: #4CAF50 !important;
+  color: var(--success) !important;
   font-size: 24px;
 }
 
 .errorMessage {
   background: #ffebee;
-  color: #c62828;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  color: var(--error);
+  padding: var(--spacing-md) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-small);
 }
 
 .submitButton {
   width: 100%;
-  padding: 16px;
-  font-size: 16px;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
 /* Mobile Responsive */
 @media (max-width: 480px) {
   .container {
-    padding: 12px;
+    padding: var(--spacing-sm);
   }
 
   .title {
-    font-size: 20px;
+    font-size: var(--font-size-h3);
   }
 
   .bookingTypeGrid {
@@ -330,6 +332,6 @@
   .parkingCard,
   .section,
   .summary {
-    padding: 16px;
+    padding: var(--spacing-md);
   }
 }

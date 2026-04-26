@@ -104,12 +104,8 @@ export function ParkingCard({ parking: rawParking, onSelect }: ParkingCardProps)
     }
   }, [rawParking.id, toggleFavorite]);
 
-  const handleCardClick = useCallback(() => {
-    onSelect?.(rawParking);
-  }, [rawParking, onSelect]);
-
   return (
-    <div className={styles.card} onClick={() => window.location.href = `/parking/${rawParking.id}`} style={{ cursor: 'pointer' }}>
+    <Link to={`/parking/${rawParking.id}`} className={styles.card} style={{ textDecoration: 'none' }}>
       <div className={styles.imageWrapper}>
         {safeImageUrl ? (
           <img 
@@ -198,15 +194,14 @@ export function ParkingCard({ parking: rawParking, onSelect }: ParkingCardProps)
         )}
         
         <Link 
-          to={`/parking/${rawParking.id}`} 
+          to={`/booking/${rawParking.id}`} 
           style={{ marginTop: '16px', display: 'block' }}
-          onClick={handleCardClick}
         >
           <Button variant="secondary" size="small" fullWidth>
             Арендовать
           </Button>
         </Link>
       </div>
-    </div>
+    </Link>
   );
 }
