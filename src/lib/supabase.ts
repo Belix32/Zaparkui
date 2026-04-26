@@ -154,16 +154,25 @@ let supabaseClient: SupabaseClient | null = null;
  * Check if Supabase is properly configured
  */
 export function isSupabaseConfigured(): boolean {
-  return !!(
-    import.meta.env.VITE_SUPABASE_URL && 
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-  );
+  try {
+    return !!(
+      import.meta.env.VITE_SUPABASE_URL && 
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Get or create Supabase client
  */
 export function getSupabaseClient(): SupabaseClient {
+  // Check if configured first - return null if not
+  if (!isSupabaseConfigured()) {
+    return null as unknown as SupabaseClient;
+  }
+  
   if (supabaseClient) {
     return supabaseClient;
   }
@@ -173,9 +182,7 @@ export function getSupabaseClient(): SupabaseClient {
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in environment variables.'
-    );
+    return null as unknown as SupabaseClient;
   }
 
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
