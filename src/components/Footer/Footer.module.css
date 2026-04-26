@@ -114,4 +114,71 @@
     gap: var(--spacing-md);
     text-align: center;
   }
+  
+  /* Mobile sticky footer support */
+  .footer {
+    position: relative;
+    padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* Ensure links are touch-friendly */
+  .column a {
+    display: block;
+    padding: 8px 0;
+    min-height: 44px;
+  }
+  
+  .socials a {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 24px 0 16px;
+  }
+  
+  .footerInner {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .brand {
+    grid-column: span 1;
+  }
+  
+  .brand .logo {
+    font-size: 18px;
+  }
+  
+  .description {
+    font-size: 13px;
+  }
+  
+  .column h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  
+  .column a {
+    font-size: 13px;
+  }
+  
+  .bottom {
+    padding-top: 16px;
+  }
+  
+  .copyright {
+    font-size: 12px;
+  }
+  
+  .socials {
+    gap: 12px;
+  }
+  
+  .socials a {
+    width: 40px;
+    height: 40px;
+  }
 }

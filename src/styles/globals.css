@@ -1,5 +1,6 @@
 @import './variables.css';
 
+/* CSS Reset */
 * {
   margin: 0;
   padding: 0;
@@ -8,6 +9,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Prevent text size adjustment on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -19,6 +23,11 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
+  /* iOS Safari fixes */
+  -webkit-overflow-scrolling: touch;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 #root {
@@ -29,9 +38,6 @@ body {
 }
 
 /* Prevent any fixed overlays from covering content */
-body {
-  overflow-x: hidden;
-}
 
 /* Main content area - positioned below fixed header */
 .main-content {
@@ -157,9 +163,29 @@ img {
   color: #ffffff;
 }
 
+/* Focus styles */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Touch-friendly tap targets - minimum 44px */
+a, button, input, select, textarea, [role="button"], [tabindex] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Allow smaller sizes for inline elements */
+a:not([class]), button:not([class]), input:not([class]), select:not([class]), textarea:not([class]) {
+  min-height: auto;
+  min-width: auto;
+}
+
+/* iOS-specific touch optimizations */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
 }
 
 /* Theme Toggle Button */
@@ -179,4 +205,58 @@ img {
 .theme-toggle:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* ============================================
+   Responsive Base Styles
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Adjust font sizes for mobile */
+  body {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .section {
+    padding: 48px 0;
+  }
+  
+  .title-h1 {
+    font-size: 28px;
+  }
+  
+  .title-h2 {
+    font-size: 24px;
+  }
+  
+  .title-h3 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-h1 {
+    font-size: 24px;
+  }
+  
+  .title-h2 {
+    font-size: 20px;
+  }
+  
+  .section {
+    padding: 32px 0;
+  }
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: max(0px)) {
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
 }

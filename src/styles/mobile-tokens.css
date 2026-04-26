@@ -113,6 +113,14 @@
   --mobile-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
+/* Smooth theme transition */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.2s ease, 
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
 /* iOS Safe Area */
 @supports (padding: max(0px)) {
   :root {
