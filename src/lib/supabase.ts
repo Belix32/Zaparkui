@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { parkings as staticParkings } from '../data/parkings';
 
 // Extended parking type with new fields for enhanced features
 export interface Parking {
@@ -215,6 +216,13 @@ export async function fetchParkings(): Promise<Parking[]> {
  * Get parking by ID
  */
 export async function getParkingById(id: string): Promise<Parking | null> {
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured()) {
+    // Return from static data
+    const staticParking = staticParkings.find(p => p.id === id);
+    return staticParking || null;
+  }
+  
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('parkings')
