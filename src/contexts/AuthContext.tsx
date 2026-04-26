@@ -213,6 +213,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check if Supabase is configured - if not, use demo mode
     if (!isSupabaseConfigured()) {
+      // Check if user with this email exists
+      const storedUser = localStorage.getItem(USER_KEY);
+      if (storedUser) {
+        try {
+          const existingUser = JSON.parse(storedUser);
+          if (existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
+            setUser(existingUser);
+            localStorage.setItem(USER_KEY, JSON.stringify(existingUser));
+            return { success: true };
+          }
+        } catch {}
+      }
+      
+      // New demo user
       const mockUser: User = {
         id: generateSecureToken().substring(0, 16),
         name: email.toLowerCase().split('@')[0],
@@ -293,6 +307,17 @@ try {
 
     // Check if Supabase is configured - if not, use demo mode
     if (!isSupabaseConfigured()) {
+      // Check if email already exists in demo mode
+      const storedUsers = localStorage.getItem(USER_KEY);
+      if (storedUsers) {
+        try {
+          const existingUser = JSON.parse(storedUsers);
+          if (existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
+            return { success: false, error: 'Пользователь с таким email уже существует' };
+          }
+        } catch {}
+      }
+      
       const mockUser: User = {
         id: generateSecureToken().substring(0, 16),
         name: name.trim(),
@@ -308,23 +333,6 @@ try {
     try {
       const supabaseClient = getSupabaseClient();
       const normalizedEmail = email.toLowerCase().trim();
-        
-      // Demo mode - create mock user
-      if (!supabaseClient) {
-        const mockUser: User = {
-          id: generateSecureToken().substring(0, 16),
-          name: name.trim(),
-          email: normalizedEmail,
-          phone: phone.trim(),
-        };
-        setUser(mockUser);
-        localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-        
-        // Also save to localStorage for parkings demo
-        localStorage.setItem(AUTH_TOKEN_KEY, generateSecureToken());
-        
-        return { success: true };
-      }
 
       // Sign up with Supabase Auth
       const { data, error } = await supabaseClient.auth.signUp({
