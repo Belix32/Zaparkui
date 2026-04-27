@@ -280,12 +280,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('Using Supabase auth');
     try {
       const supabaseClient = getSupabaseClient();
+      console.log('Attempting login with:', email.toLowerCase().trim());
+      
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
         password,
       });
 
       if (error) {
+        console.error('Supabase auth error:', error);
+        
+        // Check for specific errors
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, error: 'Неверный email или пароль. Проверьте данные или зарегистрируйтесь.' };
+        }
+        if (error.message.includes('Email not confirmed')) {
+          return { success: false, error: 'Email не подтвержден. Проверьте почту.' };
+        }
         return { success: false, error: error.message };
       }
 
@@ -313,17 +324,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { success: true };
     } catch (supabaseError) {
-      console.error('Supabase login error, falling back to demo mode:', supabaseError);
-      // Fallback to demo mode if Supabase fails
-      const mockUser: User = {
-        id: generateSecureToken().substring(0, 16),
-        name: email.toLowerCase().split('@')[0],
-        email: email.toLowerCase().trim(),
-        phone: '+7 (999) 000-00-00',
-      };
-      setUser(mockUser);
-      saveUserSession(mockUser);
-      return { success: true };
+      console.error('Supabase login error:', supabaseError);
+      // Don't fallback to demo mode in production - show error instead
+      return { success: false, error: 'Ошибка подключения к серверу. Попробуйте позже.' };
     }
   };
 
