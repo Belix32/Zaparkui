@@ -153,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Check FIRST if Supabase is configured
         if (!isSupabaseConfigured()) {
+          console.log('Supabase not configured - demo mode');
           // Load from localStorage in demo mode - with session expiry check
           const sessionUser = loadUserSession();
           if (sessionUser) {
@@ -162,6 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         
+        console.log('Supabase configured - initializing auth');
         const supabaseClient = getSupabaseClient();
         
         // Get initial session
