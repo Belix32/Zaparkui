@@ -142,6 +142,30 @@ ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 -- STEP 10: RLS Policies
 -- ============================================================================
 
+-- Drop existing policies first to avoid conflicts
+DROP POLICY IF EXISTS "Users can read own profile" ON users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON users;
+DROP POLICY IF EXISTS "Users can update own profile" ON users;
+DROP POLICY IF EXISTS "Anyone can view active parkings" ON parkings;
+DROP POLICY IF EXISTS "Authenticated can insert parking" ON parkings;
+DROP POLICY IF EXISTS "Owner can update parking" ON parkings;
+DROP POLICY IF EXISTS "Owner can delete parking" ON parkings;
+DROP POLICY IF EXISTS "Users can view own bookings" ON bookings;
+DROP POLICY IF EXISTS "Users can create booking" ON bookings;
+DROP POLICY IF EXISTS "Users can update own booking" ON bookings;
+DROP POLICY IF EXISTS "Anyone can view reviews" ON reviews;
+DROP POLICY IF EXISTS "Users can create review" ON reviews;
+DROP POLICY IF EXISTS "Users can view own favorites" ON favorites;
+DROP POLICY IF EXISTS "Users can manage own favorites" ON favorites;
+DROP POLICY IF EXISTS "Admins can manage reviews" ON reviews;
+DROP POLICY IF EXISTS "Admins can view all parkings" ON parkings;
+DROP POLICY IF EXISTS "Admins can update any parking" ON parkings;
+DROP POLICY IF EXISTS "Admins can delete any parking" ON parkings;
+DROP POLICY IF EXISTS "Admins can view all bookings" ON bookings;
+DROP POLICY IF EXISTS "Admins can update any booking" ON bookings;
+DROP POLICY IF EXISTS "Admins can view all users" ON users;
+DROP POLICY IF EXISTS "Admins can update any user" ON users;
+
 -- USERS Policies
 CREATE POLICY "Users can read own profile" ON users
   FOR SELECT USING (auth.uid() = auth_id);
