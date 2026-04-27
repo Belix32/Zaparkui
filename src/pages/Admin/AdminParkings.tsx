@@ -1,7 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from './components/AdminLayout';
+import {
+  getAllParkingsAdmin,
+  updateParkingStatus,
+  deleteParking as deleteParkingFromSupabase,
+  createParking as createParkingSupabase,
+  updateParking as updateParkingSupabase,
+  isSupabaseConfigured,
+  getAllUsers as getAllUsersSupabase,
+  Parking as SupabaseParking,
+} from '../../lib/supabase';
 import './AdminParkings.css';
 
+// Type conversion between Supabase (price, spots, parkingType) and AdminParkings (price_per_hour, total_spots, parking_type)
 interface Parking {
   id: string;
   title: string;
@@ -20,6 +31,28 @@ interface Parking {
   longitude?: number;
   owner_id?: string;
   user_id?: string;
+}
+
+// Convert Supabase parking to AdminParkings format
+function convertFromSupabaseParking(sp: SupabaseParking): Parking {
+  return {
+    id: sp.id,
+    title: sp.title,
+    address: sp.address,
+    price_per_hour: sp.price,
+    total_spots: sp.spots,
+    is_active: sp.status === 'pending' ? 'pending' : (sp.is_active ?? true),
+    created_at: sp.created_at,
+    district: sp.district,
+    metro: sp.metro,
+    parking_type: sp.parkingType as Parking['parking_type'],
+    description: sp.description,
+    amenities: sp.amenities,
+    image_url: sp.image ?? undefined,
+    latitude: sp.latitude,
+    longitude: sp.longitude,
+    owner_id: sp.owner_id,
+  };
 }
 
 interface ParkingFormData {
@@ -77,6 +110,7 @@ export function AdminParkings() {
   const [parkings, setParkings] = useState<Parking[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [supabaseAvailable, setSupabaseAvailable] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,76 +133,102 @@ export function AdminParkings() {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     setLoading(true);
-    const storedParkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
-    const storedUsers = JSON.parse(localStorage.getItem('zaparkyi_admin_users') || '[]');
+    
+    // Check if Supabase is available
+    const isConfigured = isSupabaseConfigured();
+    setSupabaseAvailable(isConfigured);
 
-    // If no data exists, create some demo data
-    if (storedParkings.length === 0) {
-      const demoParkings: Parking[] = [
-        {
-          id: 'p1',
-          title: 'Парковка на Ленина',
-          address: 'ул. Ленина, 10',
-          price_per_hour: 150,
-          total_spots: 50,
-          is_active: true,
-          created_at: '2024-01-15T10:00:00Z',
-          district: 'Центральный',
-          metro: 'Площадь Революции',
-          parking_type: 'ground',
-          description: 'Открытая парковка в центре города',
-          amenities: ['cctv', 'barrier'],
-          image_url: '',
-          latitude: 55.7558,
-          longitude: 37.6173,
-          owner_id: 'u1',
-        },
-        {
-          id: 'p2',
-          title: 'Подземный паркинг ТЦ',
-          address: 'пр. Мира, 25',
-          price_per_hour: 200,
-          total_spots: 200,
-          is_active: true,
-          created_at: '2024-02-01T14:30:00Z',
-          district: 'Пресненский',
-          metro: 'Выставочная',
-          parking_type: 'underground',
-          description: 'Просторный подземный паркинг торгового центра',
-          amenities: ['cctv', 'barrier', 'entrance_card', 'roof'],
-          image_url: '',
-          latitude: 55.7619,
-          longitude: 37.6193,
-          owner_id: 'u2',
-        },
-        {
-          id: 'p3',
-          title: 'Крытая парковка ЖК',
-          address: 'ул. Гагарина, 5',
-          price_per_hour: 120,
-          total_spots: 30,
-          is_active: false,
-          created_at: '2024-02-10T09:15:00Z',
-          district: 'Ленинский',
-          metro: 'Университет',
-          parking_type: 'covered',
-          description: 'Крытая парковка в жилом комплексе',
-          amenities: ['cctv'],
-          image_url: '',
-          latitude: 55.6922,
-          longitude: 37.5314,
-          owner_id: 'u1',
-        },
-      ];
-      setParkings(demoParkings);
-      localStorage.setItem('zaparkyi_parkings', JSON.stringify(demoParkings));
+    if (isConfigured) {
+      try {
+        const [parkingsData, usersData] = await Promise.all([
+          getAllParkingsAdmin(),
+          getAllUsersSupabase(),
+        ]);
+        // Convert from Supabase format
+        setParkings(parkingsData.map(convertFromSupabaseParking));
+        setUsers(usersData);
+      } catch (error) {
+        console.error('Error loading data from Supabase:', error);
+        // Fall back to localStorage on error
+        const storedParkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
+        const storedUsers = JSON.parse(localStorage.getItem('zaparkyi_admin_users') || '[]');
+        setParkings(storedParkings);
+        setUsers(storedUsers);
+      }
     } else {
-      setParkings(storedParkings);
+      // Supabase not configured, use localStorage as fallback
+      const storedParkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
+      const storedUsers = JSON.parse(localStorage.getItem('zaparkyi_admin_users') || '[]');
+
+      // If no data exists, create some demo data
+      if (storedParkings.length === 0) {
+        const demoParkings: Parking[] = [
+          {
+            id: 'p1',
+            title: 'Парковка на Ленина',
+            address: 'ул. Ленина, 10',
+            price_per_hour: 150,
+            total_spots: 50,
+            is_active: true,
+            created_at: '2024-01-15T10:00:00Z',
+            district: 'Центральный',
+            metro: 'Площадь Революции',
+            parking_type: 'ground',
+            description: 'Открытая парковка в центре города',
+            amenities: ['cctv', 'barrier'],
+            image_url: '',
+            latitude: 55.7558,
+            longitude: 37.6173,
+            owner_id: 'u1',
+          },
+          {
+            id: 'p2',
+            title: 'Подземный паркинг ТЦ',
+            address: 'пр. Мира, 25',
+            price_per_hour: 200,
+            total_spots: 200,
+            is_active: true,
+            created_at: '2024-02-01T14:30:00Z',
+            district: 'Пресненский',
+            metro: 'Выставочная',
+            parking_type: 'underground',
+            description: 'Просторный подземный паркинг торгового центра',
+            amenities: ['cctv', 'barrier', 'entrance_card', 'roof'],
+            image_url: '',
+            latitude: 55.7619,
+            longitude: 37.6193,
+            owner_id: 'u2',
+          },
+          {
+            id: 'p3',
+            title: 'Крытая парковка ЖК',
+            address: 'ул. Гагарина, 5',
+            price_per_hour: 120,
+            total_spots: 30,
+            is_active: false,
+            created_at: '2024-02-10T09:15:00Z',
+            district: 'Ленинский',
+            metro: 'Университет',
+            parking_type: 'covered',
+            description: 'Крытая парковка в жилом комплексе',
+            amenities: ['cctv'],
+            image_url: '',
+            latitude: 55.6922,
+            longitude: 37.5314,
+            owner_id: 'u1',
+          },
+        ];
+        setParkings(demoParkings);
+        localStorage.setItem('zaparkyi_parkings', JSON.stringify(demoParkings));
+      } else {
+        setParkings(storedParkings);
+      }
+
+      setUsers(storedUsers);
     }
 
-    setUsers(storedUsers);
     setLoading(false);
   };
 
@@ -259,28 +319,89 @@ export function AdminParkings() {
   }, [searchQuery, districtFilter, parkingTypeFilter, statusFilter]);
 
   // Actions
-  const handleDeleteParking = (parkingId: string) => {
-    const updatedParkings = parkings.filter(p => p.id !== parkingId);
-    setParkings(updatedParkings);
-    localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
-    setDeleteConfirmParking(null);
+  const handleDeleteParking = async (parkingId: string) => {
+    try {
+      if (supabaseAvailable) {
+        await deleteParkingFromSupabase(parkingId);
+      } else {
+        localStorage.setItem(
+          'zaparkyi_parkings',
+          JSON.stringify(parkings.filter(p => p.id !== parkingId))
+        );
+      }
+      setParkings(parkings.filter(p => p.id !== parkingId));
+      setDeleteConfirmParking(null);
+    } catch (error) {
+      console.error('Error deleting parking:', error);
+      // Still update local state even if Supabase fails
+      setParkings(parkings.filter(p => p.id !== parkingId));
+      setDeleteConfirmParking(null);
+    }
   };
 
-  const handleUpdateParking = (parking: Parking) => {
-    const updatedParkings = parkings.map(p =>
-      p.id === parking.id ? parking : p
-    );
-    setParkings(updatedParkings);
-    localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
-    setEditParking(null);
+  const handleUpdateParking = async (parking: Parking) => {
+    try {
+      if (supabaseAvailable) {
+        await updateParkingSupabase(parking.id, {
+          title: parking.title,
+          address: parking.address,
+          price: parking.price_per_hour,
+          spots: parking.total_spots,
+          image: parking.image_url,
+          description: parking.description,
+          district: parking.district,
+          metro: parking.metro,
+          parkingType: parking.parking_type,
+          amenities: parking.amenities,
+          latitude: parking.latitude,
+          longitude: parking.longitude,
+          is_active: parking.is_active !== false,
+          status: parking.is_active === 'pending' ? 'pending' : parking.is_active ? 'active' : 'inactive',
+        });
+      } else {
+        const updatedParkings = parkings.map(p =>
+          p.id === parking.id ? parking : p
+        );
+        localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
+        setParkings(updatedParkings);
+      }
+      setParkings(prev => prev.map(p => (p.id === parking.id ? parking : p)));
+      setEditParking(null);
+    } catch (error) {
+      console.error('Error updating parking:', error);
+      // Fall back to local update
+      const updatedParkings = parkings.map(p =>
+        p.id === parking.id ? parking : p
+      );
+      localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
+      setParkings(updatedParkings);
+      setEditParking(null);
+    }
   };
 
-  const handleToggleStatus = (parking: Parking) => {
-    const updatedParking = { ...parking, is_active: !parking.is_active };
-    handleUpdateParking(updatedParking);
+  const handleToggleStatus = async (parking: Parking) => {
+    const newStatus: 'active' | 'inactive' = parking.is_active !== false ? 'inactive' : 'active';
+    const isNowActive = newStatus === 'active';
+    const updatedParking: Parking = { 
+      ...parking, 
+      is_active: isNowActive
+    };
+    
+    try {
+      if (supabaseAvailable) {
+        await updateParkingStatus(parking.id, newStatus);
+      } else {
+        localStorage.setItem('zaparkyi_parkings', JSON.stringify(parkings.map(p =>
+          p.id === parking.id ? updatedParking : p
+        )));
+      }
+      setParkings(prev => prev.map(p => (p.id === parking.id ? updatedParking : p)));
+    } catch (error) {
+      console.error('Error toggling parking status:', error);
+    }
   };
 
-  const handleAddParking = () => {
+  const handleAddParking = async () => {
     const newParking: Parking = {
       id: 'p' + Date.now(),
       ...formData,
@@ -292,11 +413,40 @@ export function AdminParkings() {
       created_at: new Date().toISOString(),
     };
 
-    const updatedParkings = [...parkings, newParking];
-    setParkings(updatedParkings);
-    localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
-    setAddParkingModal(false);
-    setFormData(initialFormData);
+    try {
+      if (supabaseAvailable) {
+        const created = await createParkingSupabase({
+          title: formData.title,
+          address: formData.address,
+          price: Number(formData.price_per_hour),
+          spots: Number(formData.total_spots),
+          district: formData.district,
+          metro: formData.metro,
+          parkingType: formData.parking_type,
+          description: formData.description,
+          amenities: formData.amenities,
+          image: formData.image_url || null,
+          latitude: formData.latitude ? Number(formData.latitude) : undefined,
+          longitude: formData.longitude ? Number(formData.longitude) : undefined,
+        });
+        // Convert and add to state
+        setParkings(prev => [convertFromSupabaseParking(created), ...prev]);
+      } else {
+        const updatedParkings = [...parkings, newParking];
+        localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
+        setParkings(updatedParkings);
+      }
+      setAddParkingModal(false);
+      setFormData(initialFormData);
+    } catch (error) {
+      console.error('Error adding parking:', error);
+      // Fall back to localStorage
+      const updatedParkings = [...parkings, newParking];
+      localStorage.setItem('zaparkyi_parkings', JSON.stringify(updatedParkings));
+      setParkings(updatedParkings);
+      setAddParkingModal(false);
+      setFormData(initialFormData);
+    }
   };
 
   const handleFormChange = (field: keyof ParkingFormData, value: any) => {

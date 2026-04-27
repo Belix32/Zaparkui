@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS public.users (
   name VARCHAR(200),
   phone VARCHAR(50),
   avatar_url TEXT,
+  role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
+  is_blocked BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -37,6 +39,7 @@ CREATE TABLE IF NOT EXISTS parkings (
   price INTEGER NOT NULL CHECK (price > 0 AND price <= 1000000),
   spots INTEGER NOT NULL CHECK (spots > 0 AND spots <= 10000),
   image TEXT,
+  images TEXT[],
   description TEXT,
   district VARCHAR(100),
   metro VARCHAR(100),
@@ -47,7 +50,9 @@ CREATE TABLE IF NOT EXISTS parkings (
   rating DECIMAL(3, 2) DEFAULT 0,
   review_count INTEGER DEFAULT 0,
   owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  owner_email VARCHAR(255),
   is_active BOOLEAN DEFAULT true,
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -61,8 +66,15 @@ CREATE TABLE IF NOT EXISTS bookings (
   parking_id UUID NOT NULL REFERENCES parkings(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
-  status TEXT DEFAULT 'pending',
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'active', 'cancelled', 'completed')),
+  booking_type VARCHAR(20) DEFAULT 'daily' CHECK (booking_type IN ('hourly', 'daily', 'monthly')),
+  car_brand VARCHAR(100),
+  car_model VARCHAR(100),
+  car_number VARCHAR(20),
   total_price INTEGER,
+  payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'refunded')),
+  payment_method VARCHAR(50),
+  payment_id VARCHAR(255),
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -169,6 +181,82 @@ CREATE POLICY "Anyone can view reviews" ON reviews
 
 CREATE POLICY "Users can create review" ON reviews
   FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Admin can manage reviews
+CREATE POLICY "Admins can manage reviews" ON reviews
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE users.auth_id = auth.uid() 
+      AND users.role IN ('admin', 'moderator')
+    )
+  );
+
+-- Admin and Moderator policies for parkings
+CREATE POLICY "Admins can view all parkings" ON parkings
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE users.auth_id = auth.uid() 
+      AND users.role IN ('admin', 'moderator')
+    )
+  );
+
+CREATE POLICY "Admins can update any parking" ON parkings
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE users.auth_id = auth.uid() 
+      AND users.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can delete any parking" ON parkings
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE users.auth_id = auth.uid() 
+      AND users.role = 'admin'
+    )
+  );
+
+-- Admin and Moderator policies for bookings
+CREATE POLICY "Admins can view all bookings" ON bookings
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE users.auth_id = auth.uid() 
+      AND users.role IN ('admin', 'moderator')
+    )
+  );
+
+CREATE POLICY "Admins can update any booking" ON bookings
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.users 
+      WHERE users.auth_id = auth.uid() 
+      AND users.role IN ('admin', 'moderator')
+    )
+  );
+
+-- Admin policies for users
+CREATE POLICY "Admins can view all users" ON users
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.users u2
+      WHERE u2.auth_id = auth.uid() 
+      AND u2.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can update any user" ON users
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.users u2
+      WHERE u2.auth_id = auth.uid() 
+      AND u2.role = 'admin'
+    )
+  );
 
 -- FAVORITES Policies
 CREATE POLICY "Users can view own favorites" ON favorites

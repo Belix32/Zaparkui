@@ -1,17 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from './components/AdminLayout';
+import { getAllReviewsAdmin, updateReviewStatus as updateReviewStatusDb, deleteReview, Review as SupabaseReview } from '../../lib/supabase';
+import { getAllParkingsAdmin } from '../../lib/supabase';
 import './AdminReviews.css';
 
-interface Review {
-  id: string;
-  parking_id: string;
-  user_id: string;
-  author_name: string;
-  rating: number;
-  comment: string;
-  status: 'pending' | 'approved' | 'rejected';
+interface Review extends SupabaseReview {
   reject_reason?: string;
-  created_at: string;
 }
 
 interface Parking {
@@ -47,12 +41,18 @@ export function AdminReviews() {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     setLoading(true);
-    const storedReviews = JSON.parse(localStorage.getItem('zaparkyi_reviews') || '[]');
-    const storedParkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
-    setReviews(storedReviews);
-    setParkings(storedParkings);
+    try {
+      const [reviewsData, parkingsData] = await Promise.all([
+        getAllReviewsAdmin(),
+        getAllParkingsAdmin()
+      ]);
+      setReviews(reviewsData);
+      setParkings(parkingsData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
     setLoading(false);
   };
 
@@ -73,7 +73,7 @@ export function AdminReviews() {
   const filteredReviews = useMemo(() => {
     return reviews.filter(review => {
       const parkingTitle = getParkingTitle(review.parking_id).toLowerCase();
-      const authorName = review.author_name.toLowerCase();
+      const authorName = (review.author_name || '').toLowerCase();
       const query = searchQuery.toLowerCase();
 
       const matchesSearch = !searchQuery || 
@@ -111,38 +111,42 @@ export function AdminReviews() {
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);
   };
 
-  const updateReviewStatus = (reviewId: string, newStatus: Review['status'], rejectReason?: string) => {
-    const updatedReviews = reviews.map(r => {
-      if (r.id === reviewId) {
-        return {
-          ...r,
-          status: newStatus,
-          reject_reason: rejectReason,
-        };
-      }
-      return r;
-    });
-    setReviews(updatedReviews);
-    localStorage.setItem('zaparkyi_reviews', JSON.stringify(updatedReviews));
-  };
-
-  const handleApprove = (reviewId: string) => {
-    updateReviewStatus(reviewId, 'approved');
-  };
-
-  const handleReject = () => {
-    if (rejectModal && rejectReason.trim()) {
-      updateReviewStatus(rejectModal.id, 'rejected', rejectReason.trim());
-      setRejectModal(null);
-      setRejectReason('');
+  const handleApprove = async (reviewId: string) => {
+    try {
+      await updateReviewStatusDb(reviewId, 'approved');
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, status: 'approved' } : r
+      ));
+    } catch (error) {
+      console.error('Failed to approve review:', error);
     }
   };
 
-  const handleDelete = (reviewId: string) => {
+  const handleReject = async () => {
+    if (rejectModal && rejectReason.trim()) {
+      try {
+        await updateReviewStatusDb(rejectModal.id, 'rejected', rejectReason.trim());
+        setReviews(prev => prev.map(r => 
+          r.id === rejectModal.id 
+            ? { ...r, status: 'rejected', reject_reason: rejectReason.trim() } 
+            : r
+        ));
+        setRejectModal(null);
+        setRejectReason('');
+      } catch (error) {
+        console.error('Failed to reject review:', error);
+      }
+    }
+  };
+
+  const handleDelete = async (reviewId: string) => {
     if (window.confirm('Вы уверены, что хотите удалить этот отзыв?')) {
-      const updatedReviews = reviews.filter(r => r.id !== reviewId);
-      setReviews(updatedReviews);
-      localStorage.setItem('zaparkyi_reviews', JSON.stringify(updatedReviews));
+      try {
+        await deleteReview(reviewId);
+        setReviews(prev => prev.filter(r => r.id !== reviewId));
+      } catch (error) {
+        console.error('Failed to delete review:', error);
+      }
     }
   };
 

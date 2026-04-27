@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { AdminLayout } from './components/AdminLayout';
+import { 
+  getAdminStats, 
+  getRecentBookings, 
+  getRecentParkings, 
+  getRecentUsers,
+  isSupabaseConfigured,
+} from '../../lib/supabase';
 import './AdminDashboard.css';
 
 interface Stats {
@@ -40,10 +47,78 @@ export function AdminDashboard() {
     loadStats();
   }, []);
 
-  const loadStats = () => {
+  const loadStats = async () => {
     setLoading(true);
     
-    // Load from localStorage (demo mode)
+    try {
+      // Try to load from Supabase first
+      if (isSupabaseConfigured()) {
+        const stats = await getAdminStats();
+        setStats({
+          totalUsers: stats.totalUsers,
+          totalParkings: stats.totalParkings,
+          activeParkings: stats.activeParkings,
+          totalBookings: stats.totalBookings,
+          activeBookings: stats.activeBookings,
+          pendingBookings: stats.pendingBookings,
+          totalRevenue: stats.totalRevenue,
+          newUsersThisWeek: stats.newUsersThisWeek,
+          newUsersThisMonth: stats.newUsersThisMonth,
+        });
+
+        // Load recent activity from Supabase
+        const [recentBookings, recentParkings, recentUsers] = await Promise.all([
+          getRecentBookings(5),
+          getRecentParkings(3),
+          getRecentUsers(2),
+        ]);
+
+        const activities: RecentActivity[] = [];
+        
+        recentBookings.forEach((b) => {
+          activities.push({
+            id: b.id,
+            type: 'booking',
+            message: `Новое бронирование #${b.id.slice(0, 8)}`,
+            timestamp: b.created_at,
+          });
+        });
+        
+        recentParkings.forEach((p) => {
+          activities.push({
+            id: p.id,
+            type: 'parking',
+            message: `Новая парковка: ${p.title}`,
+            timestamp: p.created_at,
+          });
+        });
+        
+        recentUsers.forEach((u) => {
+          activities.push({
+            id: u.id,
+            type: 'user',
+            message: `Новый пользователь: ${u.name}`,
+            timestamp: u.created_at,
+          });
+        });
+        
+        setRecentActivity(activities.sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        ).slice(0, 10));
+      } else {
+        // Fallback to localStorage (demo mode)
+        loadStatsFromLocalStorage();
+      }
+    } catch (error) {
+      console.error('Error loading stats from Supabase:', error);
+      // Fallback to localStorage on error
+      loadStatsFromLocalStorage();
+    }
+    
+    setLoading(false);
+  };
+
+  const loadStatsFromLocalStorage = () => {
     const users = JSON.parse(localStorage.getItem('zaparkyi_admin_users') || '[]');
     const parkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
     const bookings = JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]');
@@ -101,8 +176,6 @@ export function AdminDashboard() {
     setRecentActivity(activities.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ).slice(0, 10));
-    
-    setLoading(false);
   };
 
   const formatDate = (dateStr: string) => {

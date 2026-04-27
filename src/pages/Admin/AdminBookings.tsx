@@ -1,23 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from './components/AdminLayout';
+import { getAllBookingsAdmin, updateBookingAdmin, Booking as SupabaseBooking } from '../../lib/supabase';
 import './AdminBookings.css';
 
-interface Booking {
-  id: string;
-  parking_id: string;
-  user_id: string;
-  user_email?: string;
-  user_name?: string;
-  car_number?: string;
-  car_brand?: string;
-  car_model?: string;
-  start_date: string;
-  end_date: string;
-  booking_type: 'hourly' | 'daily' | 'monthly';
-  status: 'pending' | 'confirmed' | 'active' | 'cancelled' | 'completed';
-  payment_status: 'pending' | 'paid' | 'refunded';
-  total_price: number;
-  created_at: string;
+interface Booking extends SupabaseBooking {
+  parking?: { title: string; address: string };
+  user?: { email: string; name: string };
 }
 
 interface Parking {
@@ -61,18 +49,27 @@ export function AdminBookings() {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     setLoading(true);
-    const storedBookings = JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]');
-    const storedParkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
-    setBookings(storedBookings);
-    setParkings(storedParkings);
-    setLoading(false);
+    try {
+      const fetchedBookings = await getAllBookingsAdmin();
+      setBookings(fetchedBookings);
+      // Extract unique parkings from bookings for parking titles
+      const uniqueParkings = fetchedBookings
+        .filter((b) => b.parking_id && b.parking)
+        .map((b) => ({ id: b.parking_id, title: b.parking?.title || 'Unknown' }));
+      setParkings(uniqueParkings);
+    } catch (error) {
+      console.error('Error loading bookings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getParkingTitle = (parkingId: string) => {
-    const parking = parkings.find((p) => p.id === parkingId);
-    return parking?.title || `Парковка #${parkingId.slice(0, 8)}`;
+  const getParkingTitle = (booking: Booking) => {
+    if (booking.parking?.title) return booking.parking.title;
+    const localParking = parkings.find((p) => p.id === booking.parking_id);
+    return localParking?.title || `Парковка #${booking.parking_id.slice(0, 8)}`;
   };
 
   const getCarDisplay = (booking: Booking) => {
@@ -127,9 +124,9 @@ export function AdminBookings() {
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        const parkingTitle = getParkingTitle(booking.parking_id).toLowerCase();
-        const userEmail = (booking.user_email || '').toLowerCase();
-        const userName = (booking.user_name || '').toLowerCase();
+        const parkingTitle = getParkingTitle(booking).toLowerCase();
+        const userEmail = (booking.user?.email || '').toLowerCase();
+        const userName = (booking.user?.name || '').toLowerCase();
         const carDisplay = getCarDisplay(booking).toLowerCase();
 
         if (
@@ -182,20 +179,32 @@ export function AdminBookings() {
     };
   }, [bookings]);
 
-  const handleStatusChange = (bookingId: string, newStatus: string) => {
-    const updatedBookings = bookings.map((b) =>
-      b.id === bookingId ? { ...b, status: newStatus as Booking['status'] } : b
-    );
-    setBookings(updatedBookings);
-    localStorage.setItem('zaparkyi_bookings', JSON.stringify(updatedBookings));
+  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    try {
+      await updateBookingAdmin(bookingId, { status: newStatus as Booking['status'] });
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, status: newStatus as Booking['status'] } : b
+        )
+      );
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Ошибка при обновлении статуса');
+    }
   };
 
-  const handlePaymentStatusChange = (bookingId: string, newPaymentStatus: string) => {
-    const updatedBookings = bookings.map((b) =>
-      b.id === bookingId ? { ...b, payment_status: newPaymentStatus as Booking['payment_status'] } : b
-    );
-    setBookings(updatedBookings);
-    localStorage.setItem('zaparkyi_bookings', JSON.stringify(updatedBookings));
+  const handlePaymentStatusChange = async (bookingId: string, newPaymentStatus: string) => {
+    try {
+      await updateBookingAdmin(bookingId, { payment_status: newPaymentStatus as Booking['payment_status'] });
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, payment_status: newPaymentStatus as Booking['payment_status'] } : b
+        )
+      );
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      alert('Ошибка при обновлении статуса оплаты');
+    }
   };
 
   const handleCancelBooking = (bookingId: string) => {
@@ -355,13 +364,13 @@ export function AdminBookings() {
                       <td className="admin-id-cell">
                         <span className="admin-id">{booking.id.slice(0, 8)}</span>
                       </td>
-                      <td>{getParkingTitle(booking.parking_id)}</td>
+                      <td>{getParkingTitle(booking)}</td>
                       <td>
                         <div className="admin-user-cell">
-                          {booking.user_name && (
-                            <span className="admin-user-name">{booking.user_name}</span>
+                          {booking.user?.name && (
+                            <span className="admin-user-name">{booking.user?.name}</span>
                           )}
-                          <span className="admin-user-email">{booking.user_email || '-'}</span>
+                          <span className="admin-user-email">{booking.user?.email || '-'}</span>
                         </div>
                       </td>
                       <td>{getCarDisplay(booking)}</td>
@@ -389,7 +398,7 @@ export function AdminBookings() {
                           {booking.payment_status === 'refunded' && 'Возврат'}
                         </span>
                       </td>
-                      <td className="admin-price-cell">{formatCurrency(booking.total_price)}</td>
+                      <td className="admin-price-cell">{formatCurrency(booking.total_price || 0)}</td>
                       <td>{formatDateTime(booking.created_at)}</td>
                       <td>
                         <div className="admin-actions-cell">
@@ -481,14 +490,14 @@ export function AdminBookings() {
                   </div>
                   <div className="admin-modal-item">
                     <span className="admin-modal-label">Парковка</span>
-                    <span className="admin-modal-value">{getParkingTitle(selectedBooking.parking_id)}</span>
+                    <span className="admin-modal-value">{getParkingTitle(selectedBooking)}</span>
                   </div>
                   <div className="admin-modal-item">
                     <span className="admin-modal-label">Клиент</span>
                     <span className="admin-modal-value">
-                      {selectedBooking.user_name || '—'}
+                      {selectedBooking.user?.name || '—'}
                       <br />
-                      <span className="admin-modal-sub">{selectedBooking.user_email || '—'}</span>
+                      <span className="admin-modal-sub">{selectedBooking.user?.email || '—'}</span>
                     </span>
                   </div>
                   <div className="admin-modal-item">
@@ -530,7 +539,7 @@ export function AdminBookings() {
                   <div className="admin-modal-item">
                     <span className="admin-modal-label">Сумма</span>
                     <span className="admin-modal-value admin-modal-price">
-                      {formatCurrency(selectedBooking.total_price)}
+                      {formatCurrency(selectedBooking.total_price || 0)}
                     </span>
                   </div>
                   <div className="admin-modal-item">

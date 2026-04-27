@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from './components/AdminLayout';
+import { getAllUsers, updateUserRole, setUserBlocked, deleteUser } from '../../lib/supabase';
 import './AdminUsers.css';
 
 interface User {
@@ -42,16 +43,23 @@ export function AdminUsers() {
     loadData();
   }, []);
   
-  const loadData = () => {
+  const loadData = async () => {
     setLoading(true);
-    const storedUsers = JSON.parse(localStorage.getItem('zaparkyi_admin_users') || '[]');
-    const storedParkings = JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]');
-    const storedBookings = JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]');
-    
-    setUsers(storedUsers);
-    setParkings(storedParkings);
-    setBookings(storedBookings);
-    setLoading(false);
+    try {
+      const [fetchedUsers, storedParkings, storedBookings] = await Promise.all([
+        getAllUsers(),
+        Promise.resolve(JSON.parse(localStorage.getItem('zaparkyi_parkings') || '[]')),
+        Promise.resolve(JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]'))
+      ]);
+      
+      setUsers(fetchedUsers as User[]);
+      setParkings(storedParkings);
+      setBookings(storedBookings);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setLoading(false);
+    }
   };
   
   const getStats = (): UserStats => {
@@ -114,28 +122,52 @@ export function AdminUsers() {
   }, [searchQuery, roleFilter]);
   
   // Actions
-  const handleToggleBlock = (user: User) => {
-    const updatedUsers = users.map(u => 
-      u.id === user.id ? { ...u, is_blocked: !u.is_blocked } : u
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem('zaparkyi_admin_users', JSON.stringify(updatedUsers));
+  const handleToggleBlock = async (user: User) => {
+    const newBlockedState = !user.is_blocked;
+    
+    // Optimistic update
+    setUsers(users.map(u => 
+      u.id === user.id ? { ...u, is_blocked: newBlockedState } : u
+    ));
+    
+    try {
+      await setUserBlocked(user.id, newBlockedState);
+    } catch (error) {
+      console.error('Error toggling block:', error);
+      // Revert on error
+      setUsers(users);
+    }
   };
   
-  const handleUpdateRole = (userId: string, newRole: 'user' | 'moderator' | 'admin') => {
-    const updatedUsers = users.map(u => 
+  const handleUpdateRole = async (userId: string, newRole: 'user' | 'moderator' | 'admin') => {
+    // Optimistic update
+    setUsers(users.map(u => 
       u.id === userId ? { ...u, role: newRole } : u
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem('zaparkyi_admin_users', JSON.stringify(updatedUsers));
-    setEditRoleUser(null);
+    ));
+    
+    try {
+      await updateUserRole(userId, newRole);
+      setEditRoleUser(null);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      // Revert on error - would need to refetch
+      loadData();
+    }
   };
   
-  const handleDeleteUser = (userId: string) => {
-    const updatedUsers = users.filter(u => u.id !== userId);
-    setUsers(updatedUsers);
-    localStorage.setItem('zaparkyi_admin_users', JSON.stringify(updatedUsers));
-    setDeleteConfirmUser(null);
+  const handleDeleteUser = async (userId: string) => {
+    // Optimistic update
+    const previousUsers = users;
+    setUsers(users.filter(u => u.id !== userId));
+    
+    try {
+      await deleteUser(userId);
+      setDeleteConfirmUser(null);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      // Revert on error
+      setUsers(previousUsers);
+    }
   };
   
   const getRoleBadgeClass = (role: string) => {

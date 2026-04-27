@@ -20,6 +20,10 @@ export interface Parking {
   longitude?: number;
   rating?: number;
   reviewCount?: number;
+  owner_id?: string;
+  owner_email?: string;
+  is_active?: boolean;
+  status?: 'active' | 'inactive' | 'pending';
 }
 
 export interface ParkingInsert {
@@ -52,13 +56,18 @@ export interface ParkingUpdate {
   amenities?: string[];
   latitude?: number;
   longitude?: number;
+  is_active?: boolean;
+  status?: 'active' | 'inactive' | 'pending';
 }
 
 export interface User {
   id: string;
+  auth_id?: string;
   email: string;
   name: string;
   phone: string | null;
+  role?: 'user' | 'moderator' | 'admin';
+  is_blocked?: boolean;
   created_at: string;
 }
 
@@ -71,7 +80,7 @@ export interface Booking {
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'active';
   created_at: string;
   // New fields
-  booking_type?: 'hourly' | 'daily' | 'monthly';
+  booking_type: 'hourly' | 'daily' | 'monthly';
   car_brand?: string;
   car_model?: string;
   car_number?: string;
@@ -82,6 +91,9 @@ export interface Booking {
   qr_code?: string;
   start_time?: string;
   end_time?: string;
+  // Relations (for admin queries)
+  parking?: { title: string; address: string };
+  user?: { email: string; name: string };
 }
 
 export interface BookingInsert {
@@ -131,6 +143,11 @@ export interface Review {
   rating: number;
   comment: string;
   created_at: string;
+  author_name?: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  // Relations (for admin queries)
+  parking?: { title: string };
+  user?: { name: string; email: string };
 }
 
 export interface ReviewInsert {
@@ -642,4 +659,334 @@ export async function isFavorite(userId: string, parkingId: string): Promise<boo
   }
 
   return !!data;
+}
+
+// ============================================================================
+// ADMIN FUNCTIONS
+// ============================================================================
+
+/**
+ * Get all users (admin only)
+ */
+export async function getAllUsers(): Promise<User[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching users:', error);
+    return [];
+  }
+
+  return (data as User[]) || [];
+}
+
+/**
+ * Update user role (admin only)
+ */
+export async function updateUserRole(userId: string, role: 'user' | 'moderator' | 'admin'): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('users')
+    .update({ role, updated_at: new Date().toISOString() })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('Error updating user role:', error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Block/unblock user (admin only)
+ */
+export async function setUserBlocked(userId: string, isBlocked: boolean): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('users')
+    .update({ is_blocked: isBlocked, updated_at: new Date().toISOString() })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('Error updating user blocked status:', error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Delete user (admin only)
+ */
+export async function deleteUser(userId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', userId);
+
+  if (error) {
+    console.error('Error deleting user:', error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Get all parkings (admin view - includes inactive)
+ */
+export async function getAllParkingsAdmin(): Promise<Parking[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('parkings')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching parkings:', error);
+    return [];
+  }
+
+  return (data as Parking[]) || [];
+}
+
+/**
+ * Update parking status (admin)
+ */
+export async function updateParkingStatus(parkingId: string, status: 'active' | 'inactive' | 'pending'): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('parkings')
+    .update({ 
+      status,
+      is_active: status === 'active',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', parkingId);
+
+  if (error) {
+    console.error('Error updating parking status:', error);
+    throw new Error(error.message);
+  }
+}
+
+// Duplicate removed - using the first one
+
+/**
+ * Delete parking (admin)
+ */
+
+/**
+ * Get all bookings (admin view)
+ */
+export async function getAllBookingsAdmin(): Promise<Booking[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*, parking:parkings(title, address), user:users(email, name)')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching bookings:', error);
+    return [];
+  }
+
+  return (data as Booking[]) || [];
+}
+
+/**
+ * Update booking (admin)
+ */
+export async function updateBookingAdmin(
+  bookingId: string,
+  updates: Partial<Booking>
+): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('bookings')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', bookingId);
+
+  if (error) {
+    console.error('Error updating booking:', error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Get all reviews (admin view)
+ */
+export async function getAllReviewsAdmin(): Promise<Review[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*, parking:parkings(title), user:users(name, email)')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+
+  return (data as Review[]) || [];
+}
+
+/**
+ * Update review status (admin)
+ */
+export async function updateReviewStatus(
+  reviewId: string,
+  status: 'pending' | 'approved' | 'rejected',
+  reason?: string
+): Promise<void> {
+  const supabase = getSupabaseClient();
+  const updateData: any = { 
+    status, 
+    updated_at: new Date().toISOString() 
+  };
+  if (reason) {
+    updateData.admin_comment = reason;
+  }
+  const { error } = await supabase
+    .from('reviews')
+    .update(updateData)
+    .eq('id', reviewId);
+
+  if (error) {
+    console.error('Error updating review status:', error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Delete review (admin)
+ */
+export async function deleteReview(reviewId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('reviews')
+    .delete()
+    .eq('id', reviewId);
+
+  if (error) {
+    console.error('Error deleting review:', error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Get platform statistics (admin)
+ */
+export async function getAdminStats(): Promise<{
+  totalUsers: number;
+  totalParkings: number;
+  activeParkings: number;
+  totalBookings: number;
+  activeBookings: number;
+  pendingBookings: number;
+  totalRevenue: number;
+  newUsersThisWeek: number;
+  newUsersThisMonth: number;
+}> {
+  const supabase = getSupabaseClient();
+  
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const [usersResult, parkingsResult, bookingsResult] = await Promise.all([
+    supabase.from('users').select('*'),
+    supabase.from('parkings').select('*'),
+    supabase.from('bookings').select('*'),
+  ]);
+
+  const users = (usersResult.data || []) as User[];
+  const parkings = (parkingsResult.data || []) as Parking[];
+  const bookings = (bookingsResult.data || []) as Booking[];
+  
+  const totalUsers = users.length;
+  const totalParkings = parkings.length;
+  const activeParkings = parkings.filter(p => p.is_active !== false).length;
+  const activeBookings = bookings.filter(b => 
+    b.status === 'active' || b.status === 'confirmed'
+  ).length;
+  const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+  const totalRevenue = bookings
+    .filter(b => b.payment_status === 'paid')
+    .reduce((sum, b) => sum + (b.total_price || 0), 0);
+
+  const newUsersThisWeek = users.filter(u => 
+    new Date(u.created_at).getTime() > weekAgo.getTime()
+  ).length;
+  const newUsersThisMonth = users.filter(u => 
+    new Date(u.created_at).getTime() > monthAgo.getTime()
+  ).length;
+
+  return {
+    totalUsers,
+    totalParkings,
+    activeParkings,
+    totalBookings: bookings.length,
+    activeBookings,
+    pendingBookings,
+    totalRevenue,
+    newUsersThisWeek,
+    newUsersThisMonth,
+  };
+}
+
+/**
+ * Get recent bookings (admin)
+ */
+export async function getRecentBookings(limit: number = 5): Promise<Booking[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent bookings:', error);
+    return [];
+  }
+
+  return (data as Booking[]) || [];
+}
+
+/**
+ * Get recent parkings (admin)
+ */
+export async function getRecentParkings(limit: number = 3): Promise<Parking[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('parkings')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent parkings:', error);
+    return [];
+  }
+
+  return (data as Parking[]) || [];
+}
+
+/**
+ * Get recent users (admin)
+ */
+export async function getRecentUsers(limit: number = 2): Promise<User[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent users:', error);
+    return [];
+  }
+
+  return (data as User[]) || [];
 }
