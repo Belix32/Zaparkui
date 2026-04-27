@@ -294,12 +294,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Check for specific errors
         if (error.message.includes('Invalid login credentials')) {
-          return { success: false, error: 'Неверный email или пароль. Проверьте данные или зарегистрируйтесь.' };
+          return { success: false, error: 'Неверный email или пароль. Проверьте данные.' };
         }
         if (error.message.includes('Email not confirmed')) {
-          return { success: false, error: 'Email не подтвержден. Проверьте почту.' };
+          return { success: false, error: 'Email не подтверждён. Проверьте почту.' };
         }
-        return { success: false, error: error.message };
+        if (error.message.includes('User already registered')) {
+          return { success: false, error: 'Пользователь с таким email уже существует.' };
+        }
+        if (error.message.includes('Invalid email')) {
+          return { success: false, error: 'Неверный формат email.' };
+        }
+        // Default Russian error message
+        return { success: false, error: 'Ошибка входа. Попробуйте позже.' };
       }
 
       if (data?.user) {
