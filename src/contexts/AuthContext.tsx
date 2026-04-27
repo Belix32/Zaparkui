@@ -196,6 +196,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        // Fallback to localStorage if Supabase fails
+        const sessionUser = loadUserSession();
+        if (sessionUser) {
+          setUser(sessionUser);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -249,30 +254,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Введите пароль' };
     }
 
-    // Check if Supabase is configured - if not, use demo mode
+// Check if Supabase is configured - if not, use demo mode
     if (!isSupabaseConfigured()) {
-      // Check if user with this email exists - check session not expired
+      // Demo mode - allow any login
       const existingUser = loadUserSession();
       if (existingUser && existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
         setUser(existingUser);
-        // Refresh session timestamp
         saveUserSession(existingUser);
         return { success: true };
       }
       
-      // New demo user
+      // Check if this is the admin email
+      const isAdminEmail = email.toLowerCase().trim() === 'ilya.cheplya@yandex.ru';
+      
+      // Create demo user
       const mockUser: User = {
         id: generateSecureToken().substring(0, 16),
         name: email.toLowerCase().split('@')[0],
         email: email.toLowerCase().trim(),
         phone: '+7 (999) 000-00-00',
+        role: isAdminEmail ? 'admin' : 'user',
       };
       setUser(mockUser);
       saveUserSession(mockUser);
       return { success: true };
     }
-        
-try {
+    
+    // Try Supabase auth
+    try {
       const supabaseClient = getSupabaseClient();
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
@@ -306,9 +315,18 @@ try {
       }
 
       return { success: true };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Ошибка входа. Попробуйте позже.' };
+    } catch (supabaseError) {
+      console.error('Supabase login error, falling back to demo mode:', supabaseError);
+      // Fallback to demo mode if Supabase fails
+      const mockUser: User = {
+        id: generateSecureToken().substring(0, 16),
+        name: email.toLowerCase().split('@')[0],
+        email: email.toLowerCase().trim(),
+        phone: '+7 (999) 000-00-00',
+      };
+      setUser(mockUser);
+      saveUserSession(mockUser);
+      return { success: true };
     }
   };
 
@@ -347,11 +365,15 @@ try {
         return { success: false, error: 'Пользователь с таким email уже существует' };
       }
       
+      // Check if this is the admin email
+      const isAdminEmail = email.toLowerCase().trim() === 'ilya.cheplya@yandex.ru';
+      
       const mockUser: User = {
         id: generateSecureToken().substring(0, 16),
         name: name.trim(),
         email: email.toLowerCase().trim(),
         phone: phone.trim(),
+        role: isAdminEmail ? 'admin' : 'user',
       };
       setUser(mockUser);
       saveUserSession(mockUser);

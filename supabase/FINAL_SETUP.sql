@@ -1,19 +1,12 @@
 -- =============================================================================
 -- ЗАПАРКУЙ (ZAPARKYI) - Supabase Database Setup
 -- =============================================================================
--- How to use:
--- 1. Открой https://supabase.com/dashboard → твой проект → SQL Editor
--- 2. Скопируй и вставь этот код
--- 3. Нажми "Run"
--- =============================================================================
 
--- ============================================================================
--- STEP 1: Enable UUID extension
--- ============================================================================
+-- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
--- STEP 2: Table - users (profile for authenticated users)
+-- Table: users (IF NOT EXISTS won't add columns, so we use ALTER)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -28,10 +21,13 @@ CREATE TABLE IF NOT EXISTS public.users (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add columns if they don't exist
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin'));
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT false;
+
 -- ============================================================================
--- STEP 3: Table - parkings (without enum)
+-- Table: parkings
 -- ============================================================================
--- Using TEXT for status instead of enum to avoid syntax issues
 CREATE TABLE IF NOT EXISTS parkings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title VARCHAR(200) NOT NULL,
@@ -57,8 +53,12 @@ CREATE TABLE IF NOT EXISTS parkings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add columns if not exist
+ALTER TABLE parkings ADD COLUMN IF NOT EXISTS images TEXT[];
+ALTER TABLE parkings ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending'));
+
 -- ============================================================================
--- STEP 5: Table - bookings
+-- Table: bookings
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS bookings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 
 -- ============================================================================
--- STEP 6: Table - reviews
+-- Table: reviews
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -89,11 +89,13 @@ CREATE TABLE IF NOT EXISTS reviews (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
+  status VARCHAR(20) DEFAULT 'approved' CHECK (status IN ('pending', 'approved', 'rejected')),
+  admin_comment TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================================================
--- STEP 7: Table - favorites
+-- Table: favorites
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS favorites (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -104,33 +106,24 @@ CREATE TABLE IF NOT EXISTS favorites (
 );
 
 -- ============================================================================
--- STEP 8: Create Indexes
+-- Indexes
 -- ============================================================================
--- Users indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_auth ON users(auth_id);
-
--- Parkings indexes
 CREATE INDEX IF NOT EXISTS idx_parkings_owner ON parkings(owner_id);
 CREATE INDEX IF NOT EXISTS idx_parkings_price ON parkings(price);
 CREATE INDEX IF NOT EXISTS idx_parkings_district ON parkings(district);
 CREATE INDEX IF NOT EXISTS idx_parkings_is_active ON parkings(is_active);
-
--- Bookings indexes
 CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_parking ON bookings(parking_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
-
--- Reviews indexes
 CREATE INDEX IF NOT EXISTS idx_reviews_parking ON reviews(parking_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_user ON reviews(user_id);
-
--- Favorites indexes
 CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_parking ON favorites(parking_id);
 
 -- ============================================================================
--- STEP 9: Enable Row Level Security (RLS)
+-- Enable RLS
 -- ============================================================================
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE parkings ENABLE ROW LEVEL SECURITY;
@@ -139,10 +132,8 @@ ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
--- STEP 10: RLS Policies
+-- RLS Policies - Drop existing first
 -- ============================================================================
-
--- Drop existing policies first to avoid conflicts
 DROP POLICY IF EXISTS "Users can read own profile" ON users;
 DROP POLICY IF EXISTS "Users can insert own profile" ON users;
 DROP POLICY IF EXISTS "Users can update own profile" ON users;
@@ -157,6 +148,8 @@ DROP POLICY IF EXISTS "Anyone can view reviews" ON reviews;
 DROP POLICY IF EXISTS "Users can create review" ON reviews;
 DROP POLICY IF EXISTS "Users can view own favorites" ON favorites;
 DROP POLICY IF EXISTS "Users can manage own favorites" ON favorites;
+
+-- Admin policies
 DROP POLICY IF EXISTS "Admins can manage reviews" ON reviews;
 DROP POLICY IF EXISTS "Admins can view all parkings" ON parkings;
 DROP POLICY IF EXISTS "Admins can update any parking" ON parkings;
@@ -166,131 +159,38 @@ DROP POLICY IF EXISTS "Admins can update any booking" ON bookings;
 DROP POLICY IF EXISTS "Admins can view all users" ON users;
 DROP POLICY IF EXISTS "Admins can update any user" ON users;
 
--- USERS Policies
-CREATE POLICY "Users can read own profile" ON users
-  FOR SELECT USING (auth.uid() = auth_id);
+-- Create policies
+CREATE POLICY "Users can read own profile" ON users FOR SELECT USING (auth.uid() = auth_id);
+CREATE POLICY "Users can insert own profile" ON users FOR INSERT WITH CHECK (auth.uid() = auth_id);
+CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = auth_id);
 
-CREATE POLICY "Users can insert own profile" ON users
-  FOR INSERT WITH CHECK (auth.uid() = auth_id);
+CREATE POLICY "Anyone can view active parkings" ON parkings FOR SELECT USING (is_active = true);
+CREATE POLICY "Authenticated can insert parking" ON parkings FOR INSERT WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Owner can update parking" ON parkings FOR UPDATE USING (auth.uid() = owner_id);
+CREATE POLICY "Owner can delete parking" ON parkings FOR DELETE USING (auth.uid() = owner_id);
 
-CREATE POLICY "Users can update own profile" ON users
-  FOR UPDATE USING (auth.uid() = auth_id);
+CREATE POLICY "Users can view own bookings" ON bookings FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can create booking" ON bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own booking" ON bookings FOR UPDATE USING (auth.uid() = user_id);
 
--- PARKINGS Policies (публичный просмотр, только владелец может управлять)
-CREATE POLICY "Anyone can view active parkings" ON parkings
-  FOR SELECT USING (is_active = true);
+CREATE POLICY "Anyone can view reviews" ON reviews FOR SELECT USING (true);
+CREATE POLICY "Users can create review" ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Authenticated can insert parking" ON parkings
-  FOR INSERT WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Users can view own favorites" ON favorites FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own favorites" ON favorites FOR ALL USING (auth.uid() = user_id);
 
-CREATE POLICY "Owner can update parking" ON parkings
-  FOR UPDATE USING (auth.uid() = owner_id);
-
-CREATE POLICY "Owner can delete parking" ON parkings
-  FOR DELETE USING (auth.uid() = owner_id);
-
--- BOOKINGS Policies
-CREATE POLICY "Users can view own bookings" ON bookings
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create booking" ON bookings
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own booking" ON bookings
-  FOR UPDATE USING (auth.uid() = user_id);
-
--- REVIEWS Policies
-CREATE POLICY "Anyone can view reviews" ON reviews
-  FOR SELECT USING (true);
-
-CREATE POLICY "Users can create review" ON reviews
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Admin can manage reviews
-CREATE POLICY "Admins can manage reviews" ON reviews
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE users.auth_id = auth.uid() 
-      AND users.role IN ('admin', 'moderator')
-    )
-  );
-
--- Admin and Moderator policies for parkings
-CREATE POLICY "Admins can view all parkings" ON parkings
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE users.auth_id = auth.uid() 
-      AND users.role IN ('admin', 'moderator')
-    )
-  );
-
-CREATE POLICY "Admins can update any parking" ON parkings
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE users.auth_id = auth.uid() 
-      AND users.role = 'admin'
-    )
-  );
-
-CREATE POLICY "Admins can delete any parking" ON parkings
-  FOR DELETE USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE users.auth_id = auth.uid() 
-      AND users.role = 'admin'
-    )
-  );
-
--- Admin and Moderator policies for bookings
-CREATE POLICY "Admins can view all bookings" ON bookings
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE users.auth_id = auth.uid() 
-      AND users.role IN ('admin', 'moderator')
-    )
-  );
-
-CREATE POLICY "Admins can update any booking" ON bookings
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE users.auth_id = auth.uid() 
-      AND users.role IN ('admin', 'moderator')
-    )
-  );
-
--- Admin policies for users
-CREATE POLICY "Admins can view all users" ON users
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users u2
-      WHERE u2.auth_id = auth.uid() 
-      AND u2.role = 'admin'
-    )
-  );
-
-CREATE POLICY "Admins can update any user" ON users
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.users u2
-      WHERE u2.auth_id = auth.uid() 
-      AND u2.role = 'admin'
-    )
-  );
-
--- FAVORITES Policies
-CREATE POLICY "Users can view own favorites" ON favorites
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can manage own favorites" ON favorites
-  FOR ALL USING (auth.uid() = user_id);
+-- Admin policies
+CREATE POLICY "Admins can manage reviews" ON reviews FOR ALL USING (EXISTS (SELECT 1 FROM public.users WHERE users.auth_id = auth.uid() AND users.role IN ('admin', 'moderator')));
+CREATE POLICY "Admins can view all parkings" ON parkings FOR SELECT USING (EXISTS (SELECT 1 FROM public.users WHERE users.auth_id = auth.uid() AND users.role IN ('admin', 'moderator')));
+CREATE POLICY "Admins can update any parking" ON parkings FOR UPDATE USING (EXISTS (SELECT 1 FROM public.users WHERE users.auth_id = auth.uid() AND users.role = 'admin'));
+CREATE POLICY "Admins can delete any parking" ON parkings FOR DELETE USING (EXISTS (SELECT 1 FROM public.users WHERE users.auth_id = auth.uid() AND users.role = 'admin'));
+CREATE POLICY "Admins can view all bookings" ON bookings FOR SELECT USING (EXISTS (SELECT 1 FROM public.users WHERE users.auth_id = auth.uid() AND users.role IN ('admin', 'moderator')));
+CREATE POLICY "Admins can update any booking" ON bookings FOR UPDATE USING (EXISTS (SELECT 1 FROM public.users WHERE users.auth_id = auth.uid() AND users.role IN ('admin', 'moderator')));
+CREATE POLICY "Admins can view all users" ON users FOR SELECT USING (EXISTS (SELECT 1 FROM public.users u2 WHERE u2.auth_id = auth.uid() AND u2.role = 'admin'));
+CREATE POLICY "Admins can update any user" ON users FOR UPDATE USING (EXISTS (SELECT 1 FROM public.users u2 WHERE u2.auth_id = auth.uid() AND u2.role = 'admin'));
 
 -- ============================================================================
--- STEP 11: Function to auto-create user profile on signup
+-- Auto-create user profile on signup
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -301,14 +201,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- ============================================================================
--- STEP 13: Make admin user
+-- Make admin user
 -- ============================================================================
 UPDATE public.users SET role = 'admin' WHERE email = 'ilya.cheplya@yandex.ru';
 
