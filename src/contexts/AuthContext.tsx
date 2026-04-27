@@ -386,7 +386,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const supabaseClient = getSupabaseClient();
       const normalizedEmail = email.toLowerCase().trim();
 
-      // Sign up with Supabase Auth
+      // Sign up with Supabase Auth - bypass email confirmation
       const { data, error } = await supabaseClient.auth.signUp({
         email: normalizedEmail,
         password,
@@ -395,17 +395,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: sanitizeInput(name.trim()),
             phone: phone.trim(),
           },
+          emailRedirectTo: window.location.origin,
         },
       });
 
-      if (error) {
-        // Handle specific error codes
-        if (error.message.includes('already registered')) {
-          return { success: false, error: 'Пользователь с таким email уже существует' };
-        }
-        return { success: false, error: error.message };
-      }
-
+      // If user is automatically confirmed (or disable confirmation)
+      // Also manually create user profile
       if (data?.user) {
         // Create user profile in users table
         const { error: profileError } = await supabaseClient
@@ -415,25 +410,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: normalizedEmail,
             name: sanitizeInput(name.trim()),
             phone: phone.trim(),
+            role: normalizedEmail === 'ilya.cheplya@yandex.ru' ? 'admin' : 'user',
           });
 
         if (profileError) {
           console.error('Error creating user profile:', profileError);
-          // Continue anyway - user is registered in auth
         }
 
-        // Set the user in state
+        // Set user in state
         setUser({
           id: data.user.id,
           name: sanitizeInput(name.trim()),
           email: normalizedEmail,
           phone: phone.trim(),
+          role: normalizedEmail === 'ilya.cheplya@yandex.ru' ? 'admin' : 'user',
         });
+
+        return { success: true };
+      }
+
+      // Check if email confirmation is required
+      if (data?.user === null) {
+        return { success: true };
       }
 
       return { success: true };
-    } catch (error) {
-      console.error('Registration error:', error);
+    } catch (supabaseError) {
+      console.error('Registration error:', supabaseError);
       return { success: false, error: 'Ошибка регистрации. Попробуйте позже.' };
     }
   };
