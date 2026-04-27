@@ -254,9 +254,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Введите пароль' };
     }
 
-// Check if Supabase is configured - if not, use demo mode
+// IMPORTANT: Supabase is configured - use it
     if (!isSupabaseConfigured()) {
-      // Demo mode - allow any login
+      console.warn('Supabase not configured - using demo mode');
+      // Demo mode only if not configured
       const existingUser = loadUserSession();
       if (existingUser && existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
         setUser(existingUser);
@@ -264,23 +265,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true };
       }
       
-      // Check if this is the admin email
-      const isAdminEmail = email.toLowerCase().trim() === 'ilya.cheplya@yandex.ru';
-      
-      // Create demo user
       const mockUser: User = {
         id: generateSecureToken().substring(0, 16),
         name: email.toLowerCase().split('@')[0],
         email: email.toLowerCase().trim(),
         phone: '+7 (999) 000-00-00',
-        role: isAdminEmail ? 'admin' : 'user',
       };
       setUser(mockUser);
       saveUserSession(mockUser);
       return { success: true };
     }
     
-    // Try Supabase auth
+    // Supabase is configured - use real auth
+    console.log('Using Supabase auth');
     try {
       const supabaseClient = getSupabaseClient();
       const { data, error } = await supabaseClient.auth.signInWithPassword({
