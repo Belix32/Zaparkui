@@ -55,6 +55,18 @@
   background: var(--bg-secondary);
 }
 
+/* Outline - styled like secondary but with accent border */
+.outline {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--accent);
+  color: #ffffff;
+}
+
 /* Danger */
 .danger {
   background: var(--error);

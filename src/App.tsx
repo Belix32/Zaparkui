@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
-import { Home, Catalog, ParkingDetail, Login, Register, Dashboard, Profile } from './pages';
+import { Home, Catalog, ParkingDetail, Login, Register, Dashboard, Profile, AdminDashboard, AdminParkings, AdminUsers, AdminBookings, AdminReviews, AdminSettings } from './pages';
 import { BookingPage, BookingConfirm, BookingSuccess } from './pages/Booking';
 import { BookingsHistory } from './pages/Profile';
 
@@ -23,6 +23,13 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<Profile />} />
+      {/* Admin routes */}
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/admin/parkings" element={<AdminParkings />} />
+      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/bookings" element={<AdminBookings />} />
+      <Route path="/admin/reviews" element={<AdminReviews />} />
+      <Route path="/admin/settings" element={<AdminSettings />} />
         </Routes>
       </main>
     </>

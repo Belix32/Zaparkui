@@ -11,12 +11,18 @@ export interface User {
   email: string;
   phone: string;
   created_at?: string;
+  role?: 'user' | 'moderator' | 'admin';
 }
+
+export type UserRole = 'user' | 'moderator' | 'admin';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
+  isModerator: boolean;
+  hasAdminAccess: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -132,6 +138,7 @@ function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): User {
     email: supabaseUser.email,
     phone: supabaseUser.phone || '',
     created_at: supabaseUser.created_at,
+    role: (supabaseUser as any).role || 'user',
   };
 }
 
@@ -409,8 +416,13 @@ try {
 
   const logout = async () => {
     try {
-      const supabaseClient = getSupabaseClient();
-      await supabaseClient.auth.signOut();
+      if (isSupabaseConfigured()) {
+        const supabaseClient = getSupabaseClient();
+        await supabaseClient.auth.signOut();
+      } else {
+        localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+      }
       setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
@@ -462,6 +474,9 @@ try {
         user,
         isAuthenticated: !!user,
         isLoading,
+        isAdmin: user?.role === 'admin',
+        isModerator: user?.role === 'admin' || user?.role === 'moderator',
+        hasAdminAccess: user?.role === 'admin' || user?.role === 'moderator',
         login,
         register,
         logout,

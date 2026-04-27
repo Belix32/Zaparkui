@@ -1,0 +1,204 @@
+.admin-settings {
+  max-width: 1200px;
+}
+
+.admin-settings .admin-card {
+  margin-bottom: 24px;
+}
+
+.admin-settings .admin-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  color: #1a1a2e;
+}
+
+.admin-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.admin-settings-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-settings-field label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.admin-settings-field input[type="text"],
+.admin-settings-field input[type="email"],
+.admin-settings-field input[type="tel"],
+.admin-settings-field input[type="number"],
+.admin-settings-field select,
+.admin-settings-field textarea {
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.admin-settings-field input:focus,
+.admin-settings-field select:focus,
+.admin-settings-field textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.admin-settings-field input::placeholder,
+.admin-settings-field textarea::placeholder {
+  color: #9ca3af;
+}
+
+.admin-settings-field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+}
+
+.admin-settings-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.admin-settings-field-inline {
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.admin-settings-field-full {
+  grid-column: 1 / -1;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.checkbox-label span {
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+/* Danger Zone */
+.admin-card-danger {
+  border: 2px solid #ef4444;
+  background: linear-gradient(to bottom, #fef2f2, #fff);
+}
+
+.admin-card-danger h3 {
+  color: #dc2626;
+}
+
+.admin-danger-warning {
+  color: #b91c1c;
+  font-size: 0.9rem;
+  margin: 0 0 20px 0;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #ef4444;
+}
+
+.admin-danger-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.admin-danger-btn {
+  padding: 14px 20px;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  background: white;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-danger-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.admin-danger-btn-all {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+}
+
+.admin-danger-btn-all:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  color: white;
+}
+
+/* Toast */
+.admin-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1a1a2e;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-danger-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+}

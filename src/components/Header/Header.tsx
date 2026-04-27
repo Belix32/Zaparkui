@@ -9,7 +9,7 @@ import styles from './Header.module.css';
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const { toggleTheme, isDark } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, hasAdminAccess } = useAuth();
   const { favorites } = useFavorites();
   const navigate = useNavigate();
 
@@ -48,6 +48,9 @@ export function Header() {
                   {favorites.length > 0 && <span className={styles.favoritesBadge}>{favorites.length}</span>}
                 </Link>
                 <Link to="/dashboard"><Button variant="ghost" size="small">Личный кабинет</Button></Link>
+                {hasAdminAccess && (
+                  <Link to="/admin"><Button variant="outline" size="small">Админка</Button></Link>
+                )}
                 <Button variant="secondary" size="small" onClick={handleLogout}>Выйти</Button>
               </>
             ) : (
