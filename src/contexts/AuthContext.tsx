@@ -489,52 +489,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Try to save to Supabase first
-    if (isSupabaseConfigured() && user) {
-      try {
-        const supabase = getSupabaseClient();
-        const { data, error } = await supabase
-          .from('parkings')
-          .insert({
-            title: sanitizeInput(parking.title.trim()),
-            address: sanitizeInput(parking.address.trim()),
-            price: priceCheck.value,
-            spots: spotsCheck.value,
-            description: parking.description ? sanitizeInput(parking.description.trim()) : undefined,
-            owner_id: user.id,
-            owner_email: user.email,
-            is_active: true,
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Supabase error saving parking:', error);
-          // Fall back to localStorage
-        } else if (data) {
-          const updated = [...myParkings, data];
-          setMyParkings(updated);
-          return;
-        }
-      } catch (supabaseError) {
-        console.error('Error saving to Supabase:', supabaseError);
-        // Fall back to localStorage
-      }
+    // Save to Supabase (required for shared parkings)
+    if (!isSupabaseConfigured() || !user) {
+      console.error('Supabase not configured or user not logged in');
+      throw new Error('Необходимо войти в аккаунт');
     }
 
-    // Fall back to localStorage (demo mode or Supabase failed)
-    const newParking: ParkingItem = {
-      id: generateSecureToken().substring(0, 16),
-      title: sanitizeInput(parking.title.trim()),
-      address: sanitizeInput(parking.address.trim()),
-      price: priceCheck.value,
-      spots: spotsCheck.value,
-      description: parking.description ? sanitizeInput(parking.description.trim()) : undefined,
-    };
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from('parkings')
+        .insert({
+          title: sanitizeInput(parking.title.trim()),
+          address: sanitizeInput(parking.address.trim()),
+          price: priceCheck.value,
+          spots: spotsCheck.value,
+          description: parking.description ? sanitizeInput(parking.description.trim()) : undefined,
+          owner_id: user.id,
+          owner_email: user.email,
+          is_active: true,
+        })
+        .select()
+        .single();
 
-    const updated = [...myParkings, newParking];
-    setMyParkings(updated);
-    localStorage.setItem(PARKING_KEY, JSON.stringify(updated));
+      if (error) {
+        console.error('Supabase error saving parking:', error);
+        throw new Error('Не удалось сохранить парковку: ' + error.message);
+      } else if (data) {
+        const updated = [...myParkings, data];
+        setMyParkings(updated);
+        return;
+      }
+    } catch (supabaseError: any) {
+      console.error('Error saving to Supabase:', supabaseError);
+      throw new Error(supabaseError?.message || 'Ошибка сохранения');
+    }
+
+    throw new Error('Не удалось сохранить парковку');
   };
 
   return (

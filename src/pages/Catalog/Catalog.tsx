@@ -42,23 +42,12 @@ export function Catalog() {
   const loadParkings = useCallback(async () => {
     setLoading(true);
     setError('');
+    setUseStaticData(false);
     
+    // Always try Supabase first (required for shared parkings)
     if (!isSupabaseConfigured()) {
-      // Load user's parkings from localStorage
-      console.log('Supabase not configured, using localStorage data');
-      try {
-        const storedParkings = localStorage.getItem('zaparkyi_parkings');
-        if (storedParkings) {
-          const parsed = JSON.parse(storedParkings);
-          setParkings(parsed);
-        } else {
-          setParkings([]);
-        }
-        setUseStaticData(false);
-      } catch (e) {
-        console.error('Error loading from localStorage:', e);
-        setUseStaticData(true);
-      }
+      console.log('Supabase not configured, using demo data');
+      setUseStaticData(true);
       setLoading(false);
       return;
     }
