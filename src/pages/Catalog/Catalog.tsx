@@ -44,8 +44,21 @@ export function Catalog() {
     setError('');
     
     if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, using static data');
-      setUseStaticData(true);
+      // Load user's parkings from localStorage
+      console.log('Supabase not configured, using localStorage data');
+      try {
+        const storedParkings = localStorage.getItem('zaparkyi_parkings');
+        if (storedParkings) {
+          const parsed = JSON.parse(storedParkings);
+          setParkings(parsed);
+        } else {
+          setParkings([]);
+        }
+        setUseStaticData(false);
+      } catch (e) {
+        console.error('Error loading from localStorage:', e);
+        setUseStaticData(true);
+      }
       setLoading(false);
       return;
     }
@@ -133,12 +146,14 @@ export function Catalog() {
     }
     
     return filtered;
-  }, [search, filters, userLatitude, userLongitude]);
+  }, [search, filters, userLatitude, userLongitude, parkings]);
 
   useEffect(() => {
+    // Only apply static filtering when using demo data
     if (useStaticData) {
       setParkings(filteredStaticParkings());
     }
+    // When Supabase is not configured, parkings already come from localStorage filtered
   }, [search, filters, useStaticData, filteredStaticParkings]);
 
   useEffect(() => {
