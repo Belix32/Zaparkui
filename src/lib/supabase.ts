@@ -272,6 +272,13 @@ export async function searchParkings(filters: ParkingFilters): Promise<Parking[]
   const supabase = getSupabaseClient();
   let query = supabase.from('parkings').select('*');
 
+  // Always show active parkings
+  query = query.eq('is_active', true);
+  
+  // OR show all if no filters (for admin/super admin use)
+  // For now, just get active ones
+  query = query.eq('is_active', true);
+
   if (filters.search) {
     const searchTerm = `%${filters.search}%`;
     query = query.or(`title.ilike.${searchTerm},address.ilike.${searchTerm}`);

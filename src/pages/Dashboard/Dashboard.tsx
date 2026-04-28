@@ -79,7 +79,7 @@ export function Dashboard() {
     return <Navigate to="/login" />;
   }
 
-  const handleAddParking = (e: React.FormEvent) => {
+  const handleAddParking = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
     
@@ -118,32 +118,37 @@ export function Dashboard() {
       return;
     }
     
-    addParking({
-      title: sanitizedTitle,
-      address: sanitizedAddress,
-      price: priceCheck.value,
-      spots: spotsCheck.value,
-      description: sanitizedDescription || undefined,
-      image: imageUrl || undefined,
-    });
-    
-    recordParkingAddition(user.id);
-    
-    setSuccess('Парковка успешно добавлена!');
-    setTitle('');
-    setAddress('');
-    setPrice('');
-    setSpots('');
-    setDescription('');
-    setImageUrl('');
-    setDistrict('');
-    setMetro('');
-    setParkingType('');
-    setDescription('');
-    setImageUrl('');
-    setActiveTab('parkings');
-    
-    setTimeout(() => setSuccess(''), 3000);
+    try {
+      await addParking({
+        title: sanitizedTitle,
+        address: sanitizedAddress,
+        price: priceCheck.value,
+        spots: spotsCheck.value,
+        description: sanitizedDescription || undefined,
+        image: imageUrl || undefined,
+      });
+      
+      recordParkingAddition(user.id);
+      
+      setSuccess('Парковка успешно добавлена!');
+      setTitle('');
+      setAddress('');
+      setPrice('');
+      setSpots('');
+      setDescription('');
+      setImageUrl('');
+      setDistrict('');
+      setMetro('');
+      setParkingType('');
+      setDescription('');
+      setImageUrl('');
+      setActiveTab('parkings');
+      
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Error adding parking:', err);
+      setFormError('Не удалось добавить парковку. Попробуйте позже.');
+    }
   };
 
   // Security: Controlled input handlers with sanitization

@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { 
   getSupabaseClient,
   User as SupabaseUser,
-  isSupabaseConfigured
+  isSupabaseConfigured,
+  createParking as createParkingDb
 } from '../lib/supabase';
 
 export interface User {
@@ -463,7 +464,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addParking = (parking: Omit<ParkingItem, 'id'>) => {
+  const addParking = async (parking: Omit<ParkingItem, 'id'>) => {
     // Validate all inputs
     if (!parking.title || parking.title.trim().length < 2) {
       console.error('Invalid title');
@@ -488,6 +489,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Try to save to Supabase first
+    if (isSupabaseConfigured() && user) {
+      try {
+        const supabase = getSupabaseClient();
+        const { data, error } = await supabase
+          .from('parkings')
+          .insert({
+            title: sanitizeInput(parking.title.trim()),
+            address: sanitizeInput(parking.address.trim()),
+            price: priceCheck.value,
+            spots: spotsCheck.value,
+            description: parking.description ? sanitizeInput(parking.description.trim()) : undefined,
+            owner_id: user.id,
+            owner_email: user.email,
+            is_active: true,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Supabase error saving parking:', error);
+          // Fall back to localStorage
+        } else if (data) {
+          const updated = [...myParkings, data];
+          setMyParkings(updated);
+          return;
+        }
+      } catch (supabaseError) {
+        console.error('Error saving to Supabase:', supabaseError);
+        // Fall back to localStorage
+      }
+    }
+
+    // Fall back to localStorage (demo mode or Supabase failed)
     const newParking: ParkingItem = {
       id: generateSecureToken().substring(0, 16),
       title: sanitizeInput(parking.title.trim()),
