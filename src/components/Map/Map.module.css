@@ -88,9 +88,9 @@
   content: '';
   position: absolute;
   bottom: 0;
-  right: 60px;
-  width: 120px;
-  height: 14px;
+  right: 0;
+  width: 200px;
+  height: 20px;
   background: #ffffff;
   z-index: 1000;
   pointer-events: none;
