@@ -97,7 +97,7 @@ export function ParkingMap({
         scrollWheelZoom={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://yandex.ru/maps">ЯндексКарты</a>'
+          attribution=''
           url="https://core-renderer-tiles.maps.yandex.ru/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU"
         />
         
@@ -192,6 +192,7 @@ export function ParkingLocationMap({
       >
         <TileLayer
           url="https://core-renderer-tiles.maps.yandex.ru/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU"
+          attribution=''
         />
         <Marker position={[latitude, longitude]} />
       </MapContainer>

@@ -78,3 +78,20 @@
   background: #ef4444;
   transform: scale(1.2);
 }
+
+/* Скрытие атрибуции карты для презентации */
+.mapWrapper {
+  position: relative;
+}
+
+.mapWrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 60px;
+  width: 120px;
+  height: 14px;
+  background: #ffffff;
+  z-index: 1000;
+  pointer-events: none;
+}
