@@ -6,7 +6,7 @@
     { "source": "/(.*)", "destination": "/" }
   ],
   "env": {
-    "VITE_SUPABASE_URL": "@supabase-url",
-    "VITE_SUPABASE_ANON_KEY": "@supabase-anon-key"
+    "VITE_SUPABASE_URL": "https://hkllkcctnasaybjapmtk.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_MLrWmpCmyE7Wx2vI7HwEnQ_JuZWIQAY"
   }
 }
