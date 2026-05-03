@@ -184,7 +184,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (userError) {
             console.error('Error fetching user profile:', userError);
           } else if (userData) {
-            setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+            // Create user object with role from database
+            setUser({
+              id: session.user.id,
+              name: userData.name || session.user.email?.split('@')[0] || 'Пользователь',
+              email: userData.email || session.user.email || '',
+              phone: userData.phone || '',
+              created_at: userData.created_at,
+              role: userData.role || 'user',
+            });
           }
         }
 
@@ -230,7 +238,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .single();
 
             if (userData) {
-              setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+              setUser({
+                id: session.user.id,
+                name: userData.name || session.user.email?.split('@')[0] || 'Пользователь',
+                email: userData.email || session.user.email || '',
+                phone: userData.phone || '',
+                created_at: userData.created_at,
+                role: userData.role || 'user',
+              });
             }
           } else {
             setUser(null);
@@ -331,7 +346,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             phone: '',
           });
         } else if (userData) {
-          setUser(mapSupabaseUserToAppUser(userData as unknown as SupabaseUser));
+          setUser({
+            id: data.user.id,
+            name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
+            email: userData.email || data.user.email || email,
+            phone: userData.phone || '',
+            created_at: userData.created_at,
+            role: userData.role || 'user',
+          });
         }
       }
 
