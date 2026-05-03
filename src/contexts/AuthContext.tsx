@@ -174,15 +174,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session?.user) {
-          // Fetch user profile from users table by auth_id
-          const { data: userData, error: userError } = await supabaseClient
+          // Fetch user profile from users table - try multiple methods
+          let userData = null;
+          
+          // Try by auth_id first
+          const { data: userByAuthId } = await supabaseClient
             .from('users')
             .select('*')
             .eq('auth_id', session.user.id)
             .single();
-
-          if (userError) {
-            console.error('Error fetching user profile:', userError);
+          
+          if (userByAuthId) {
+            userData = userByAuthId;
+          } else {
             // Fallback: try by email
             const { data: userByEmail } = await supabaseClient
               .from('users')
@@ -191,16 +195,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .single();
             
             if (userByEmail) {
-              setUser({
-                id: session.user.id,
-                name: userByEmail.name || session.user.email?.split('@')[0] || 'Пользователь',
-                email: userByEmail.email || session.user.email || '',
-                phone: userByEmail.phone || '',
-                created_at: userByEmail.created_at,
-                role: userByEmail.role || 'user',
-              });
+              userData = userByEmail;
             }
-          } else if (userData) {
+          }
+
+          if (userData) {
             // Create user object with role from database
             setUser({
               id: session.user.id,
@@ -247,12 +246,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
         async (_event, session) => {
           if (session?.user) {
-            // Fetch user profile from users table by auth_id
-            const { data: userData } = await supabaseClient
+            // Fetch user profile from users table - try multiple methods
+            let userData = null;
+            
+            const { data: userByAuthId } = await supabaseClient
               .from('users')
               .select('*')
               .eq('auth_id', session.user.id)
               .single();
+            
+            if (userByAuthId) {
+              userData = userByAuthId;
+            } else {
+              // Fallback: try by email
+              const { data: userByEmail } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('email', session.user.email)
+                .single();
+              
+              if (userByEmail) {
+                userData = userByEmail;
+              }
+            }
 
             if (userData) {
               setUser({
@@ -346,23 +362,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data?.user) {
-        // Fetch user profile from users table by auth_id
-        const { data: userData, error: userError } = await supabaseClient
+        // Fetch user profile from users table - try multiple methods
+        let userData = null;
+        
+        const { data: userByAuthId } = await supabaseClient
           .from('users')
           .select('*')
           .eq('auth_id', data.user.id)
           .single();
+        
+        if (userByAuthId) {
+          userData = userByAuthId;
+        } else {
+          // Fallback: try by email
+          const { data: userByEmail } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('email', data.user.email)
+            .single();
+          
+          if (userByEmail) {
+            userData = userByEmail;
+          }
+        }
 
-        if (userError) {
-          console.error('Error fetching user profile:', userError);
-          // Still allow login even if profile fetch fails
-          setUser({
-            id: data.user.id,
-            name: data.user.email?.split('@')[0] || 'User',
-            email: data.user.email || email,
-            phone: '',
-          });
-        } else if (userData) {
+        if (userData) {
           setUser({
             id: data.user.id,
             name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
@@ -370,6 +394,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             phone: userData.phone || '',
             created_at: userData.created_at,
             role: userData.role || 'user',
+          });
+        } else {
+          // No profile found - create basic user
+          setUser({
+            id: data.user.id,
+            name: data.user.email?.split('@')[0] || 'User',
+            email: data.user.email || email,
+            phone: '',
           });
         }
       }
