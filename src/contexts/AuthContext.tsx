@@ -174,15 +174,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session?.user) {
-          // Fetch user profile from users table
+          // Fetch user profile from users table by auth_id
           const { data: userData, error: userError } = await supabaseClient
             .from('users')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('auth_id', session.user.id)
             .single();
 
           if (userError) {
             console.error('Error fetching user profile:', userError);
+            // Fallback: try by email
+            const { data: userByEmail } = await supabaseClient
+              .from('users')
+              .select('*')
+              .eq('email', session.user.email)
+              .single();
+            
+            if (userByEmail) {
+              setUser({
+                id: session.user.id,
+                name: userByEmail.name || session.user.email?.split('@')[0] || 'Пользователь',
+                email: userByEmail.email || session.user.email || '',
+                phone: userByEmail.phone || '',
+                created_at: userByEmail.created_at,
+                role: userByEmail.role || 'user',
+              });
+            }
           } else if (userData) {
             // Create user object with role from database
             setUser({
@@ -230,11 +247,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
         async (_event, session) => {
           if (session?.user) {
-            // Fetch user profile from users table
+            // Fetch user profile from users table by auth_id
             const { data: userData } = await supabaseClient
               .from('users')
               .select('*')
-              .eq('id', session.user.id)
+              .eq('auth_id', session.user.id)
               .single();
 
             if (userData) {
@@ -329,11 +346,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data?.user) {
-        // Fetch user profile from users table
+        // Fetch user profile from users table by auth_id
         const { data: userData, error: userError } = await supabaseClient
           .from('users')
           .select('*')
-          .eq('id', data.user.id)
+          .eq('auth_id', data.user.id)
           .single();
 
         if (userError) {
@@ -435,11 +452,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // If user is automatically confirmed (or disable confirmation)
       // Also manually create user profile
       if (data?.user) {
-        // Create user profile in users table
+        // Create user profile in users table - use auth_id to link to auth.users
         const { error: profileError } = await supabaseClient
           .from('users')
           .insert({
-            id: data.user.id,
+            auth_id: data.user.id,
             email: normalizedEmail,
             name: sanitizeInput(name.trim()),
             phone: phone.trim(),
