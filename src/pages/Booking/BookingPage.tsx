@@ -55,6 +55,25 @@ export function BookingPage() {
   const [carModel, setCarModel] = useState('');
   const [carNumber, setCarNumber] = useState('');
 
+  // Retry wrapper for Supabase operations
+  const withRetry = async <T,>(fn: () => Promise<T>, retries = 3): Promise<T> => {
+    let lastError: Error | null = null;
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err: any) {
+        lastError = err;
+        // Check if retryable
+        if (err?.message?.includes('Lock') || err?.message?.includes('claim')) {
+          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw lastError;
+  };
+
   // Load parking data
   useEffect(() => {
     const loadParking = async () => {
@@ -65,8 +84,8 @@ export function BookingPage() {
       }
 
       try {
-        // Try to get from Supabase first
-        const data = await getParkingById(parkingId);
+        // Try to get from Supabase first with retry
+        const data = await withRetry(() => getParkingById(parkingId));
         
         if (data) {
           setParking(data);
@@ -173,7 +192,7 @@ export function BookingPage() {
     setError(null);
 
     try {
-      const booking: Booking = await createBooking({
+      const booking: Booking = await withRetry(() => createBooking({
         user_id: user.id,
         parking_id: parking.id,
         start_date: startDate,
@@ -186,7 +205,7 @@ export function BookingPage() {
         car_number: carNumber.toUpperCase(),
         total_price: totalPrice,
         status: 'pending',
-      });
+      }), 5);
 
       // Navigate to confirmation page
       navigate(`/booking/confirm?bookingId=${booking.id}`);
