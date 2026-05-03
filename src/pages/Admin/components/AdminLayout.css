@@ -205,4 +205,26 @@
   .admin-content {
     padding: 16px;
   }
+
+  .admin-header {
+    padding: 16px;
+  }
+
+  .admin-header h1 {
+    font-size: 20px;
+  }
+
+  .admin-back-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  .admin-user-info,
+  .admin-logout-btn {
+    margin-bottom: 8px;
+  }
+
+  .admin-logout-btn {
+    min-height: 44px;
+  }
 }

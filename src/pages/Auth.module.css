@@ -130,3 +130,48 @@
   font-size: var(--font-size-small);
   text-align: center;
 }
+
+@media (max-width: 480px) {
+  .authPage {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 100px;
+  }
+
+  .authCard {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .form {
+    gap: 16px;
+  }
+
+  .field input {
+    padding: 14px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  .submitButton {
+    min-height: 52px;
+    font-size: 18px;
+  }
+
+  .divider {
+    margin: 24px 0;
+  }
+
+  .footer {
+    margin-top: 24px;
+    font-size: 14px;
+  }
+}

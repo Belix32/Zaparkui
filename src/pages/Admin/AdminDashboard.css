@@ -182,3 +182,44 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .admin-stat-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .admin-stat-value {
+    font-size: 1.5rem;
+  }
+
+  .admin-stat-label {
+    font-size: 0.8rem;
+  }
+
+  .admin-card {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .admin-card h3 {
+    font-size: 20px;
+  }
+
+  .admin-quick-action {
+    min-height: 44px;
+    padding: 12px;
+  }
+
+  .admin-dashboard-grid {
+    gap: 16px;
+  }
+}

@@ -441,3 +441,58 @@
     width: 100%;
   }
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .admin-bookings .admin-card {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .admin-filters-row {
+    padding: 16px;
+  }
+
+  .admin-card h3 {
+    font-size: 20px;
+  }
+
+  .admin-filter-btn,
+  .admin-filter-reset {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+
+  .admin-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    white-space: nowrap;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px;
+  }
+
+  .admin-action-btn {
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .admin-pagination {
+    padding: 16px;
+  }
+
+  .admin-modal {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .admin-modal-content {
+    padding: 16px;
+  }
+}

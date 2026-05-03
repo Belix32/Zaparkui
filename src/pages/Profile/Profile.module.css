@@ -301,23 +301,87 @@
 }
 
 @media (max-width: 640px) {
+  .profile {
+    padding-top: 80px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: stretch;
+  }
+  
+  .userCard {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--spacing-lg);
+    max-width: 100%;
+  }
+  
+  .avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+  
+  .userInfo {
+    width: 100%;
+  }
+  
+  .userStats {
+    justify-content: center;
+  }
+  
   .item {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-md);
+    padding: var(--spacing-md);
   }
   
   .itemActions {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  
+  .itemActions a,
+  .itemActions button {
+    flex: 1;
+    min-width: 100px;
+  }
+  
+  .itemDetails {
+    flex-wrap: wrap;
   }
   
   .tabs {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .tabs::-webkit-scrollbar {
+    display: none;
   }
   
   .tab {
     padding: var(--spacing-sm) var(--spacing-md);
     white-space: nowrap;
+    font-size: var(--font-size-small);
+  }
+  
+  .historyItem {
+    padding: var(--spacing-sm);
+  }
+  
+  .historyMain {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+  
+  .historyDate {
+    font-size: 12px;
   }
 }
