@@ -1,0 +1,122 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-md);
+  background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.title {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-size-body);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.field label {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field input {
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
+  transition: border-color var(--transition-fast);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field input:disabled {
+  background: var(--bg-secondary);
+  cursor: not-allowed;
+}
+
+.error {
+  padding: var(--spacing-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  font-size: var(--font-size-small);
+  text-align: center;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  margin-top: var(--spacing-sm);
+}
+
+.footer {
+  margin-top: var(--spacing-xl);
+  text-align: center;
+}
+
+.backLink {
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--spacing-lg);
+  }
+}

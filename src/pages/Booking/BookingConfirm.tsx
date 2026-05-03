@@ -110,8 +110,8 @@ export function BookingConfirm() {
           throw new Error('Ошибка обновления бронирования');
         }
 
-        // Navigate to success page
-        navigate(`/booking/success?bookingId=${booking.id}`);
+        // Navigate to payment coming soon page
+        navigate(`/payment-soon?bookingId=${booking.id}`);
       }
     } catch (err) {
       console.error('Payment error:', err);

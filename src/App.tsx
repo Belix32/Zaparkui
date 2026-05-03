@@ -24,6 +24,12 @@ const BookingConfirm = lazy(() => import('./pages/Booking/BookingConfirm').then(
 const BookingSuccess = lazy(() => import('./pages/Booking/BookingSuccess').then(m => ({ default: m.BookingSuccess })));
 const BookingsHistory = lazy(() => import('./pages/Profile/BookingsHistory').then(m => ({ default: m.BookingsHistory })));
 
+// Admin login
+const AdminLogin = lazy(() => import('./pages/AdminLogin/AdminLogin').then(m => ({ default: m.AdminLogin })));
+
+// Payment coming soon
+const PaymentComingSoon = lazy(() => import('./pages/PaymentComingSoon/PaymentComingSoon').then(m => ({ default: m.PaymentComingSoon })));
+
 // Loading fallback component
 function PageLoader() {
   return (
@@ -74,7 +80,9 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             {/* Admin routes - lazy loaded */}
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/payment-soon" element={<PaymentComingSoon />} />
             <Route path="/admin/parkings" element={<AdminParkings />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/bookings" element={<AdminBookings />} />

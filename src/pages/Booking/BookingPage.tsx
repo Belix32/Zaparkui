@@ -6,6 +6,25 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingPage.module.css';
 
+// Validate Russian license plate
+// Format: А123ВС (7 chars) or А123ВС777 (8 chars)
+function validateLicensePlate(plate: string): { valid: boolean; error?: string } {
+  const cleaned = plate.toUpperCase().replace(/[^А-ЯЁA-Z0-9]/g, '');
+  
+  if (cleaned.length < 6) {
+    return { valid: false, error: 'Госномер слишком короткий' };
+  }
+  
+  // Russian plate pattern: 1-2 letters + 3 digits + 2-3 letters (optional region)
+  const plateRegex = /^[А-ЯЁ]{1,2}\d{3}[А-ЯЁ]{2}(\d{2,3})?$/;
+  
+  if (!plateRegex.test(cleaned)) {
+    return { valid: false, error: 'Неверный формат госномера. Пример: А123ВС или А123ВС777' };
+  }
+  
+  return { valid: true };
+}
+
 /**
  * BookingPage - Main booking page
  * Allows user to select date, time, booking type, and car for parking reservation
@@ -128,8 +147,25 @@ export function BookingPage() {
       return;
     }
 
-    if (!carBrand || !carModel || !carNumber) {
-      setError('Заполните данные об автомобиле');
+    if (!carBrand || carBrand.trim().length < 2) {
+      setError('Укажите марку автомобиля');
+      return;
+    }
+    
+    if (!carModel || carModel.trim().length < 2) {
+      setError('Укажите модель автомобиля');
+      return;
+    }
+    
+    if (!carNumber || carNumber.trim().length < 5) {
+      setError('Укажите госномер автомобиля');
+      return;
+    }
+    
+    // Validate license plate format
+    const plateValidation = validateLicensePlate(carNumber);
+    if (!plateValidation.valid) {
+      setError(plateValidation.error || 'Неверный формат госномера');
       return;
     }
 
