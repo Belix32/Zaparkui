@@ -207,9 +207,11 @@ export function getSupabaseClient(): SupabaseClient {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
+      debug: false,
     },
     global: {
       headers: {
+        'apikey': supabaseAnonKey,
         'x-client-info': 'zaparkyi-web',
       },
     },
@@ -451,22 +453,49 @@ export async function deleteParking(id: string): Promise<void> {
 }
 
 /**
- * Create a new booking
+ * Create a new booking with retry logic for auth lock issues
  */
-export async function createBooking(booking: BookingInsert): Promise<Booking> {
+export async function createBooking(booking: BookingInsert, retries = 3): Promise<Booking> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
-    .from('bookings')
-    .insert(booking as any)
-    .select()
-    .single();
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      // Small delay between retries to avoid lock conflicts
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      }
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert(booking as any)
+        .select()
+        .single();
 
-  if (error) {
-    console.error('Error creating booking:', error);
-    throw new Error(error.message);
+      if (error) {
+        // Check if it's a lock error
+        if (error.message?.includes('Lock')) {
+          lastError = new Error(error.message);
+          continue; // Retry
+        }
+        console.error('Error creating booking:', error);
+        throw new Error(error.message);
+      }
+
+      return data as Booking;
+    } catch (err: any) {
+      // Check if it's a retryable error
+      if (err?.message?.includes('Lock') || err?.message?.includes('claim')) {
+        lastError = err;
+        continue; // Retry
+      }
+      throw err;
+    }
   }
-
-  return data as Booking;
+  
+  // All retries failed
+  console.error('All booking creation retries failed:', lastError);
+  throw lastError || new Error('Не удалось создать бронирование. Попробуйте ещё раз.');
 }
 
 /**

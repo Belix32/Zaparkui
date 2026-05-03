@@ -190,9 +190,15 @@ export function BookingPage() {
 
       // Navigate to confirmation page
       navigate(`/booking/confirm?bookingId=${booking.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating booking:', err);
-      setError('Ошибка создания бронирования. Попробуйте снова.');
+      
+      // Check for auth lock error
+      if (err?.message?.includes('Lock') || err?.message?.includes('claim')) {
+        setError('Ошибка подключения. Попробуйте ещё раз через несколько секунд.');
+      } else {
+        setError(err?.message || 'Ошибка создания бронирования. Попробуйте снова.');
+      }
     } finally {
       setSubmitting(false);
     }
