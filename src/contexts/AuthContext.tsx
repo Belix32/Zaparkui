@@ -154,82 +154,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Initialize Supabase client and set up auth listener
     const initializeAuth = async () => {
-      try {
-        // Check FIRST if Supabase is configured
-        if (!isSupabaseConfigured()) {
-          console.log('Supabase not configured - demo mode');
-          // Load from localStorage in demo mode - with session expiry check
-          const sessionUser = loadUserSession();
-          if (sessionUser) {
-            setUser(sessionUser);
-          }
-          setIsLoading(false);
-          return;
+      // Always try localStorage first as instant fallback
+      const localUser = loadUserSession();
+      
+      if (!isSupabaseConfigured()) {
+        console.log('Supabase not configured - demo mode');
+        if (localUser) {
+          setUser(localUser);
         }
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('Supabase configured - initializing auth');
+      const supabaseClient = getSupabaseClient();
+      
+      try {
+        // Get session with timeout
+        const sessionPromise = supabaseClient.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth timeout')), 5000)
+        );
         
-        console.log('Supabase configured - initializing auth');
-        const supabaseClient = getSupabaseClient();
-        
-        // Get initial session
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        // Race between Supabase and timeout
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
         
         if (session?.user) {
           // Fetch user profile from users table - try multiple methods
           let userData = null;
           
-          // Try by auth_id first
-          const { data: userByAuthId } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('auth_id', session.user.id)
-            .single();
-          
-          if (userByAuthId) {
-            userData = userByAuthId;
-          } else {
-            // Fallback: try by email
-            const { data: userByEmail } = await supabaseClient
+          try {
+            const { data: userByAuthId } = await supabaseClient
               .from('users')
               .select('*')
-              .eq('email', session.user.email)
+              .eq('auth_id', session.user.id)
               .single();
             
-            if (userByEmail) {
-              userData = userByEmail;
+            if (userByAuthId) {
+              userData = userByAuthId;
+            } else {
+              const { data: userByEmail } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('email', session.user.email)
+                .single();
+              
+              if (userByEmail) {
+                userData = userByEmail;
+              }
             }
+          } catch (profileErr) {
+            console.log('Profile fetch failed, using local fallback');
           }
 
           if (userData) {
-            // Create user object with role from database
-            setUser({
+            const userObj = {
               id: session.user.id,
               name: userData.name || session.user.email?.split('@')[0] || 'Пользователь',
               email: userData.email || session.user.email || '',
               phone: userData.phone || '',
               created_at: userData.created_at,
               role: userData.role || 'user',
-            });
-          }
-        }
-
-        // Load parking data from localStorage (local backup)
-        const storedParkings = localStorage.getItem(PARKING_KEY);
-        if (storedParkings) {
-          try {
-            const parsed = JSON.parse(storedParkings);
-            if (Array.isArray(parsed)) {
-              setMyParkings(parsed);
+            };
+            setUser(userObj);
+            // Save to localStorage for reliability
+            saveUserSession(userObj);
+          } else {
+            // Use localStorage fallback
+            if (localUser) {
+              setUser(localUser);
             }
-          } catch (e) {
-            localStorage.removeItem(PARKING_KEY);
+          }
+        } else {
+          // No Supabase session - use localStorage
+          if (localUser) {
+            setUser(localUser);
           }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        // Fallback to localStorage if Supabase fails
-        const sessionUser = loadUserSession();
-        if (sessionUser) {
-          setUser(sessionUser);
+        // Always fallback to localStorage if anything fails
+        if (localUser) {
+          setUser(localUser);
         }
       } finally {
         setIsLoading(false);
@@ -386,24 +395,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        if (userData) {
-          setUser({
-            id: data.user.id,
-            name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
-            email: userData.email || data.user.email || email,
-            phone: userData.phone || '',
-            created_at: userData.created_at,
-            role: userData.role || 'user',
-          });
-        } else {
-          // No profile found - create basic user
-          setUser({
-            id: data.user.id,
-            name: data.user.email?.split('@')[0] || 'User',
-            email: data.user.email || email,
-            phone: '',
-          });
-        }
+        const userObj = userData ? {
+          id: data.user.id,
+          name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
+          email: userData.email || data.user.email || email,
+          phone: userData.phone || '',
+          created_at: userData.created_at,
+          role: userData.role || 'user',
+        } : {
+          id: data.user.id,
+          name: data.user.email?.split('@')[0] || 'User',
+          email: data.user.email || email,
+          phone: '',
+        };
+        
+        setUser(userObj);
+        saveUserSession(userObj);
       }
 
       return { success: true };
