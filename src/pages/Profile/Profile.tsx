@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { parkings as staticParkings } from '../../data/parkings';
 import { Parking } from '../../lib/supabase';
 import { useFavorites, useSearchHistory } from '../../hooks';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './Profile.module.css';
 
@@ -12,8 +13,9 @@ import styles from './Profile.module.css';
  */
 export function Profile() {
   const { favorites, loading: favoritesLoading, clearFavorites, removeFavorite } = useFavorites();
+  const { user: authUser, myParkings } = useAuth();
   const { history, loading: historyLoading, clearHistory, removeFromHistory } = useSearchHistory();
-  const [activeTab, setActiveTab] = useState<'favorites' | 'history'>('favorites');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'parkings'>('favorites');
   
   // Get favorite parkings data
   const [favoriteParkings, setFavoriteParkings] = useState<Parking[]>([]);
@@ -51,13 +53,33 @@ export function Profile() {
     });
   };
 
+  const userInitials = authUser?.name 
+    ? authUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : authUser?.email?.[0].toUpperCase() || 'U';
+
   return (
     <section className={styles.profile}>
       <div className="container">
         <div className={styles.header}>
-          <h1 className={`title-h1 ${styles.title}`}>Личный кабинет</h1>
+          <div className={styles.userCard}>
+            <div className={styles.avatar}>{userInitials}</div>
+            <div className={styles.userInfo}>
+              <div className={styles.userName}>{authUser?.name || authUser?.email || 'Пользователь'}</div>
+              <div className={styles.userEmail}>{authUser?.email}</div>
+              <div className={styles.userStats}>
+                <div className={styles.userStat}>
+                  <div className={styles.userStatValue}>{myParkings?.length || 0}</div>
+                  <div className={styles.userStatLabel}>Мои парковки</div>
+                </div>
+                <div className={styles.userStat}>
+                  <div className={styles.userStatValue}>{favorites.length}</div>
+                  <div className={styles.userStatLabel}>Избранное</div>
+                </div>
+              </div>
+            </div>
+          </div>
           <Button 
-            variant="ghost" 
+            variant="secondary" 
             size="small"
             onClick={() => alert('Редактирование профиля: скоро!')}
           >
@@ -101,6 +123,19 @@ export function Profile() {
             </svg>
             Мои бронирования
           </Link>
+          <button
+            className={`${styles.tab} ${activeTab === 'parkings' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('parkings')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
+            </svg>
+            Мои парковки
+            {myParkings.length > 0 && (
+              <span className={styles.badge}>{myParkings.length}</span>
+            )}
+          </button>
         </div>
 
         {/* Favorites tab */}
@@ -258,6 +293,55 @@ export function Profile() {
                 <p>История поиска пуста</p>
                 <Link to="/catalog">
                   <Button variant="primary">Начать поиск</Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* My Parkings tab */}
+        {activeTab === 'parkings' && (
+          <div className={styles.content}>
+            {myParkings.length > 0 ? (
+              <div className={styles.list}>
+                {myParkings.map((parking) => (
+                  <div key={parking.id} className={styles.item}>
+                    <div className={styles.itemInfo}>
+                      <h3 className={styles.itemTitle}>{parking.title}</h3>
+                      <p className={styles.itemAddress}>{parking.address}</p>
+                      <div className={styles.itemDetails}>
+                        <span className={styles.itemPrice}>
+                          {parking.price.toLocaleString('ru-RU')} ₽/мес
+                        </span>
+                        <span className={styles.itemSpots}>
+                          {parking.spots} мест
+                        </span>
+                        {parking.latitude && (
+                          <span className={styles.itemCoords}>
+                            📍 На карте
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.itemActions}>
+                      <Link to={`/catalog/${parking.id}`}>
+                        <Button variant="secondary" size="small">
+                          Редактировать
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
+                </svg>
+                <p>У вас пока нет парковок</p>
+                <Link to="/dashboard">
+                  <Button variant="primary">Добавить парковку</Button>
                 </Link>
               </div>
             )}

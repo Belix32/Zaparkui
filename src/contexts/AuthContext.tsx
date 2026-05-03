@@ -3,7 +3,8 @@ import {
   getSupabaseClient,
   User as SupabaseUser,
   isSupabaseConfigured,
-  createParking as createParkingDb
+  createParking as createParkingDb,
+  geocodeAddress
 } from '../lib/supabase';
 
 export interface User {
@@ -39,6 +40,8 @@ export interface ParkingItem {
   spots: number;
   description?: string;
   image?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -497,6 +500,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const supabase = getSupabaseClient();
+      
+      // Geocode address to get coordinates
+      const coords = await geocodeAddress(parking.address);
+      
       const { data, error } = await supabase
         .from('parkings')
         .insert({
@@ -508,6 +515,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           owner_id: user.id,
           owner_email: user.email,
           is_active: true,
+          latitude: coords?.latitude,
+          longitude: coords?.longitude,
         })
         .select()
         .single();

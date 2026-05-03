@@ -362,6 +362,43 @@ function toRad(deg: number): number {
 }
 
 /**
+ * Geocode address to coordinates using Nominatim (OpenStreetMap)
+ * Returns null if not found
+ */
+export async function geocodeAddress(address: string): Promise<{ latitude: number; longitude: number } | null> {
+  try {
+    const encodedAddress = encodeURIComponent(address + ', Москва, Россия');
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'Zaparkyi/1.0',
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      console.error('Geocoding failed:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      return {
+        latitude: parseFloat(data[0].lat),
+        longitude: parseFloat(data[0].lon),
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return null;
+  }
+}
+
+/**
  * Create a new parking (admin)
  */
 export async function createParking(parking: ParkingInsert): Promise<Parking> {
