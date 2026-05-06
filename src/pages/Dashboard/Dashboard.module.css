@@ -385,3 +385,50 @@
     font-size: 16px;
   }
 }
+
+/* Amenities */
+.amenitiesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.amenityCheckbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.amenityCheckbox:hover {
+  border-color: var(--accent);
+}
+
+.amenityCheckbox input {
+  display: none;
+}
+
+.amenityCheckbox:has(input:checked) {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.amenityIcon {
+  font-size: 18px;
+}
+
+.amenityLabel {
+  font-size: var(--font-size-small);
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .amenitiesGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -74,6 +74,27 @@ export function Dashboard() {
   const [district, setDistrict] = useState('');
   const [metro, setMetro] = useState('');
   const [parkingType, setParkingType] = useState('');
+  const [amenities, setAmenities] = useState<string[]>([]);
+
+  // Available amenities options
+  const amenityOptions = [
+    { id: 'security', label: 'Охрана', icon: '🛡️' },
+    { id: 'cctv', label: 'Видеонаблюдение', icon: '📹' },
+    { id: 'ev_charging', label: 'Электрозарядка', icon: '⚡' },
+    { id: 'access_24_7', label: 'Круглосуточный доступ', icon: '🕐' },
+    { id: 'covered', label: 'Крытая', icon: '🏢' },
+    { id: 'heated', label: 'Отопление', icon: '🔥' },
+    { id: 'car_wash', label: 'Мойка', icon: '🚗' },
+    { id: 'tire_service', label: 'Шиномонтаж', icon: '🔧' },
+  ];
+
+  const toggleAmenity = (id: string) => {
+    setAmenities(prev => 
+      prev.includes(id) 
+        ? prev.filter(a => a !== id)
+        : [...prev, id]
+    );
+  };
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" />;
@@ -126,6 +147,10 @@ export function Dashboard() {
         spots: spotsCheck.value,
         description: sanitizedDescription || undefined,
         image: imageUrl || undefined,
+        district: district || undefined,
+        metro: metro || undefined,
+        parkingType: parkingType || undefined,
+        amenities: amenities.length > 0 ? amenities : undefined,
       });
       
       recordParkingAddition(user.id);
@@ -138,6 +163,9 @@ export function Dashboard() {
       setDescription('');
       setImageUrl('');
       setDistrict('');
+      setMetro('');
+      setParkingType('');
+      setAmenities([]);
       setMetro('');
       setParkingType('');
       setDescription('');
@@ -379,6 +407,25 @@ export function Dashboard() {
                       <option value="covered">Крытая</option>
                     </select>
                   </div>
+                  
+                  {/* Amenities */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Удобства</label>
+                    <div className={styles.amenitiesGrid}>
+                      {amenityOptions.map(option => (
+                        <label key={option.id} className={styles.amenityCheckbox}>
+                          <input
+                            type="checkbox"
+                            checked={amenities.includes(option.id)}
+                            onChange={() => toggleAmenity(option.id)}
+                          />
+                          <span className={styles.amenityIcon}>{option.icon}</span>
+                          <span className={styles.amenityLabel}>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
                   <Textarea
                     label="Описание (необязательно)"
                     placeholder="Дополнительная информация о парковке..."

@@ -453,6 +453,40 @@ export async function deleteParking(id: string): Promise<void> {
 }
 
 /**
+ * Check if parking is available for booking dates
+ */
+export async function checkParkingAvailability(
+  parkingId: string, 
+  startDate: string, 
+  endDate: string
+): Promise<{ available: boolean; message: string }> {
+  const supabase = getSupabaseClient();
+  
+  // Check for existing confirmed/active bookings that overlap
+  const { data: existingBookings, error } = await supabase
+    .from('bookings')
+    .select('id, start_date, end_date, spots')
+    .eq('parking_id', parkingId)
+    .in('status', ['pending', 'confirmed', 'active'])
+    .or(`start_date.lte.${endDate},end_date.gte.${startDate}`)
+    .limit(10);
+  
+  if (error) {
+    console.error('Error checking availability:', error);
+    return { available: true, message: '' }; // Allow on error
+  }
+  
+  if (existingBookings && existingBookings.length > 0) {
+    return { 
+      available: false, 
+      message: 'На эти даты уже есть бронирование. Выберите другие даты.' 
+    };
+  }
+  
+  return { available: true, message: '' };
+}
+
+/**
  * Create a new booking with retry logic for auth lock issues
  */
 export async function createBooking(booking: BookingInsert, retries = 3): Promise<Booking> {

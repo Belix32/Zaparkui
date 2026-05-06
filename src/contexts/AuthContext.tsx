@@ -42,6 +42,10 @@ export interface ParkingItem {
   image?: string;
   latitude?: number;
   longitude?: number;
+  district?: string;
+  metro?: string;
+  parkingType?: string;
+  amenities?: string[];
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -595,6 +599,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           is_active: true,
           latitude: coords?.latitude,
           longitude: coords?.longitude,
+          district: parking.district || null,
+          metro: parking.metro || null,
+          parking_type: parking.parkingType || null,
         })
         .select()
         .single();

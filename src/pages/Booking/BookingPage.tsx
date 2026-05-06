@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
-import { getParkingById, Parking, createBooking, Booking } from '../../lib/supabase';
+import { getParkingById, Parking, createBooking, Booking, checkParkingAvailability } from '../../lib/supabase';
 import { parkings } from '../../data/parkings';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
@@ -165,6 +165,30 @@ export function BookingPage() {
       setError('Выберите даты бронирования');
       return;
     }
+    
+    // Validate dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    
+    if (startDateObj < today) {
+      setError('Дата начала не может быть в прошлом');
+      return;
+    }
+    
+    if (endDateObj < startDateObj) {
+      setError('Дата окончания должна быть позже даты начала');
+      return;
+    }
+    
+    // Validate minimum booking period
+    const minDays = bookingType === 'hourly' ? 0 : bookingType === 'daily' ? 1 : 30;
+    const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+    if (bookingType === 'monthly' && daysDiff < 30) {
+      setError('Минимальный срок аренды на месяц - 30 дней');
+      return;
+    }
 
     if (!carBrand || carBrand.trim().length < 2) {
       setError('Укажите марку автомобиля');
@@ -192,6 +216,14 @@ export function BookingPage() {
     setError(null);
 
     try {
+      // Check parking availability before booking
+      const availability = await checkParkingAvailability(parking.id, startDate, endDate);
+      if (!availability.available) {
+        setError(availability.message);
+        setSubmitting(false);
+        return;
+      }
+      
       const booking: Booking = await withRetry(() => createBooking({
         user_id: user.id,
         parking_id: parking.id,
