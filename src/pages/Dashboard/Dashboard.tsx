@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button, Input, Textarea } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
+import { uploadParkingImage } from '../../lib/supabase';
 import styles from './Dashboard.module.css';
 
 type Tab = 'parkings' | 'add' | 'history';
@@ -140,13 +141,26 @@ export function Dashboard() {
     }
     
     try {
+      // Upload image to Supabase Storage if file selected
+      let imageUrlToSave = undefined;
+      if (imageFile) {
+        try {
+          setFormError('Загрузка изображения...');
+          imageUrlToSave = await uploadParkingImage(imageFile);
+        } catch (uploadErr) {
+          console.error('Image upload error:', uploadErr);
+          setFormError('Ошибка загрузки изображения. Парковка будет создана без фото.');
+          // Continue without image
+        }
+      }
+      
       await addParking({
         title: sanitizedTitle,
         address: sanitizedAddress,
         price: priceCheck.value,
         spots: spotsCheck.value,
         description: sanitizedDescription || undefined,
-        image: imageUrl || undefined,
+        image: imageUrlToSave,
         district: district || undefined,
         metro: metro || undefined,
         parkingType: parkingType || undefined,

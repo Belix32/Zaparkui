@@ -453,6 +453,40 @@ export async function deleteParking(id: string): Promise<void> {
 }
 
 /**
+ * Upload image to Supabase Storage
+ */
+export async function uploadParkingImage(file: File): Promise<string> {
+  const supabase = getSupabaseClient();
+  
+  // Generate unique filename
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const extension = file.name.split('.').pop() || 'jpg';
+  const fileName = `parking-${timestamp}-${random}.${extension}`;
+  
+  // Upload to Storage
+  const { data, error } = await supabase.storage
+    .from('parking-images')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type,
+    });
+  
+  if (error) {
+    console.error('Error uploading image:', error);
+    throw new Error('Ошибка загрузки изображения');
+  }
+  
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('parking-images')
+    .getPublicUrl(fileName);
+  
+  return urlData.publicUrl;
+}
+
+/**
  * Check if parking is available for booking dates
  */
 export async function checkParkingAvailability(
