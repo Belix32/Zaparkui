@@ -7,6 +7,7 @@
   ],
   "env": {
     "VITE_SUPABASE_URL": "https://hkllkcctnasaybjapmtk.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "sb_publishable_MLrWmpCmyE7Wx2vI7HwEnQ_JuZWIQAY"
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_MLrWmpCmyE7Wx2vI7HwEnQ_JuZWIQAY",
+    "VITE_ADMIN_EMAIL": "ilya.cheplya@yandex.ru"
   }
 }

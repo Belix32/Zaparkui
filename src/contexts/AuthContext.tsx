@@ -103,11 +103,34 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+// Get admin email from environment variable
+function getAdminEmail(): string {
+  return import.meta.env.VITE_ADMIN_EMAIL || '';
+}
+
+// Check if user is admin by email
+function isAdminEmail(email: string): boolean {
+  const adminEmail = getAdminEmail();
+  if (!adminEmail) return false;
+  return email.toLowerCase().trim() === adminEmail.toLowerCase().trim();
+}
+
 // Security: Validate password strength
 function isValidPassword(password: string): { valid: boolean; error: string } {
-  if (password.length < 6) {
-    return { valid: false, error: 'Пароль должен быть не менее 6 символов' };
+  if (password.length < 8) {
+    return { valid: false, error: 'Пароль должен быть не менее 8 символов' };
   }
+  
+  // Check for at least one number
+  if (!/\d/.test(password)) {
+    return { valid: false, error: 'Пароль должен содержать хотя бы одну цифру' };
+  }
+  
+  // Check for at least one uppercase letter
+  if (!/[A-ZА-Я]/.test(password)) {
+    return { valid: false, error: 'Пароль должен содержать хотя бы одну заглавную букву' };
+  }
+  
   return { valid: true, error: '' };
 }
 
@@ -347,7 +370,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('Using Supabase auth');
     try {
       const supabaseClient = getSupabaseClient();
-      console.log('Attempting login with:', email.toLowerCase().trim());
+      console.log('Attempting login');
       
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
@@ -461,14 +484,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       // Check if this is the admin email
-      const isAdminEmail = email.toLowerCase().trim() === 'ilya.cheplya@yandex.ru';
+      const isAdmin = isAdminEmail(email);
       
       const mockUser: User = {
         id: generateSecureToken().substring(0, 16),
         name: name.trim(),
         email: email.toLowerCase().trim(),
         phone: phone.trim(),
-        role: isAdminEmail ? 'admin' : 'user',
+        role: isAdminEmail(email) ? 'admin' : 'user',
       };
       setUser(mockUser);
       saveUserSession(mockUser);
@@ -503,7 +526,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: normalizedEmail,
             name: sanitizeInput(name.trim()),
             phone: phone.trim(),
-            role: normalizedEmail === 'ilya.cheplya@yandex.ru' ? 'admin' : 'user',
+            role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
           });
 
         if (profileError) {
@@ -516,7 +539,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: sanitizeInput(name.trim()),
           email: normalizedEmail,
           phone: phone.trim(),
-          role: normalizedEmail === 'ilya.cheplya@yandex.ru' ? 'admin' : 'user',
+          role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
         });
 
         return { success: true };
