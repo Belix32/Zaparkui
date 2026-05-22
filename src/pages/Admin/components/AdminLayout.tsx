@@ -9,12 +9,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/admin', label: 'Дашборд', icon: '📊' },
-  { path: '/admin/parkings', label: 'Парковки', icon: '🅿️' },
-  { path: '/admin/users', label: 'Пользователи', icon: '👥' },
-  { path: '/admin/bookings', label: 'Бронирования', icon: '📅' },
-  { path: '/admin/reviews', label: 'Отзывы', icon: '⭐' },
-  { path: '/admin/settings', label: 'Настройки', icon: '⚙️' },
+  { path: '/admin', label: 'Дашборд', icon: '' },
+  { path: '/admin/parkings', label: 'Парковки', icon: '' },
+  { path: '/admin/users', label: 'Пользователи', icon: '' },
+  { path: '/admin/bookings', label: 'Бронирования', icon: '' },
+  { path: '/admin/reviews', label: 'Отзывы', icon: '' },
+  { path: '/admin/settings', label: 'Настройки', icon: '' },
 ];
 
 interface AdminLayoutProps {
@@ -33,7 +33,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (!hasAdminAccess) {
     return (
       <div className="admin-unauthorized">
-        <h1>⛔ Доступ запрещен</h1>
+        <h1>Доступ запрещен</h1>
         <p>У вас нет прав для просмотра этой страницы.</p>
         <button onClick={() => navigate('/')}>На главную</button>
       </div>
@@ -44,7 +44,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <h2>🅿️ Zaparkyi</h2>
+          <h2>Zaparkyi</h2>
           <span className="admin-badge">{user?.role === 'admin' ? 'Админ' : 'Модератор'}</span>
         </div>
         

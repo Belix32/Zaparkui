@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
-import { getParkingById, Parking, createBooking, Booking, checkParkingAvailability } from '../../lib/supabase';
+import { getParkingById, Parking, createBooking, Booking, checkParkingAvailability, isSupabaseConfigured } from '../../lib/supabase';
 import { parkings } from '../../data/parkings';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
@@ -214,6 +214,33 @@ export function BookingPage() {
 
     setSubmitting(true);
     setError(null);
+
+    // Demo mode: skip Supabase, use localStorage
+    if (!isSupabaseConfigured()) {
+      const fakeId = `demo_booking_${Date.now()}`;
+      const mockBooking: Booking = {
+        id: fakeId,
+        user_id: user.id,
+        parking_id: parking.id,
+        start_date: startDate,
+        end_date: endDate,
+        start_time: startTime,
+        end_time: endTime,
+        booking_type: bookingType,
+        car_brand: carBrand,
+        car_model: carModel,
+        car_number: carNumber.toUpperCase(),
+        total_price: totalPrice,
+        status: 'pending',
+        payment_status: 'pending',
+        created_at: new Date().toISOString(),
+      };
+      const existing = JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]');
+      existing.push(mockBooking);
+      localStorage.setItem('zaparkyi_bookings', JSON.stringify(existing));
+      navigate(`/booking/confirm?bookingId=${fakeId}`);
+      return;
+    }
 
     try {
       // Check parking availability before booking

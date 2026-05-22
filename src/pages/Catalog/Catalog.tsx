@@ -135,15 +135,7 @@ export function Catalog() {
     }
     
     return filtered;
-  }, [search, filters, userLatitude, userLongitude, parkings]);
-
-  useEffect(() => {
-    // Only apply static filtering when using demo data
-    if (useStaticData) {
-      setParkings(filteredStaticParkings());
-    }
-    // When Supabase is not configured, parkings already come from localStorage filtered
-  }, [search, filters, useStaticData, filteredStaticParkings]);
+  }, [search, filters, userLatitude, userLongitude]);
 
   useEffect(() => {
     loadParkings();

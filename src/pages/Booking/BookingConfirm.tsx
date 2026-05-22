@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getSupabaseClient, Booking, Parking, getParkingById } from '../../lib/supabase';
+import { getSupabaseClient, Booking, Parking, getParkingById, isSupabaseConfigured } from '../../lib/supabase';
 import { createPayment, PaymentMethod } from '../../lib/payments/yookassa';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
@@ -30,6 +30,22 @@ export function BookingConfirm() {
     const loadData = async () => {
       if (!bookingId) {
         setError('ID бронирования не указан');
+        setLoading(false);
+        return;
+      }
+
+      if (!isSupabaseConfigured()) {
+        const stored = localStorage.getItem('zaparkyi_demo_booking');
+        if (stored) {
+          const mockBooking: Booking = JSON.parse(stored);
+          setBooking(mockBooking);
+          if (mockBooking.parking_id) {
+            const parkingData = await getParkingById(mockBooking.parking_id);
+            setParking(parkingData);
+          }
+        } else {
+          setError('Бронирование не найдено');
+        }
         setLoading(false);
         return;
       }
@@ -68,15 +84,23 @@ export function BookingConfirm() {
     loadData();
   }, [bookingId]);
 
-  // Handle payment with YooKassa mock
   const handlePayment = useCallback(async () => {
     if (!booking || !user) return;
 
     setProcessingPayment(true);
     setError(null);
 
+    if (!isSupabaseConfigured()) {
+      const paidBooking = { ...booking, status: 'confirmed', payment_status: 'paid', payment_method: selectedPayment, qr_code: `ZAPARKYI:${booking.id}:${booking.parking_id}` };
+      const existing = JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]');
+      existing.unshift(paidBooking);
+      localStorage.setItem('zaparkyi_bookings', JSON.stringify(existing));
+      navigate(`/booking/success?bookingId=${booking.id}`);
+      setProcessingPayment(false);
+      return;
+    }
+
     try {
-      // Create payment via YooKassa mock
       const payment = await createPayment({
         amount: {
           value: booking.total_price || 0,
@@ -86,15 +110,19 @@ export function BookingConfirm() {
         description: `Бронирование #${booking.id}`,
         bookingId: booking.id,
         userId: user.id,
+        returnUrl: `${window.location.origin}/payment-soon?bookingId=${booking.id}`,
       });
 
-      // If payment successful (always true in mock), update booking
-      if (payment.status === 'success') {
+      if (payment.confirmationUrl) {
+        window.location.href = payment.confirmationUrl;
+        return;
+      }
+
+      if (payment.status === 'succeeded') {
         const supabase = getSupabaseClient();
-        
-        // Generate QR code data
+
         const qrData = `ZAPARKYI:${booking.id}:${booking.parking_id}`;
-        
+
         const { error: updateError } = await supabase
           .from('bookings')
           .update({
@@ -110,8 +138,9 @@ export function BookingConfirm() {
           throw new Error('Ошибка обновления бронирования');
         }
 
-        // Navigate to payment coming soon page
-        navigate(`/payment-soon?bookingId=${booking.id}`);
+        navigate(`/booking/success?bookingId=${booking.id}`);
+      } else {
+        setError('Платеж не был завершен. Попробуйте снова.');
       }
     } catch (err) {
       console.error('Payment error:', err);

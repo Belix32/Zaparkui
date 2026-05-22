@@ -113,7 +113,7 @@ export function AdminSettings() {
       <div className="admin-settings">
         {/* Общие настройки */}
         <div className="admin-card">
-          <h3>⚙️ Общие настройки</h3>
+          <h3>Общие настройки</h3>
           <div className="admin-settings-grid">
             <div className="admin-settings-field">
               <label>Название сайта</label>
@@ -147,7 +147,7 @@ export function AdminSettings() {
 
         {/* Настройки бронирований */}
         <div className="admin-card">
-          <h3>📅 Настройки бронирований</h3>
+          <h3>Настройки бронирований</h3>
           <div className="admin-settings-grid">
             <div className="admin-settings-field">
               <label>Минимальная длительность (часы)</label>
@@ -194,7 +194,7 @@ export function AdminSettings() {
 
         {/* Настройки цен */}
         <div className="admin-card">
-          <h3>💰 Настройки цен</h3>
+          <h3>Настройки цен</h3>
           <div className="admin-settings-grid">
             <div className="admin-settings-field">
               <label>Комиссия платформы (%)</label>
@@ -231,7 +231,7 @@ export function AdminSettings() {
 
         {/* Модерация */}
         <div className="admin-card">
-          <h3>🛡️ Модерация</h3>
+          <h3>Модерация</h3>
           <div className="admin-settings-grid">
             <div className="admin-settings-field admin-settings-field-inline">
               <label className="checkbox-label">
@@ -267,7 +267,7 @@ export function AdminSettings() {
 
         {/* Опасная зона */}
         <div className="admin-card admin-card-danger">
-          <h3>⚠️ Опасная зона</h3>
+          <h3>Опасная зона</h3>
           <p className="admin-danger-warning">
             Внимание! Эти действия необратимы. Все данные будут удалены безвозвратно.
           </p>
@@ -276,25 +276,25 @@ export function AdminSettings() {
               className="admin-danger-btn"
               onClick={() => handleClearData('parkings')}
             >
-              🗑️ Очистить все парковки
+              Очистить все парковки
             </button>
             <button
               className="admin-danger-btn"
               onClick={() => handleClearData('bookings')}
             >
-              🗑️ Очистить все бронирования
+              Очистить все бронирования
             </button>
             <button
               className="admin-danger-btn"
               onClick={() => handleClearData('reviews')}
             >
-              🗑️ Очистить все отзывы
+              Очистить все отзывы
             </button>
             <button
               className="admin-danger-btn admin-danger-btn-all"
               onClick={() => handleClearData('all')}
             >
-              💀 Очистить все данные
+              Очистить все данные
             </button>
           </div>
         </div>

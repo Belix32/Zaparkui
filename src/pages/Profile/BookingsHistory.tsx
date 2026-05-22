@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getUserBookings, Booking, getParkingById, Parking, updateBookingStatus } from '../../lib/supabase';
+import { getUserBookings, Booking, getParkingById, Parking, updateBookingStatus, isSupabaseConfigured } from '../../lib/supabase';
+import { parkings as staticParkings } from '../../data/parkings';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';
 import styles from './BookingsHistory.module.css';
@@ -84,6 +85,7 @@ export function BookingsHistory() {
   const [parkingCache, setParkingCache] = useState<Record<string, Parking>>({});
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [extendingId, setExtendingId] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   // Load bookings
   useEffect(() => {
@@ -91,21 +93,35 @@ export function BookingsHistory() {
       if (!user) return;
 
       try {
-        const data = await getUserBookings(user.id);
-        setBookings(data);
+        if (!isSupabaseConfigured()) {
+          setIsDemo(true);
+          const stored: Booking[] = JSON.parse(localStorage.getItem('zaparkyi_bookings') || '[]');
+          const userBookings = stored.filter(b => b.user_id === user.id);
+          setBookings(userBookings);
 
-        // Load parking details for each booking
-        const parkingIds = [...new Set(data.map(b => b.parking_id))];
-        const cache: Record<string, Parking> = {};
-        
-        for (const parkingId of parkingIds) {
-          const parking = await getParkingById(parkingId);
-          if (parking) {
-            cache[parkingId] = parking;
+          const parkingIds = [...new Set(userBookings.map(b => b.parking_id))];
+          const cache: Record<string, Parking> = {};
+          for (const pid of parkingIds) {
+            const p = staticParkings.find(p => p.id === pid);
+            if (p) cache[pid] = p;
           }
+          setParkingCache(cache);
+        } else {
+          const data = await getUserBookings(user.id);
+          setBookings(data);
+
+          const parkingIds = [...new Set(data.map(b => b.parking_id))];
+          const cache: Record<string, Parking> = {};
+          
+          for (const parkingId of parkingIds) {
+            const parking = await getParkingById(parkingId);
+            if (parking) {
+              cache[parkingId] = parking;
+            }
+          }
+          
+          setParkingCache(cache);
         }
-        
-        setParkingCache(cache);
       } catch (err) {
         console.error('Error loading bookings:', err);
       } finally {
@@ -206,6 +222,13 @@ export function BookingsHistory() {
       <div className={styles.header}>
         <h2 className={styles.title}>Мои бронирования</h2>
       </div>
+
+      {/* Demo mode banner */}
+      {isDemo && (
+        <div className={styles.demoBanner}>
+          Режим демонстрации — данные загружены из локального хранилища
+        </div>
+      )}
 
       {/* Tabs */}
       <div className={styles.tabs}>

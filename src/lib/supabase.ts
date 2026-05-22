@@ -40,6 +40,8 @@ export interface ParkingInsert {
   amenities?: string[];
   latitude?: number;
   longitude?: number;
+  owner_id?: string;
+  owner_email?: string;
 }
 
 export interface ParkingUpdate {
@@ -60,7 +62,7 @@ export interface ParkingUpdate {
   status?: 'active' | 'inactive' | 'pending';
 }
 
-export interface User {
+export interface Profile {
   id: string;
   auth_id?: string;
   email: string;
@@ -405,9 +407,28 @@ export async function geocodeAddress(address: string): Promise<{ latitude: numbe
  */
 export async function createParking(parking: ParkingInsert): Promise<Parking> {
   const supabase = getSupabaseClient();
+  // Map camelCase → snake_case for DB columns
+  const dbParking: Record<string, any> = {
+    title: parking.title,
+    address: parking.address,
+    price: parking.price,
+    spots: parking.spots,
+    image: parking.image || null,
+    images: parking.images || null,
+    description: parking.description || null,
+    district: parking.district || null,
+    metro: parking.metro || null,
+    parking_type: parking.parkingType,
+    amenities: parking.amenities || null,
+    latitude: parking.latitude || null,
+    longitude: parking.longitude || null,
+    owner_id: parking.owner_id || null,
+    owner_email: parking.owner_email || null,
+  };
+
   const { data, error } = await supabase
     .from('parkings')
-    .insert(parking as any)
+    .insert(dbParking)
     .select()
     .single();
 
@@ -424,9 +445,28 @@ export async function createParking(parking: ParkingInsert): Promise<Parking> {
  */
 export async function updateParking(id: string, parking: ParkingUpdate): Promise<Parking> {
   const supabase = getSupabaseClient();
+  // Map camelCase → snake_case for DB columns
+  const dbParking: Record<string, any> = {};
+  if (parking.title !== undefined) dbParking.title = parking.title;
+  if (parking.address !== undefined) dbParking.address = parking.address;
+  if (parking.price !== undefined) dbParking.price = parking.price;
+  if (parking.spots !== undefined) dbParking.spots = parking.spots;
+  if (parking.image !== undefined) dbParking.image = parking.image;
+  if (parking.images !== undefined) dbParking.images = parking.images;
+  if (parking.description !== undefined) dbParking.description = parking.description;
+  if (parking.district !== undefined) dbParking.district = parking.district;
+  if (parking.metro !== undefined) dbParking.metro = parking.metro;
+  if (parking.parkingType !== undefined) dbParking.parking_type = parking.parkingType;
+  if (parking.amenities !== undefined) dbParking.amenities = parking.amenities;
+  if (parking.latitude !== undefined) dbParking.latitude = parking.latitude;
+  if (parking.longitude !== undefined) dbParking.longitude = parking.longitude;
+  if (parking.is_active !== undefined) dbParking.is_active = parking.is_active;
+  if (parking.status !== undefined) dbParking.status = parking.status;
+  dbParking.updated_at = new Date().toISOString();
+
   const { data, error } = await supabase
     .from('parkings')
-    .update(parking as any)
+    .update(dbParking)
     .eq('id', id)
     .select()
     .single();
@@ -630,10 +670,10 @@ export async function updateBookingStatus(
 /**
  * Create a new user profile
  */
-export async function createUser(user: { email: string; name: string; phone?: string }): Promise<User> {
+export async function createUser(user: { email: string; name: string; phone?: string }): Promise<Profile> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .insert(user as any)
     .select()
     .single();
@@ -643,16 +683,16 @@ export async function createUser(user: { email: string; name: string; phone?: st
     throw new Error(error.message);
   }
 
-  return data as User;
+  return data as Profile;
 }
 
 /**
  * Get user by ID
  */
-export async function getUserById(id: string): Promise<User | null> {
+export async function getUserById(id: string): Promise<Profile | null> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*')
     .eq('id', id)
     .single();
@@ -665,16 +705,16 @@ export async function getUserById(id: string): Promise<User | null> {
     throw new Error(error.message);
   }
 
-  return data as User;
+  return data as Profile;
 }
 
 /**
  * Get user by email
  */
-export async function getUserByEmail(email: string): Promise<User | null> {
+export async function getUserByEmail(email: string): Promise<Profile | null> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*')
     .eq('email', email.toLowerCase())
     .single();
@@ -687,7 +727,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     throw new Error(error.message);
   }
 
-  return data as User;
+  return data as Profile;
 }
 
 /**
@@ -809,10 +849,10 @@ export async function isFavorite(userId: string, parkingId: string): Promise<boo
 /**
  * Get all users (admin only)
  */
-export async function getAllUsers(): Promise<User[]> {
+export async function getAllUsers(): Promise<Profile[]> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -821,7 +861,7 @@ export async function getAllUsers(): Promise<User[]> {
     return [];
   }
 
-  return (data as User[]) || [];
+  return (data as Profile[]) || [];
 }
 
 /**
@@ -830,7 +870,7 @@ export async function getAllUsers(): Promise<User[]> {
 export async function updateUserRole(userId: string, role: 'user' | 'moderator' | 'admin'): Promise<void> {
   const supabase = getSupabaseClient();
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .update({ role, updated_at: new Date().toISOString() })
     .eq('id', userId);
 
@@ -846,7 +886,7 @@ export async function updateUserRole(userId: string, role: 'user' | 'moderator' 
 export async function setUserBlocked(userId: string, isBlocked: boolean): Promise<void> {
   const supabase = getSupabaseClient();
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .update({ is_blocked: isBlocked, updated_at: new Date().toISOString() })
     .eq('id', userId);
 
@@ -862,7 +902,7 @@ export async function setUserBlocked(userId: string, isBlocked: boolean): Promis
 export async function deleteUser(userId: string): Promise<void> {
   const supabase = getSupabaseClient();
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .delete()
     .eq('id', userId);
 
@@ -923,7 +963,7 @@ export async function getAllBookingsAdmin(): Promise<Booking[]> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, parking:parkings(title, address), user:users(email, name)')
+    .select('*, parking:parkings(title, address), user:profiles(email, name)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -960,7 +1000,7 @@ export async function getAllReviewsAdmin(): Promise<Review[]> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('reviews')
-    .select('*, parking:parkings(title), user:users(name, email)')
+    .select('*, parking:parkings(title), user:profiles(name, email)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -1035,12 +1075,12 @@ export async function getAdminStats(): Promise<{
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   const [usersResult, parkingsResult, bookingsResult] = await Promise.all([
-    supabase.from('users').select('*'),
+    supabase.from('profiles').select('*'),
     supabase.from('parkings').select('*'),
     supabase.from('bookings').select('*'),
   ]);
 
-  const users = (usersResult.data || []) as User[];
+  const users = (usersResult.data || []) as Profile[];
   const parkings = (parkingsResult.data || []) as Parking[];
   const bookings = (bookingsResult.data || []) as Booking[];
   
@@ -1116,10 +1156,10 @@ export async function getRecentParkings(limit: number = 3): Promise<Parking[]> {
 /**
  * Get recent users (admin)
  */
-export async function getRecentUsers(limit: number = 2): Promise<User[]> {
+export async function getRecentUsers(limit: number = 2): Promise<Profile[]> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -1129,5 +1169,5 @@ export async function getRecentUsers(limit: number = 2): Promise<User[]> {
     return [];
   }
 
-  return (data as User[]) || [];
+  return (data as Profile[]) || [];
 }

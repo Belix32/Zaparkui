@@ -202,7 +202,7 @@ export function AdminUsers() {
         {/* Stats Cards */}
         <div className="admin-stats-grid">
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">👥</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.totalUsers}</span>
               <span className="admin-stat-label">Всего пользователей</span>
@@ -210,7 +210,7 @@ export function AdminUsers() {
           </div>
           
           <div className="admin-stat-card">
-            <div className="admin-stat-icon stat-admin">👑</div>
+            <div className="admin-stat-icon stat-admin"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.adminsCount}</span>
               <span className="admin-stat-label">Администраторов</span>
@@ -218,7 +218,7 @@ export function AdminUsers() {
           </div>
           
           <div className="admin-stat-card">
-            <div className="admin-stat-icon stat-moderator">🛡️</div>
+            <div className="admin-stat-icon stat-moderator"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.moderatorsCount}</span>
               <span className="admin-stat-label">Модераторов</span>
@@ -226,7 +226,7 @@ export function AdminUsers() {
           </div>
           
           <div className="admin-stat-card">
-            <div className="admin-stat-icon stat-blocked">🚫</div>
+            <div className="admin-stat-icon stat-blocked"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.blockedCount}</span>
               <span className="admin-stat-label">Заблокировано</span>
@@ -237,7 +237,7 @@ export function AdminUsers() {
         {/* Filters */}
         <div className="admin-filters">
           <div className="admin-search">
-            <span className="admin-search-icon">🔍</span>
+            <span className="admin-search-icon"></span>
             <input
               type="text"
               placeholder="Поиск по имени или email..."
@@ -262,13 +262,13 @@ export function AdminUsers() {
         {/* Table */}
         {users.length === 0 ? (
           <div className="admin-empty">
-            <div className="admin-empty-icon">👥</div>
+            <div className="admin-empty-icon"></div>
             <h3>Нет пользователей</h3>
             <p>В системе пока нет зарегистрированных пользователей</p>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="admin-empty">
-            <div className="admin-empty-icon">🔍</div>
+            <div className="admin-empty-icon"></div>
             <h3>Ничего не найдено</h3>
             <p>Попробуйте изменить параметры поиска</p>
           </div>
@@ -310,28 +310,28 @@ export function AdminUsers() {
                           onClick={() => setViewModalUser(user)}
                           title="Просмотр"
                         >
-                          👁️
+                          Просмотр
                         </button>
                         <button 
                           className="action-btn edit-btn"
                           onClick={() => setEditRoleUser(user)}
                           title="Изменить роль"
                         >
-                          ✏️
+                          Роль
                         </button>
                         <button 
                           className={`action-btn ${user.is_blocked ? 'unblock-btn' : 'block-btn'}`}
                           onClick={() => handleToggleBlock(user)}
                           title={user.is_blocked ? 'Разблокировать' : 'Заблокировать'}
                         >
-                          {user.is_blocked ? '🔓' : '🔒'}
+                          {user.is_blocked ? 'Разбл.' : 'Блок.'}
                         </button>
                         <button 
                           className="action-btn delete-btn"
                           onClick={() => setDeleteConfirmUser(user)}
                           title="Удалить"
                         >
-                          🗑️
+                          Удалить
                         </button>
                       </td>
                     </tr>
@@ -370,7 +370,7 @@ export function AdminUsers() {
           <div className="modal-overlay" onClick={() => setViewModalUser(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>👤 Информация о пользователе</h2>
+                <h2>Информация о пользователе</h2>
                 <button className="modal-close" onClick={() => setViewModalUser(null)}>×</button>
               </div>
               <div className="modal-body">
@@ -427,7 +427,7 @@ export function AdminUsers() {
           <div className="modal-overlay" onClick={() => setEditRoleUser(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>✏️ Изменить роль</h2>
+                <h2>Изменить роль</h2>
                 <button className="modal-close" onClick={() => setEditRoleUser(null)}>×</button>
               </div>
               <div className="modal-body">
@@ -458,7 +458,7 @@ export function AdminUsers() {
           <div className="modal-overlay" onClick={() => setDeleteConfirmUser(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>🗑️ Подтверждение удаления</h2>
+                <h2>Подтверждение удаления</h2>
                 <button className="modal-close" onClick={() => setDeleteConfirmUser(null)}>×</button>
               </div>
               <div className="modal-body">

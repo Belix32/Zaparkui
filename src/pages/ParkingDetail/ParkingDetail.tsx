@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Parking, getParkingById, getParkingReviews, Review, isSupabaseConfigured } from '../../lib/supabase';
 import { parkings as staticParkings } from '../../data/parkings';
 import { useFavorites } from '../../hooks';
@@ -27,7 +27,8 @@ const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1573348722427-f1d68
 export function ParkingDetail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const parkingId = searchParams.get('id') || searchParams.get('parkingId');
+  const params = useParams<{ id?: string }>();
+  const parkingId = params.id || searchParams.get('id') || searchParams.get('parkingId');
   
   const [parking, setParking] = useState<Parking | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);

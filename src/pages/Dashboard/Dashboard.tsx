@@ -180,10 +180,6 @@ export function Dashboard() {
       setMetro('');
       setParkingType('');
       setAmenities([]);
-      setMetro('');
-      setParkingType('');
-      setDescription('');
-      setImageUrl('');
       setActiveTab('parkings');
       
       setTimeout(() => setSuccess(''), 3000);

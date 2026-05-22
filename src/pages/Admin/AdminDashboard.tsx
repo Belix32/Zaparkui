@@ -209,7 +209,7 @@ export function AdminDashboard() {
       <div className="admin-dashboard">
         <div className="admin-stats-grid">
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">👥</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.totalUsers}</span>
               <span className="admin-stat-label">Всего пользователей</span>
@@ -218,7 +218,7 @@ export function AdminDashboard() {
           </div>
 
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">🅿️</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.totalParkings}</span>
               <span className="admin-stat-label">Всего парковок</span>
@@ -227,7 +227,7 @@ export function AdminDashboard() {
           </div>
 
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">📅</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.totalBookings}</span>
               <span className="admin-stat-label">Всего бронирований</span>
@@ -236,7 +236,7 @@ export function AdminDashboard() {
           </div>
 
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">💰</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{formatCurrency(stats.totalRevenue)}</span>
               <span className="admin-stat-label">Общая выручка</span>
@@ -247,7 +247,7 @@ export function AdminDashboard() {
 
         <div className="admin-dashboard-grid">
           <div className="admin-card admin-activity-card">
-            <h3>📋 Последняя активность</h3>
+            <h3>Последняя активность</h3>
             {recentActivity.length === 0 ? (
               <p className="admin-empty">Нет активности</p>
             ) : (
@@ -255,10 +255,10 @@ export function AdminDashboard() {
                 {recentActivity.map((activity) => (
                   <li key={activity.id} className="admin-activity-item">
                     <span className="admin-activity-icon">
-                      {activity.type === 'user' && '👤'}
-                      {activity.type === 'booking' && '📅'}
-                      {activity.type === 'parking' && '🅿️'}
-                      {activity.type === 'review' && '⭐'}
+                      {activity.type === 'user' && 'Пользователь'}
+                      {activity.type === 'booking' && 'Бронь'}
+                      {activity.type === 'parking' && 'Парковка'}
+                      {activity.type === 'review' && 'Отзыв'}
                     </span>
                     <span className="admin-activity-message">{activity.message}</span>
                     <span className="admin-activity-time">{formatDate(activity.timestamp)}</span>
@@ -269,19 +269,19 @@ export function AdminDashboard() {
           </div>
 
           <div className="admin-card admin-quick-actions">
-            <h3>⚡ Быстрые действия</h3>
+            <h3>Быстрые действия</h3>
             <div className="admin-quick-actions-grid">
               <a href="/admin/parkings" className="admin-quick-action">
-                🅿️ Все парковки
+                Все парковки
               </a>
               <a href="/admin/users" className="admin-quick-action">
-                👥 Все пользователи
+                Все пользователи
               </a>
               <a href="/admin/bookings" className="admin-quick-action">
-                📅 Бронирования
+                Бронирования
               </a>
               <a href="/admin/reviews" className="admin-quick-action">
-                ⭐ Модерация отзывов
+                Модерация отзывов
               </a>
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   getAllUsers as getAllUsersSupabase,
   Parking as SupabaseParking,
 } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import './AdminParkings.css';
 
 // Type conversion between Supabase (price, spots, parkingType) and AdminParkings (price_per_hour, total_spots, parking_type)
@@ -71,10 +72,10 @@ interface ParkingFormData {
 }
 
 const PARKING_TYPE_ICONS: Record<string, string> = {
-  ground: '🏠',
-  underground: '🏢',
-  roof: '☀️',
-  covered: '🅿️',
+  ground: '',
+  underground: '',
+  roof: '',
+  covered: '',
 };
 
 const PARKING_TYPE_LABELS: Record<string, string> = {
@@ -85,10 +86,10 @@ const PARKING_TYPE_LABELS: Record<string, string> = {
 };
 
 const AMENITIES_OPTIONS = [
-  { id: 'cctv', label: 'Видеонаблюдение', icon: '📹' },
-  { id: 'barrier', label: 'Шлагбаум', icon: '🚧' },
-  { id: 'roof', label: 'Крыша', icon: '🏠' },
-  { id: 'entrance_card', label: 'Пропуск', icon: '🔑' },
+  { id: 'cctv', label: 'Видеонаблюдение', icon: '' },
+  { id: 'barrier', label: 'Шлагбаум', icon: '' },
+  { id: 'roof', label: 'Крыша', icon: '' },
+  { id: 'entrance_card', label: 'Пропуск', icon: '' },
 ];
 
 const initialFormData: ParkingFormData = {
@@ -107,6 +108,7 @@ const initialFormData: ParkingFormData = {
 };
 
 export function AdminParkings() {
+  const { user } = useAuth();
   const [parkings, setParkings] = useState<Parking[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -428,6 +430,8 @@ export function AdminParkings() {
           image: formData.image_url || null,
           latitude: formData.latitude ? Number(formData.latitude) : undefined,
           longitude: formData.longitude ? Number(formData.longitude) : undefined,
+          owner_id: user?.id,
+          owner_email: user?.email,
         });
         // Convert and add to state
         setParkings(prev => [convertFromSupabaseParking(created), ...prev]);
@@ -476,7 +480,7 @@ export function AdminParkings() {
     <AdminLayout>
       <div className="admin-parkings">
         <div className="admin-page-header">
-          <h2>🅿️ Управление парковками</h2>
+          <h2>Управление парковками</h2>
           <button className="admin-add-btn" onClick={() => setAddParkingModal(true)}>
             + Добавить парковку
           </button>
@@ -485,7 +489,7 @@ export function AdminParkings() {
         {/* Filters */}
         <div className="admin-filters">
           <div className="admin-search">
-            <span className="admin-search-icon">🔍</span>
+            <span className="admin-search-icon"></span>
             <input
               type="text"
               placeholder="Поиск по названию или адресу..."
@@ -512,10 +516,10 @@ export function AdminParkings() {
             className="admin-filter-select"
           >
             <option value="all">Все типы</option>
-            <option value="ground">🏠 Наземная</option>
-            <option value="underground">🏢 Подземная</option>
-            <option value="roof">☀️ Крыша</option>
-            <option value="covered">🅿️ Крытая</option>
+            <option value="ground">Наземная</option>
+            <option value="underground">Подземная</option>
+            <option value="roof">Крыша</option>
+            <option value="covered">Крытая</option>
           </select>
 
           <select
@@ -533,7 +537,7 @@ export function AdminParkings() {
         {/* Table */}
         {parkings.length === 0 ? (
           <div className="admin-empty">
-            <div className="admin-empty-icon">🅿️</div>
+            <div className="admin-empty-icon"></div>
             <h3>Нет парковок</h3>
             <p>В системе пока нет добавленных парковок</p>
             <button className="admin-add-btn" onClick={() => setAddParkingModal(true)}>
@@ -542,7 +546,7 @@ export function AdminParkings() {
           </div>
         ) : filteredParkings.length === 0 ? (
           <div className="admin-empty">
-            <div className="admin-empty-icon">🔍</div>
+            <div className="admin-empty-icon"></div>
             <h3>Ничего не найдено</h3>
             <p>Попробуйте изменить параметры поиска</p>
           </div>
@@ -589,28 +593,28 @@ export function AdminParkings() {
                           onClick={() => setViewParking(parking)}
                           title="Просмотр"
                         >
-                          👁️
+                          Просмотр
                         </button>
                         <button
                           className="action-btn edit-btn"
                           onClick={() => setEditParking(parking)}
                           title="Редактировать"
                         >
-                          ✏️
+                          Ред.
                         </button>
                         <button
                           className={`action-btn ${parking.is_active !== false ? 'deactivate-btn' : 'activate-btn'}`}
                           onClick={() => handleToggleStatus(parking)}
                           title={parking.is_active !== false ? 'Деактивировать' : 'Активировать'}
                         >
-                          {parking.is_active !== false ? '⏸️' : '▶️'}
+                          {parking.is_active !== false ? 'Выкл.' : 'Вкл.'}
                         </button>
                         <button
                           className="action-btn delete-btn"
                           onClick={() => setDeleteConfirmParking(parking)}
                           title="Удалить"
                         >
-                          🗑️
+                          Удалить
                         </button>
                       </td>
                     </tr>
@@ -649,7 +653,7 @@ export function AdminParkings() {
           <div className="modal-overlay" onClick={() => setViewParking(null)}>
             <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>🅿️ Информация о парковке</h2>
+                <h2>Информация о парковке</h2>
                 <button className="modal-close" onClick={() => setViewParking(null)}>×</button>
               </div>
               <div className="modal-body">
@@ -681,7 +685,6 @@ export function AdminParkings() {
                 <div className="detail-row">
                   <span className="detail-label">Тип:</span>
                   <span className="detail-value">
-                    {viewParking.parking_type && PARKING_TYPE_ICONS[viewParking.parking_type]}{' '}
                     {viewParking.parking_type ? PARKING_TYPE_LABELS[viewParking.parking_type] : '-'}
                   </span>
                 </div>
@@ -708,7 +711,7 @@ export function AdminParkings() {
                   <span className="detail-value">
                     {viewParking.amenities?.length ? viewParking.amenities.map(a => {
                       const amenity = AMENITIES_OPTIONS.find(opt => opt.id === a);
-                      return amenity ? `${amenity.icon} ${amenity.label}` : a;
+                      return amenity ? amenity.label : a;
                     }).join(', ') : '-'}
                   </span>
                 </div>
@@ -741,7 +744,7 @@ export function AdminParkings() {
           <div className="modal-overlay" onClick={() => setEditParking(null)}>
             <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>✏️ Редактирование парковки</h2>
+                <h2>Редактирование парковки</h2>
                 <button className="modal-close" onClick={() => setEditParking(null)}>×</button>
               </div>
               <div className="modal-body">
@@ -784,10 +787,10 @@ export function AdminParkings() {
                       value={editParking.parking_type || 'ground'}
                       onChange={(e) => setEditParking({ ...editParking, parking_type: e.target.value as any })}
                     >
-                      <option value="ground">🏠 Наземная</option>
-                      <option value="underground">🏢 Подземная</option>
-                      <option value="roof">☀️ Крыша</option>
-                      <option value="covered">🅿️ Крытая</option>
+                      <option value="ground">Наземная</option>
+                      <option value="underground">Подземная</option>
+                      <option value="roof">Крыша</option>
+                      <option value="covered">Крытая</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -863,7 +866,7 @@ export function AdminParkings() {
                               setEditParking({ ...editParking, amenities: newAmenities });
                             }}
                           />
-                          {amenity.icon} {amenity.label}
+                          {amenity.label}
                         </label>
                       ))}
                     </div>
@@ -883,7 +886,7 @@ export function AdminParkings() {
           <div className="modal-overlay" onClick={() => setDeleteConfirmParking(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>🗑️ Подтверждение удаления</h2>
+                <h2>Подтверждение удаления</h2>
                 <button className="modal-close" onClick={() => setDeleteConfirmParking(null)}>×</button>
               </div>
               <div className="modal-body">
@@ -909,7 +912,7 @@ export function AdminParkings() {
           <div className="modal-overlay" onClick={() => setAddParkingModal(false)}>
             <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>➕ Добавить парковку</h2>
+                <h2>Добавить парковку</h2>
                 <button className="modal-close" onClick={() => setAddParkingModal(false)}>×</button>
               </div>
               <div className="modal-body">
@@ -956,10 +959,10 @@ export function AdminParkings() {
                       value={formData.parking_type}
                       onChange={(e) => handleFormChange('parking_type', e.target.value)}
                     >
-                      <option value="ground">🏠 Наземная</option>
-                      <option value="underground">🏢 Подземная</option>
-                      <option value="roof">☀️ Крыша</option>
-                      <option value="covered">🅿️ Крытая</option>
+                      <option value="ground">Наземная</option>
+                      <option value="underground">Подземная</option>
+                      <option value="roof">Крыша</option>
+                      <option value="covered">Крытая</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -1026,7 +1029,7 @@ export function AdminParkings() {
                             checked={formData.amenities.includes(amenity.id)}
                             onChange={() => handleAmenityToggle(amenity.id)}
                           />
-                          {amenity.icon} {amenity.label}
+                          {amenity.label}
                         </label>
                       ))}
                     </div>

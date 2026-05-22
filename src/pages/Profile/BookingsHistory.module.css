@@ -13,6 +13,16 @@
   margin: 0;
 }
 
+.demoBanner {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #856404;
+}
+
 .tabs {
   display: flex;
   gap: 8px;

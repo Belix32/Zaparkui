@@ -32,17 +32,10 @@ export function AdminLogin() {
       const result = await login(email, password);
       
       if (result.success) {
-        // Check if user has admin role
-        const userStr = localStorage.getItem('zaparkyi_user');
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          if (user.role === 'admin') {
-            navigate('/admin');
-          } else {
-            setError('У вас нет доступа к админ-панели');
-          }
-        } else {
+        if (result.role === 'admin') {
           navigate('/admin');
+        } else {
+          setError('У вас нет доступа к админ-панели');
         }
       } else {
         setError(result.error || 'Ошибка входа');

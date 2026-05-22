@@ -231,7 +231,7 @@ export function AdminBookings() {
       <div className="admin-bookings">
         <div className="admin-stats-grid">
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">📅</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.total}</span>
               <span className="admin-stat-label">Всего бронирований</span>
@@ -239,7 +239,7 @@ export function AdminBookings() {
           </div>
 
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">✅</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.active}</span>
               <span className="admin-stat-label">Активных сейчас</span>
@@ -247,7 +247,7 @@ export function AdminBookings() {
           </div>
 
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">⏳</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{stats.pending}</span>
               <span className="admin-stat-label">Ожидают подтверждения</span>
@@ -255,7 +255,7 @@ export function AdminBookings() {
           </div>
 
           <div className="admin-stat-card">
-            <div className="admin-stat-icon">💰</div>
+            <div className="admin-stat-icon"></div>
             <div className="admin-stat-content">
               <span className="admin-stat-value">{formatCurrency(stats.revenue)}</span>
               <span className="admin-stat-label">Общая выручка</span>
@@ -410,7 +410,7 @@ export function AdminBookings() {
                             }}
                             title="Подробнее"
                           >
-                            👁️
+                            Детали
                           </button>
                           <select
                             className="admin-status-select"
@@ -429,7 +429,7 @@ export function AdminBookings() {
                               onClick={() => handleCancelBooking(booking.id)}
                               title="Отменить"
                             >
-                              ❌
+                              Отмена
                             </button>
                           )}
                           {booking.payment_status === 'paid' && (booking.status === 'cancelled' || booking.status === 'completed') && (
@@ -438,7 +438,7 @@ export function AdminBookings() {
                               onClick={() => handleRefund(booking.id)}
                               title="Вернуть"
                             >
-                              💵
+                              Возврат
                             </button>
                           )}
                         </div>

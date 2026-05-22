@@ -49,6 +49,36 @@
   margin-bottom: var(--spacing-2xl);
 }
 
+.details {
+  text-align: left;
+  background: var(--bg-secondary, #f8fafc);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--spacing-sm) 0;
+}
+
+.detailRow + .detailRow {
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.detailLabel {
+  font-size: var(--font-size-body);
+  color: var(--text-secondary, #64748b);
+}
+
+.detailValue {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .actions {
   display: flex;
   flex-direction: column;

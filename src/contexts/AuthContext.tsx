@@ -1,7 +1,23 @@
+/**
+ * ⚠️ SECURITY NOTE: Production Requirements
+ * 
+ * Current implementation uses localStorage for session persistence, which is 
+ * acceptable for SPA with XSS protections but NOT fully secure.
+ * 
+ * For PRODUCTION deployment, implement:
+ * 1. httpOnly cookies for session (requires backend proxy)
+ * 2. CSRF tokens on all state-changing requests
+ * 3. Content Security Policy (CSP) headers
+ * 4. Subresource Integrity (SRI) for loaded scripts
+ * 5. Use @supabase/ssr package with cookies in production
+ * 
+ * SECURITY AUDIT DATE: 2026-05
+ */
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   getSupabaseClient,
-  User as SupabaseUser,
+  Profile as SupabaseUser,
   isSupabaseConfigured,
   createParking as createParkingDb,
   geocodeAddress
@@ -25,7 +41,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isModerator: boolean;
   hasAdminAccess: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   addParking: (parking: Omit<ParkingItem, 'id'>) => void;
@@ -65,39 +81,137 @@ function generateSecureToken(): string {
   return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-// Save user with timestamp for session expiry
-function saveUserSession(user: User): void {
-  const sessionData = {
-    user,
-    timestamp: Date.now(),
-  };
-  localStorage.setItem(USER_KEY, JSON.stringify(sessionData));
-  localStorage.setItem(AUTH_TOKEN_KEY, generateSecureToken());
+// Encrypted session storage interface
+interface StoredSession {
+  id: string;
+  email: string;
+  role: string;
+  expiry: number;
+  hash: string;
 }
 
-// Load user if session not expired
-function loadUserSession(): User | null {
+// Derive encryption key from auth token (first 32 chars, padded if needed)
+function deriveEncryptionKey(token: string): string {
+  if (!token) return '';
+  return token.padEnd(32, 'x').slice(0, 32);
+}
+
+// XOR cipher with key - simple obfuscation to prevent plaintext storage
+function xorWithKey(data: string, key: string): string {
+  let result = '';
+  for (let i = 0; i < data.length; i++) {
+    result += String.fromCharCode(
+      data.charCodeAt(i) ^ key.charCodeAt(i % key.length)
+    );
+  }
+  return result;
+}
+
+// Encrypt session data: JSON → XOR → base64
+function encryptData(data: StoredSession): string {
+  const key = deriveEncryptionKey(localStorage.getItem(AUTH_TOKEN_KEY) || '');
+  const json = JSON.stringify(data);
+  if (!key) return btoa(json);
+  return btoa(xorWithKey(json, key));
+}
+
+// Decrypt session data: base64 → XOR → JSON
+function decryptData(encoded: string): StoredSession | null {
   try {
-    const stored = localStorage.getItem(USER_KEY);
-    if (!stored) return null;
-    
-    const sessionData = JSON.parse(stored);
-    const { user, timestamp } = sessionData;
-    
-    // Check if session expired (30 days)
-    if (Date.now() - timestamp > SESSION_EXPIRY_MS) {
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(AUTH_TOKEN_KEY);
+    const key = deriveEncryptionKey(localStorage.getItem(AUTH_TOKEN_KEY) || '');
+    const decoded = atob(encoded);
+    const json = key ? xorWithKey(decoded, key) : decoded;
+    const parsed = JSON.parse(json);
+
+    if (!parsed || typeof parsed !== 'object' || !parsed.id || !parsed.expiry) {
       return null;
     }
-    
-    return user;
+
+    return parsed as StoredSession;
   } catch {
     return null;
   }
 }
 
-// Security: Validate email format
+// Compute session integrity hash from data + auth token
+function computeSessionHash(id: string, email: string, expiry: number, token: string): string {
+  let hash = 0;
+  const material = `${id}:${email}:${expiry}:${token}`;
+  for (let i = 0; i < material.length; i++) {
+    const chr = material.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash = hash | 0;
+  }
+  return (hash >>> 0).toString(36);
+}
+
+// Save minimal encrypted session (id, email, expiry, integrity hash)
+function saveUserSession(user: User): void {
+  const token = generateSecureToken();
+  const expiry = Date.now() + SESSION_EXPIRY_MS;
+  const hash = computeSessionHash(user.id, user.email, expiry, token);
+
+  const sessionData: StoredSession = {
+    id: user.id,
+    email: user.email,
+    role: user.role || 'user',
+    expiry,
+    hash,
+  };
+
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, encryptData(sessionData));
+}
+
+// Load and verify encrypted session, return minimal User if valid
+function loadUserSession(): User | null {
+  try {
+    const stored = localStorage.getItem(USER_KEY);
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!stored || !token) return null;
+
+    const session = decryptData(stored);
+    if (!session) {
+      clearSession();
+      return null;
+    }
+
+    // Verify session integrity hash
+    const expectedHash = computeSessionHash(session.id, session.email, session.expiry, token);
+    if (session.hash !== expectedHash) {
+      clearSession();
+      return null;
+    }
+
+    // Check if session expired
+    if (Date.now() > session.expiry) {
+      clearSession();
+      return null;
+    }
+
+    return {
+      id: session.id,
+      email: session.email,
+      name: '',
+      phone: '',
+      role: normalizeRole(session.role),
+    };
+  } catch {
+    clearSession();
+    return null;
+  }
+}
+
+function clearSession(): void {
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+// Normalize role string to valid values
+function normalizeRole(role: string | undefined | null): 'user' | 'moderator' | 'admin' {
+  if (role === 'admin' || role === 'moderator') return role;
+  return 'user';
+}
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -215,7 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           try {
             const { data: userByAuthId } = await supabaseClient
-              .from('users')
+              .from('profiles')
               .select('*')
               .eq('auth_id', session.user.id)
               .single();
@@ -224,7 +338,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               userData = userByAuthId;
             } else {
               const { data: userByEmail } = await supabaseClient
-                .from('users')
+                .from('profiles')
                 .select('*')
                 .eq('email', session.user.email)
                 .single();
@@ -238,22 +352,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
 
           if (userData) {
-            const userObj = {
+            const userObj: User = {
               id: session.user.id,
               name: userData.name || session.user.email?.split('@')[0] || 'Пользователь',
               email: userData.email || session.user.email || '',
               phone: userData.phone || '',
               created_at: userData.created_at,
-              role: userData.role || 'user',
+              role: userData?.role ? normalizeRole(userData.role) : (isAdminEmail(session.user.email || '') ? 'admin' as const : 'user' as const),
             };
             setUser(userObj);
             // Save to localStorage for reliability
             saveUserSession(userObj);
-          } else {
+          } else if (localUser) {
             // Use localStorage fallback
-            if (localUser) {
-              setUser(localUser);
-            }
+            setUser(localUser);
+          } else {
+            // Create user from session data even without profile
+            const fallbackUser = {
+              id: session.user.id,
+              name: session.user.email?.split('@')[0] || 'Пользователь',
+              email: session.user.email || '',
+              phone: '',
+              role: normalizeRole(isAdminEmail(session.user.email || '') ? 'admin' : 'user'),
+            };
+            setUser(fallbackUser);
+            saveUserSession(fallbackUser);
           }
         } else {
           // No Supabase session - use localStorage
@@ -286,7 +409,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             let userData = null;
             
             const { data: userByAuthId } = await supabaseClient
-              .from('users')
+              .from('profiles')
               .select('*')
               .eq('auth_id', session.user.id)
               .single();
@@ -296,7 +419,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
               // Fallback: try by email
               const { data: userByEmail } = await supabaseClient
-                .from('users')
+                .from('profiles')
                 .select('*')
                 .eq('email', session.user.email)
                 .single();
@@ -313,7 +436,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: userData.email || session.user.email || '',
                 phone: userData.phone || '',
                 created_at: userData.created_at,
-                role: userData.role || 'user',
+                role: userData?.role ? normalizeRole(userData.role) : (isAdminEmail(session.user.email || '') ? 'admin' as const : 'user' as const),
+              });
+            } else {
+              // Fallback: create user from session data even without profile
+              setUser({
+                id: session.user.id,
+                name: session.user.email?.split('@')[0] || 'Пользователь',
+                email: session.user.email || '',
+                phone: '',
+                role: normalizeRole(isAdminEmail(session.user.email || '') ? 'admin' : 'user'),
               });
             }
           } else {
@@ -333,7 +465,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string; role?: string }> => {
     // Validate email format
     if (!email || !isValidEmail(email)) {
       return { success: false, error: 'Неверный формат email' };
@@ -352,7 +484,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (existingUser && existingUser.email?.toLowerCase() === email.toLowerCase().trim()) {
         setUser(existingUser);
         saveUserSession(existingUser);
-        return { success: true };
+        return { success: true, role: existingUser.role };
       }
       
       const mockUser: User = {
@@ -360,10 +492,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: email.toLowerCase().split('@')[0],
         email: email.toLowerCase().trim(),
         phone: '+7 (999) 000-00-00',
+        role: isAdminEmail(email) ? 'admin' : 'user',
       };
       setUser(mockUser);
       saveUserSession(mockUser);
-      return { success: true };
+      return { success: true, role: mockUser.role };
     }
     
     // Supabase is configured - use real auth
@@ -402,7 +535,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let userData = null;
         
         const { data: userByAuthId } = await supabaseClient
-          .from('users')
+          .from('profiles')
           .select('*')
           .eq('auth_id', data.user.id)
           .single();
@@ -412,7 +545,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           // Fallback: try by email
           const { data: userByEmail } = await supabaseClient
-            .from('users')
+            .from('profiles')
             .select('*')
             .eq('email', data.user.email)
             .single();
@@ -422,25 +555,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        const userObj = userData ? {
+        const userObj: User = userData ? {
           id: data.user.id,
           name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
           email: userData.email || data.user.email || email,
           phone: userData.phone || '',
           created_at: userData.created_at,
-          role: userData.role || 'user',
+          role: userData?.role ? normalizeRole(userData.role) : (isAdminEmail(email) ? 'admin' as const : 'user' as const),
         } : {
           id: data.user.id,
           name: data.user.email?.split('@')[0] || 'User',
           email: data.user.email || email,
           phone: '',
+          role: isAdminEmail(email) ? 'admin' as const : 'user' as const,
         };
         
         setUser(userObj);
         saveUserSession(userObj);
       }
 
-      return { success: true };
+      return { success: true, role: data?.user ? (isAdminEmail(email) ? 'admin' : 'user') : undefined };
     } catch (supabaseError) {
       console.error('Supabase login error:', supabaseError);
       // Don't fallback to demo mode in production - show error instead
@@ -516,21 +650,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       // If user is automatically confirmed (or disable confirmation)
-      // Also manually create user profile
+      // Also manually create/update user profile in users table
+      // Note: trigger on_auth_user_created already inserted a profile with defaults,
+      // so we use upsert to update it with name/phone/role
       if (data?.user) {
-        // Create user profile in users table - use auth_id to link to auth.users
         const { error: profileError } = await supabaseClient
-          .from('users')
-          .insert({
+          .from('profiles')
+          .upsert({
             auth_id: data.user.id,
             email: normalizedEmail,
             name: sanitizeInput(name.trim()),
             phone: phone.trim(),
             role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
-          });
+          }, { onConflict: 'auth_id' });
 
         if (profileError) {
           console.error('Error creating user profile:', profileError);
+          // Fallback: try direct update if upsert fails
+          await supabaseClient
+            .from('profiles')
+            .update({
+              name: sanitizeInput(name.trim()),
+              phone: phone.trim(),
+              role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
+            })
+            .eq('auth_id', data.user.id);
         }
 
         // Set user in state
@@ -562,13 +706,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (isSupabaseConfigured()) {
         const supabaseClient = getSupabaseClient();
         await supabaseClient.auth.signOut();
-      } else {
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(AUTH_TOKEN_KEY);
       }
+      clearSession();
       setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
+      clearSession();
+      setUser(null);
     }
   };
 
