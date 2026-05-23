@@ -182,7 +182,7 @@ export function Catalog() {
           <h1 className={`title-h1 ${styles.title}`}>Доступные парковки</h1>
           <p className={styles.subtitle}>
             {useStaticData 
-              ? 'Демо-режим. Подключите Supabase для работы с базой данных.' 
+              ? 'Парковки загружаются в демо-режиме' 
               : 'Найдите идеальное парковочное место в вашем ЖК'}
           </p>
         </div>

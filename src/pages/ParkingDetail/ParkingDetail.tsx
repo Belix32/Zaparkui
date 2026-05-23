@@ -211,7 +211,7 @@ export function ParkingDetail() {
         {/* Demo mode banner */}
         {useStaticData && (
           <div className={styles.demoBanner}>
-            Демо-режим. Подключите Supabase для работы с базой данных.
+            Парковка загружена в демо-режиме
           </div>
         )}
 

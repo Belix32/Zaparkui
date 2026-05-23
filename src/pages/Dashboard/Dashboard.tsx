@@ -300,7 +300,7 @@ export function Dashboard() {
               >
                 📋 История
               </button>
-              {(user as any)?.role === 'admin' && (
+              {hasAdminAccess && (
                 <Link to="/admin" className={styles.navButton} style={{ color: '#f59e0b', fontWeight: 600 }}>
                   ⚙️ Админ-панель
                 </Link>
