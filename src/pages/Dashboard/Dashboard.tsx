@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { Button, Input, Textarea } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
 import { uploadParkingImage } from '../../lib/supabase';
@@ -58,7 +58,7 @@ function recordParkingAddition(userId: string): void {
 }
 
 export function Dashboard() {
-  const { user, isAuthenticated, myParkings, addParking } = useAuth();
+  const { user, isAuthenticated, myParkings, addParking, hasAdminAccess } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('parkings');
   const [success, setSuccess] = useState('');
   const [formError, setFormError] = useState('');
@@ -300,6 +300,11 @@ export function Dashboard() {
               >
                 📋 История
               </button>
+              {(user as any)?.role === 'admin' && (
+                <Link to="/admin" className={styles.navButton} style={{ color: '#f59e0b', fontWeight: 600 }}>
+                  ⚙️ Админ-панель
+                </Link>
+              )}
             </nav>
           </aside>
 
