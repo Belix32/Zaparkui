@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { path: '/admin/users', label: 'Пользователи', icon: '' },
   { path: '/admin/bookings', label: 'Бронирования', icon: '' },
   { path: '/admin/reviews', label: 'Отзывы', icon: '' },
+  { path: '/admin/promotions', label: 'Акции', icon: '' },
   { path: '/admin/settings', label: 'Настройки', icon: '' },
 ];
 

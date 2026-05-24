@@ -1171,3 +1171,180 @@ export async function getRecentUsers(limit: number = 2): Promise<Profile[]> {
 
   return (data as Profile[]) || [];
 }
+
+// ============================================================================
+// PROMOTIONS / BANNERS
+// ============================================================================
+
+export interface Promotion {
+  id: string;
+  title?: string;
+  description?: string;
+  image_url?: string;
+  link_url?: string;
+  link_text?: string;
+  bg_color: string;
+  text_color: string;
+  is_active: boolean;
+  sort_order: number;
+  starts_at?: string;
+  ends_at?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface PromotionInsert {
+  title?: string;
+  description?: string;
+  image_url?: string;
+  link_url?: string;
+  link_text?: string;
+  bg_color?: string;
+  text_color?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  starts_at?: string | null;
+  ends_at?: string | null;
+}
+
+export interface PromotionUpdate {
+  title?: string;
+  description?: string;
+  image_url?: string;
+  link_url?: string;
+  link_text?: string;
+  bg_color?: string;
+  text_color?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  starts_at?: string | null;
+  ends_at?: string | null;
+}
+
+/**
+ * Fetch all active promotions (for public display)
+ */
+export async function getActivePromotions(): Promise<Promotion[]> {
+  const supabase = getSupabaseClient();
+  const now = new Date().toISOString();
+
+  let query = supabase
+    .from('promotions')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+
+  // Filter by date range: starts_at <= now AND (ends_at IS NULL OR ends_at >= now)
+  query = query.lte('starts_at', now);
+  query = query.or(`ends_at.is.null,ends_at.gte.${now}`);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching active promotions:', error);
+    return [];
+  }
+
+  return (data as Promotion[]) || [];
+}
+
+/**
+ * Get all promotions (admin view)
+ */
+export async function getAllPromotionsAdmin(): Promise<Promotion[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('promotions')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching promotions:', error);
+    return [];
+  }
+
+  return (data as Promotion[]) || [];
+}
+
+/**
+ * Create a new promotion (admin)
+ */
+export async function createPromotion(promotion: PromotionInsert): Promise<Promotion> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('promotions')
+    .insert({
+      title: promotion.title || null,
+      description: promotion.description || null,
+      image_url: promotion.image_url || null,
+      link_url: promotion.link_url || null,
+      link_text: promotion.link_text || null,
+      bg_color: promotion.bg_color || '#2563eb',
+      text_color: promotion.text_color || '#ffffff',
+      is_active: promotion.is_active ?? true,
+      sort_order: promotion.sort_order ?? 0,
+      starts_at: promotion.starts_at || new Date().toISOString(),
+      ends_at: promotion.ends_at || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating promotion:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Promotion;
+}
+
+/**
+ * Update a promotion (admin)
+ */
+export async function updatePromotion(id: string, updates: PromotionUpdate): Promise<Promotion> {
+  const supabase = getSupabaseClient();
+  const dbUpdates: Record<string, any> = {};
+
+  if (updates.title !== undefined) dbUpdates.title = updates.title || null;
+  if (updates.description !== undefined) dbUpdates.description = updates.description || null;
+  if (updates.image_url !== undefined) dbUpdates.image_url = updates.image_url || null;
+  if (updates.link_url !== undefined) dbUpdates.link_url = updates.link_url || null;
+  if (updates.link_text !== undefined) dbUpdates.link_text = updates.link_text || null;
+  if (updates.bg_color !== undefined) dbUpdates.bg_color = updates.bg_color;
+  if (updates.text_color !== undefined) dbUpdates.text_color = updates.text_color;
+  if (updates.is_active !== undefined) dbUpdates.is_active = updates.is_active;
+  if (updates.sort_order !== undefined) dbUpdates.sort_order = updates.sort_order;
+  if (updates.starts_at !== undefined) dbUpdates.starts_at = updates.starts_at;
+  if (updates.ends_at !== undefined) dbUpdates.ends_at = updates.ends_at;
+  dbUpdates.updated_at = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from('promotions')
+    .update(dbUpdates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating promotion:', error);
+    throw new Error(error.message);
+  }
+
+  return data as Promotion;
+}
+
+/**
+ * Delete a promotion (admin)
+ */
+export async function deletePromotion(id: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('promotions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting promotion:', error);
+    throw new Error(error.message);
+  }
+}

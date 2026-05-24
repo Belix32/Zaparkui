@@ -17,6 +17,7 @@ const AdminUsers = lazy(() => import('./pages/Admin/AdminUsers').then(m => ({ de
 const AdminBookings = lazy(() => import('./pages/Admin/AdminBookings').then(m => ({ default: m.AdminBookings })));
 const AdminReviews = lazy(() => import('./pages/Admin/AdminReviews').then(m => ({ default: m.AdminReviews })));
 const AdminSettings = lazy(() => import('./pages/Admin/AdminSettings').then(m => ({ default: m.AdminSettings })));
+const AdminPromotions = lazy(() => import('./pages/Admin/AdminPromotions').then(m => ({ default: m.AdminPromotions })));
 
 // Booking pages
 const BookingPage = lazy(() => import('./pages/Booking/BookingPage').then(m => ({ default: m.BookingPage })));
@@ -88,6 +89,7 @@ function App() {
             <Route path="/admin/bookings" element={<AdminBookings />} />
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/promotions" element={<AdminPromotions />} />
           </Routes>
         </Suspense>
       </main>

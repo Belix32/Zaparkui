@@ -8,4 +8,5 @@ export { Reviews } from './Reviews';
 export { FilterPanel } from './FilterPanel';
 export { ErrorBoundary } from './ErrorBoundary';
 export { OfflineBanner } from './OfflineBanner/OfflineBanner';
+export { PromotionsBanner } from './PromotionsBanner/PromotionsBanner';
 export type { FilterValues } from './FilterPanel';
