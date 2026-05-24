@@ -1,7 +1,7 @@
 /* ReviewForm Mobile-Optimized Styles */
 
 .formContainer {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Expand Button (collapsed state) */
@@ -9,17 +9,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -34,9 +34,9 @@
 /* Form */
 .form {
   padding: 20px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -50,7 +50,7 @@
 .formTitle {
   font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -61,43 +61,43 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  background: #f3f4f6;
+  background: var(--bg-secondary);
   border: none;
   border-radius: 50%;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background var(--transition-fast), color var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
 .closeBtn:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--border);
+  color: var(--text-primary);
 }
 
 .closeBtn:active {
-  background: #d1d5db;
+  background: var(--text-secondary);
 }
 
 /* Labels */
 .label {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-small);
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .optional {
   font-weight: 400;
-  color: #9ca3af;
+  color: var(--text-secondary);
   margin-left: 4px;
 }
 
 /* Star Rating */
 .starRating {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -108,11 +108,11 @@
   align-items: center;
   gap: 4px;
   padding: 12px 8px;
-  background: #f9fafb;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   min-width: 60px;
   -webkit-tap-highlight-color: transparent;
 }
@@ -123,7 +123,7 @@
 
 .starBtnFilled {
   border-color: #fbbf24;
-  background: #fffbeb;
+  background: color-mix(in srgb, #fbbf24 15%, var(--bg-secondary));
 }
 
 .starBtnFilled .starIcon {
@@ -132,9 +132,9 @@
 
 .starIcon {
   font-size: 28px;
-  color: #d1d5db;
+  color: var(--border);
   line-height: 1;
-  transition: color 0.2s, transform 0.2s;
+  transition: color var(--transition-fast), transform var(--transition-fast);
 }
 
 .starBtnFilled .starIcon {
@@ -147,7 +147,7 @@
 
 .starLabel {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -162,9 +162,9 @@
 
 .ratingHint {
   text-align: center;
-  font-size: 13px;
-  color: #16a34a;
-  margin-top: 8px;
+  font-size: var(--font-size-caption);
+  color: var(--success);
+  margin-top: var(--spacing-sm);
   font-weight: 500;
 }
 
@@ -176,25 +176,27 @@
 .textarea {
   width: 100%;
   padding: 14px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
   resize: vertical;
   min-height: 120px;
   font-family: inherit;
   line-height: 1.5;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   -webkit-appearance: none;
 }
 
 .textarea:focus {
   outline: none;
-  border-color: #22c55e;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
 .textarea::placeholder {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .charCounter {
@@ -202,49 +204,49 @@
   justify-content: flex-end;
   gap: 2px;
   margin-top: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
 }
 
 .charCount {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .charCountWarning {
-  color: #ef4444;
+  color: var(--error);
   font-weight: 600;
 }
 
 .charTotal {
-  color: #d1d5db;
+  color: var(--border);
 }
 
 /* Photo Section */
 .photoSection {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .photoBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
   padding: 14px 20px;
-  background: #f9fafb;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  color: #6b7280;
-  font-size: 14px;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
 .photoBtn:hover {
-  border-color: #22c55e;
-  color: #22c55e;
-  background: #f0fdf4;
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-secondary));
 }
 
 .photoBtn:active {
@@ -264,7 +266,7 @@
   border-radius: 50%;
   border-top-color: white;
   animation: spin 0.8s linear infinite;
-  margin-right: 8px;
+  margin-right: var(--spacing-sm);
   vertical-align: middle;
 }
 
@@ -277,8 +279,8 @@
 /* Mobile Responsive */
 @media (max-width: 480px) {
   .form {
-    padding: 16px;
-    border-radius: 12px;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
   }
 
   .starRating {
@@ -311,7 +313,7 @@
   }
 
   .starBtn {
-    padding: 16px 12px;
+    padding: var(--spacing-md) 12px;
     min-width: 80px;
   }
 
@@ -320,7 +322,7 @@
   }
 
   .starLabel {
-    font-size: 12px;
+    font-size: var(--font-size-caption);
   }
 
   .photoBtn {

@@ -49,6 +49,8 @@
 }
 
 .navLink {
+  display: flex;
+  align-items: center;
   color: var(--text-secondary);
   text-decoration: none;
   font-size: var(--font-size-body);
@@ -61,6 +63,8 @@
 }
 
 .navLinkActive {
+  display: flex;
+  align-items: center;
   color: var(--accent);
 }
 

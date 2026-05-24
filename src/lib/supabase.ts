@@ -1268,40 +1268,59 @@ export async function getAllPromotionsAdmin(): Promise<Promotion[]> {
 }
 
 /**
- * Create a new promotion (admin)
+ * Create a new promotion (admin) — with retry logic for auth lock errors
  */
-export async function createPromotion(promotion: PromotionInsert): Promise<Promotion> {
+export async function createPromotion(promotion: PromotionInsert, retries = 3): Promise<Promotion> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
-    .from('promotions')
-    .insert({
-      title: promotion.title || null,
-      description: promotion.description || null,
-      image_url: promotion.image_url || null,
-      link_url: promotion.link_url || null,
-      link_text: promotion.link_text || null,
-      bg_color: promotion.bg_color || '#2563eb',
-      text_color: promotion.text_color || '#ffffff',
-      is_active: promotion.is_active ?? true,
-      sort_order: promotion.sort_order ?? 0,
-      starts_at: promotion.starts_at || new Date().toISOString(),
-      ends_at: promotion.ends_at || null,
-    })
-    .select()
-    .single();
 
-  if (error) {
-    console.error('Error creating promotion:', error);
-    throw new Error(error.message);
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      }
+
+      const { data, error } = await supabase
+        .from('promotions')
+        .insert({
+          title: promotion.title || null,
+          description: promotion.description || null,
+          image_url: promotion.image_url || null,
+          link_url: promotion.link_url || null,
+          link_text: promotion.link_text || null,
+          bg_color: promotion.bg_color || '#2563eb',
+          text_color: promotion.text_color || '#ffffff',
+          is_active: promotion.is_active ?? true,
+          sort_order: promotion.sort_order ?? 0,
+          starts_at: promotion.starts_at || new Date().toISOString(),
+          ends_at: promotion.ends_at || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        if (error.message?.includes('Lock')) {
+          continue; // Retry on lock contention
+        }
+        console.error('Error creating promotion:', error);
+        throw new Error(error.message);
+      }
+
+      return data as Promotion;
+    } catch (err: any) {
+      if (err?.message?.includes('Lock') || err?.message?.includes('claim')) {
+        continue; // Retry
+      }
+      throw err;
+    }
   }
 
-  return data as Promotion;
+  throw new Error('Не удалось создать акцию. Попробуйте ещё раз.');
 }
 
 /**
- * Update a promotion (admin)
+ * Update a promotion (admin) — with retry logic for auth lock errors
  */
-export async function updatePromotion(id: string, updates: PromotionUpdate): Promise<Promotion> {
+export async function updatePromotion(id: string, updates: PromotionUpdate, retries = 3): Promise<Promotion> {
   const supabase = getSupabaseClient();
   const dbUpdates: Record<string, any> = {};
 
@@ -1318,33 +1337,72 @@ export async function updatePromotion(id: string, updates: PromotionUpdate): Pro
   if (updates.ends_at !== undefined) dbUpdates.ends_at = updates.ends_at;
   dbUpdates.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from('promotions')
-    .update(dbUpdates)
-    .eq('id', id)
-    .select()
-    .single();
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      }
 
-  if (error) {
-    console.error('Error updating promotion:', error);
-    throw new Error(error.message);
+      const { data, error } = await supabase
+        .from('promotions')
+        .update(dbUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.message?.includes('Lock')) {
+          continue;
+        }
+        console.error('Error updating promotion:', error);
+        throw new Error(error.message);
+      }
+
+      return data as Promotion;
+    } catch (err: any) {
+      if (err?.message?.includes('Lock') || err?.message?.includes('claim')) {
+        continue;
+      }
+      throw err;
+    }
   }
 
-  return data as Promotion;
+  throw new Error('Не удалось обновить акцию. Попробуйте ещё раз.');
 }
 
 /**
- * Delete a promotion (admin)
+ * Delete a promotion (admin) — with retry logic for auth lock errors
  */
-export async function deletePromotion(id: string): Promise<void> {
+export async function deletePromotion(id: string, retries = 3): Promise<void> {
   const supabase = getSupabaseClient();
-  const { error } = await supabase
-    .from('promotions')
-    .delete()
-    .eq('id', id);
 
-  if (error) {
-    console.error('Error deleting promotion:', error);
-    throw new Error(error.message);
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      }
+
+      const { error } = await supabase
+        .from('promotions')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        if (error.message?.includes('Lock')) {
+          continue;
+        }
+        console.error('Error deleting promotion:', error);
+        throw new Error(error.message);
+      }
+
+      return;
+    } catch (err: any) {
+      if (err?.message?.includes('Lock') || err?.message?.includes('claim')) {
+        continue;
+      }
+      throw err;
+    }
   }
+
+  throw new Error('Не удалось удалить акцию. Попробуйте ещё раз.');
 }

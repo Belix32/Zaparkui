@@ -1,31 +1,31 @@
 .filterPanel {
-  background: white;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
 }
 
 .expandButton {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 16px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-fast);
 }
 
 .expandButton:hover {
-  background: #f9fafb;
+  background: var(--bg-secondary);
 }
 
 .expandButton svg {
-  transition: transform 0.2s;
+  transition: transform var(--transition-fast);
 }
 
 .rotated {
@@ -35,17 +35,17 @@
 .activeCount {
   width: 8px;
   height: 8px;
-  background: #22c55e;
+  background: var(--success);
   border-radius: 50%;
 }
 
 .filters {
-  padding: 16px;
+  padding: var(--spacing-md);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  gap: var(--spacing-md);
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
 }
 
 .field {
@@ -55,28 +55,28 @@
 }
 
 .label {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .select {
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  background: white;
-  color: #111827;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-small);
+  background: var(--bg-card);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .select:focus {
   outline: none;
-  border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .actions {
@@ -84,8 +84,8 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border);
 }
 
 @media (max-width: 640px) {

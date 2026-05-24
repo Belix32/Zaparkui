@@ -296,7 +296,7 @@
 }
 
 .errorMessage {
-  background: #ffebee;
+  background: color-mix(in srgb, var(--error) 12%, transparent);
   color: var(--error);
   padding: var(--spacing-md) var(--spacing-md);
   border-radius: var(--radius-sm);
