@@ -5,6 +5,20 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "zaparkyi.ru" }],
+      "destination": "https://zaparkui.vercel.app/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.zaparkyi.ru" }],
+      "destination": "https://zaparkui.vercel.app/$1",
+      "permanent": true
+    }
+  ],
   "env": {
     "VITE_SUPABASE_URL": "https://hkllkcctnasaybjapmtk.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "sb_publishable_MLrWmpCmyE7Wx2vI7HwEnQ_JuZWIQAY",
