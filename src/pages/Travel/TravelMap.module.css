@@ -28,14 +28,14 @@
   height: 100%;
 }
 
-/* Hide Yandex logo — full-width white strip at the bottom of the map */
+/* Hide map attribution — bottom-right corner */
 .mapContainer::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 36px;
+  right: 0;
+  width: 200px;
+  height: 24px;
   background: #ffffff;
   z-index: 1000;
   pointer-events: none;
