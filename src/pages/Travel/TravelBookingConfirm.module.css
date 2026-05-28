@@ -1,0 +1,170 @@
+/* Travel Booking Confirm Styles */
+
+.page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--container-padding);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.title {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.cardTitle {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md);
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-small);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  color: var(--text-secondary);
+}
+
+.detailValue {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-align: right;
+}
+
+.detailHighlight {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.priceSection {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+.priceRow:last-of-type {
+  border-bottom: none;
+}
+
+.priceRowValue {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.priceTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  border-top: 2px solid var(--border);
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.priceTotalValue {
+  color: var(--success);
+  font-size: 24px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.confirmButton {
+  width: 100%;
+  padding: var(--spacing-md) !important;
+  font-size: var(--font-size-body) !important;
+  font-weight: 600 !important;
+}
+
+.cancelLink {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: underline;
+  padding: var(--spacing-sm);
+}
+
+.cancelLink:hover {
+  color: var(--text-primary);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .card,
+  .priceSection {
+    padding: var(--spacing-md);
+  }
+
+  .detailRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detailValue {
+    text-align: left;
+  }
+
+  .priceTotalValue {
+    font-size: 20px;
+  }
+}

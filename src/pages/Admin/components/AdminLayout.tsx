@@ -9,13 +9,22 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/admin', label: 'Дашборд', icon: '' },
-  { path: '/admin/parkings', label: 'Парковки', icon: '' },
-  { path: '/admin/users', label: 'Пользователи', icon: '' },
-  { path: '/admin/bookings', label: 'Бронирования', icon: '' },
-  { path: '/admin/reviews', label: 'Отзывы', icon: '' },
-  { path: '/admin/promotions', label: 'Акции', icon: '' },
-  { path: '/admin/settings', label: 'Настройки', icon: '' },
+  { path: '/admin', label: 'Дашборд', icon: '📊' },
+  { path: '/admin/parkings', label: 'Парковки', icon: '🅿' },
+  { path: '/admin/users', label: 'Пользователи', icon: '👤' },
+  { path: '/admin/bookings', label: 'Бронирования', icon: '📋' },
+  { path: '/admin/reviews', label: 'Отзывы', icon: '⭐' },
+  { path: '/admin/promotions', label: 'Акции', icon: '🎯' },
+  { path: '/admin/settings', label: 'Настройки', icon: '⚙️' },
+];
+
+const travelAdminItems: NavItem[] = [
+  { path: '/admin/travel', label: 'Дашборд поездок', icon: '🏖️' },
+  { path: '/admin/travel/destinations', label: 'Направления', icon: '🗺️' },
+  { path: '/admin/travel/partners', label: 'Партнёры', icon: '🏢' },
+  { path: '/admin/travel/cars', label: 'Автомобили', icon: '🚗' },
+  { path: '/admin/travel/bookings', label: 'Брони поездок', icon: '📅' },
+  { path: '/admin/travel/storage', label: 'Хранение', icon: '🔒' },
 ];
 
 interface AdminLayoutProps {
@@ -50,12 +59,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
         
         <nav className="admin-nav">
+          <div className="admin-nav-section-title">Парковки</div>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               end={item.path === '/admin'}
+            >
+              <span className="admin-nav-icon">{item.icon}</span>
+              <span className="admin-nav-label">{item.label}</span>
+            </NavLink>
+          ))}
+          <div className="admin-nav-section-title">Поездки на море</div>
+          {travelAdminItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
+              end={item.path === '/admin/travel'}
             >
               <span className="admin-nav-icon">{item.icon}</span>
               <span className="admin-nav-label">{item.label}</span>

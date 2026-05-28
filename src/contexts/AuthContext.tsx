@@ -29,10 +29,10 @@ export interface User {
   email: string;
   phone: string;
   created_at?: string;
-  role?: 'user' | 'moderator' | 'admin';
+  role?: 'user' | 'moderator' | 'admin' | 'partner';
 }
 
-export type UserRole = 'user' | 'moderator' | 'admin';
+export type UserRole = 'user' | 'moderator' | 'admin' | 'partner';
 
 interface AuthContextType {
   user: User | null;
@@ -40,6 +40,8 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   isModerator: boolean;
+  isPartner: boolean;
+  partnerId: string | null;
   hasAdminAccess: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -208,8 +210,8 @@ function clearSession(): void {
 }
 
 // Normalize role string to valid values
-function normalizeRole(role: string | undefined | null): 'user' | 'moderator' | 'admin' {
-  if (role === 'admin' || role === 'moderator') return role;
+function normalizeRole(role: string | undefined | null): 'user' | 'moderator' | 'admin' | 'partner' {
+  if (role === 'admin' || role === 'moderator' || role === 'partner') return role;
   return 'user';
 }
 function isValidEmail(email: string): boolean {
@@ -797,6 +799,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAdmin: user?.role === 'admin',
         isModerator: user?.role === 'admin' || user?.role === 'moderator',
+        isPartner: user?.role === 'partner',
+        partnerId: user?.role === 'partner' ? user.id : null,
         hasAdminAccess: user?.role === 'admin' || user?.role === 'moderator',
         login,
         register,

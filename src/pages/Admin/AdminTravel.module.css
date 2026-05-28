@@ -1,0 +1,420 @@
+/* ============================================================================
+   Sea Trips (Поездки на море) — Admin Module Styles
+   Uses CSS variables from src/styles/variables.css for dark mode compatibility
+   ============================================================================ */
+
+/* Dashboard */
+.travelDashboard {
+  max-width: 1400px;
+}
+
+.travelPageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.travelPageHeader h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.travelPageHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary, #1a1a2e);
+}
+
+/* Quick Links */
+.travelQuickLinks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.travelQuickLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-primary, #1a1a2e);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.travelQuickLink:hover {
+  background: var(--accent, #667eea);
+  color: #ffffff;
+  border-color: var(--accent, #667eea);
+  transform: translateY(-2px);
+}
+
+/* Stats overlay on cards for travel module */
+.travelStatIcon {
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.travelStatIconRevenue {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.travelStatIconCommission {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.travelStatIconBookings {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.travelStatIconActive {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Stats row for destination/partner/car pages */
+.travelStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.travelStatCard {
+  background: var(--bg-card, #ffffff);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.travelStatValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+  line-height: 1.2;
+}
+
+.travelStatLabel {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+/* Compact table cells for travel pages */
+.travelIdCell {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.travelTruncate {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travelPriceCell {
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  white-space: nowrap;
+}
+
+/* Badge variants for travel-specific statuses */
+.travelBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.travelBadgePending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.travelBadgeConfirmed {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.travelBadgeActive {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.travelBadgeCompleted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.travelBadgeCancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.travelBadgeInStorage {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+/* Payment badges */
+.travelPaymentBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.travelPaymentBadgePending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.travelPaymentBadgePaid {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.travelPaymentBadgeRefunded {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.travelPaymentBadgePartiallyRefunded {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* Action buttons compact */
+.travelActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.travelActionBtn {
+  padding: 6px 12px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #1a1a2e);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.travelActionBtn:hover {
+  background: var(--accent, #667eea);
+  color: #ffffff;
+  border-color: var(--accent, #667eea);
+}
+
+.travelActionBtnDanger:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.travelActionBtnSuccess:hover {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+/* Filter bar with labels (like AdminBookings pattern) */
+.travelFilterBar {
+  margin-bottom: 24px;
+}
+
+.travelFilterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.travelFilterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.travelFilterGroup label {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #6b7280);
+  font-weight: 500;
+}
+
+.travelFilterGroup input,
+.travelFilterGroup select {
+  padding: 10px 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary, #1a1a2e);
+  background: var(--bg-card, #ffffff);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.travelFilterGroup input:focus,
+.travelFilterGroup select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.travelFilterReset {
+  padding: 10px 20px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.travelFilterReset:hover {
+  background: #e5e7eb;
+  color: var(--text-primary, #1a1a2e);
+}
+
+/* Status select dropdown */
+.travelStatusSelect {
+  padding: 6px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-primary, #1a1a2e);
+  background: var(--bg-card, #ffffff);
+  cursor: pointer;
+}
+
+.travelStatusSelect:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Image thumbnail */
+.travelThumb {
+  width: 60px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+/* Date cell */
+.travelDatesCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.travelDatesSeparator {
+  color: #9ca3af;
+}
+
+/* Rating stars */
+.travelRating {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .travelStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .travelQuickLinks {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .travelStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .travelStatValue {
+    font-size: 1.5rem;
+  }
+
+  .travelQuickLinks {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .travelQuickLink {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .travelPageHeader {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .travelFilterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .travelFilterGroup {
+    min-width: auto;
+  }
+
+  .travelActions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .travelStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .travelQuickLinks {
+    grid-template-columns: 1fr;
+  }
+}

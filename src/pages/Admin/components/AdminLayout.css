@@ -41,6 +41,22 @@
   overflow-y: auto;
 }
 
+.admin-nav-section-title {
+  padding: 20px 20px 8px 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 8px;
+}
+
+.admin-nav-section-title:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
 .admin-nav-item {
   display: flex;
   align-items: center;

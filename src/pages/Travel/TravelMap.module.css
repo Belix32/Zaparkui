@@ -1,0 +1,488 @@
+/* ============================================================================
+   Travel Map Page — Full-screen partner office map with sidebar
+   ============================================================================
+   Layout:
+     .page — full viewport wrapper (100vh - header height)
+     .sidebar — absolute left panel over the map
+     .mapContainer — fills remaining space
+   ============================================================================ */
+
+/* -- CSS custom properties for this page -- */
+.page {
+  --map-header-height: 80px;
+
+  position: relative;
+  height: calc(100vh - var(--map-header-height));
+  margin-top: var(--map-header-height);
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* ============================================================================
+   Map Container
+   ============================================================================ */
+
+.mapContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ============================================================================
+   Back Button (top right)
+   ============================================================================ */
+
+.backButton {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  z-index: 1001;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.backButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.backButton svg {
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   Sidebar Toggle (mobile)
+   ============================================================================ */
+
+.sidebarToggle {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  z-index: 1001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all var(--transition-fast);
+}
+
+.sidebarToggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sidebarToggleActive {
+  left: calc(360px + var(--spacing-md));
+}
+
+/* ============================================================================
+   Sidebar
+   ============================================================================ */
+
+.sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 360px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.06);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  overflow: hidden;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.1);
+}
+
+.sidebarHasSelection {
+  /* subtle indicator when a location is selected */
+}
+
+/* Sidebar header */
+.sidebarHeader {
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.sidebarTitle {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.sidebarSubtitle {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Filter dropdown */
+.filterWrapper {
+  padding: 0 var(--spacing-lg) var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.filterSelect {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  padding-right: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color var(--transition-fast);
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Office list */
+.officeList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.officeList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.officeList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.officeList::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.officeListEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+}
+
+/* Office item in the list */
+.officeItem {
+  display: flex;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.officeItem:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.officeItem:last-child {
+  margin-bottom: 0;
+}
+
+.officeItemActive {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg-card));
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Colored dot for destination */
+.officeItemDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.officeItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.officeItemName {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.officeItemAddress {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.officeItemPhone {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.officeItemServices {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.serviceBadge {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.officeItemPartner {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  margin-left: var(--spacing-xs);
+  opacity: 0.8;
+}
+
+/* ============================================================================
+   Popup Styles
+   ============================================================================ */
+
+.popup {
+  font-size: 13px;
+  line-height: 1.5;
+  min-width: 200px;
+}
+
+.popupName {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.3;
+}
+
+.popupAddress,
+.popupPhone {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.popupAddress svg,
+.popupPhone svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--text-secondary);
+}
+
+.popupServices {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  font-size: 13px;
+}
+
+.popupDetailBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  margin-top: var(--spacing-xs);
+}
+
+.popupDetailBtn:hover {
+  background: var(--accent-hover);
+}
+
+/* ============================================================================
+   Leaflet Popup Overrides
+   ============================================================================ */
+
+/* Style Leaflet popup to match the design system */
+:global(.leaflet-popup-content-wrapper) {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  padding: 0 !important;
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+:global(.leaflet-popup-content) {
+  margin: var(--spacing-md) !important;
+  font-family: var(--font-primary) !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+:global(.leaflet-popup-tip) {
+  background: var(--bg-card) !important;
+  box-shadow: none !important;
+}
+
+:global(.leaflet-popup-close-button) {
+  color: var(--text-secondary) !important;
+  font-size: 18px !important;
+  padding: 6px !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: color var(--transition-fast) !important;
+}
+
+:global(.leaflet-popup-close-button:hover) {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+}
+
+/* ============================================================================
+   Responsive: Tablet
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 320px;
+  }
+
+  .sidebarToggleActive {
+    left: calc(320px + var(--spacing-md));
+  }
+}
+
+/* ============================================================================
+   Responsive: Mobile
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .page {
+    --map-header-height: 60px;
+  }
+
+  .sidebarToggle {
+    display: flex;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: 100%;
+    transform: translateX(-100%);
+    background: var(--bg-primary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-right: none;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebarToggleActive {
+    left: auto;
+    right: var(--spacing-md);
+  }
+
+  .backButton {
+    top: auto;
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebarHeader {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+  }
+
+  .sidebarTitle {
+    font-size: 18px;
+  }
+
+  .filterWrapper {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+  }
+
+  .officeList {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .backButton {
+    font-size: var(--font-size-caption);
+    padding: 6px 12px;
+  }
+
+  .officeItem {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .officeItemName {
+    font-size: var(--font-size-small);
+  }
+}

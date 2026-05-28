@@ -31,6 +31,29 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin/AdminLogin').then(m => 
 // Payment coming soon
 const PaymentComingSoon = lazy(() => import('./pages/PaymentComingSoon/PaymentComingSoon').then(m => ({ default: m.PaymentComingSoon })));
 
+// Travel module (Sea Trips)
+const TravelHome = lazy(() => import('./pages/Travel/TravelHome').then(m => ({ default: m.TravelHome })));
+const TravelSearch = lazy(() => import('./pages/Travel/TravelSearch').then(m => ({ default: m.TravelSearch })));
+const TravelBooking = lazy(() => import('./pages/Travel/TravelBooking').then(m => ({ default: m.TravelBooking })));
+const TravelBookingConfirm = lazy(() => import('./pages/Travel/TravelBookingConfirm').then(m => ({ default: m.TravelBookingConfirm })));
+const TravelBookingSuccess = lazy(() => import('./pages/Travel/TravelBookingSuccess').then(m => ({ default: m.TravelBookingSuccess })));
+const MyTravelTrips = lazy(() => import('./pages/Travel/MyTravelTrips').then(m => ({ default: m.MyTravelTrips })));
+const TravelMap = lazy(() => import('./pages/Travel/TravelMap').then(m => ({ default: m.TravelMap })));
+
+// Travel Admin pages
+const AdminTravelDashboard = lazy(() => import('./pages/Admin/AdminTravelDashboard').then(m => ({ default: m.AdminTravelDashboard })));
+const AdminTravelDestinations = lazy(() => import('./pages/Admin/AdminTravelDestinations').then(m => ({ default: m.AdminTravelDestinations })));
+const AdminTravelPartners = lazy(() => import('./pages/Admin/AdminTravelPartners').then(m => ({ default: m.AdminTravelPartners })));
+const AdminTravelCars = lazy(() => import('./pages/Admin/AdminTravelCars').then(m => ({ default: m.AdminTravelCars })));
+const AdminTravelBookings = lazy(() => import('./pages/Admin/AdminTravelBookings').then(m => ({ default: m.AdminTravelBookings })));
+const AdminTravelStorage = lazy(() => import('./pages/Admin/AdminTravelStorage').then(m => ({ default: m.AdminTravelStorage })));
+
+// Partner Cabinet pages
+const PartnerDashboard = lazy(() => import('./pages/Partner/PartnerDashboard').then(m => ({ default: m.PartnerDashboard })));
+const PartnerCars = lazy(() => import('./pages/Partner/PartnerCars').then(m => ({ default: m.PartnerCars })));
+const PartnerBookings = lazy(() => import('./pages/Partner/PartnerBookings').then(m => ({ default: m.PartnerBookings })));
+const PartnerStorage = lazy(() => import('./pages/Partner/PartnerStorage').then(m => ({ default: m.PartnerStorage })));
+
 // Loading fallback component
 function PageLoader() {
   return (
@@ -90,6 +113,29 @@ function App() {
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/promotions" element={<AdminPromotions />} />
+            
+            {/* Travel Module Routes */}
+            <Route path="/travel" element={<TravelHome />} />
+            <Route path="/travel/search" element={<TravelSearch />} />
+            <Route path="/travel/booking/:carId" element={<TravelBooking />} />
+            <Route path="/travel/booking/confirm" element={<TravelBookingConfirm />} />
+            <Route path="/travel/booking/success" element={<TravelBookingSuccess />} />
+            <Route path="/travel/my-trips" element={<MyTravelTrips />} />
+            <Route path="/travel/map" element={<TravelMap />} />
+            
+            {/* Travel Admin Routes */}
+            <Route path="/admin/travel" element={<AdminTravelDashboard />} />
+            <Route path="/admin/travel/destinations" element={<AdminTravelDestinations />} />
+            <Route path="/admin/travel/partners" element={<AdminTravelPartners />} />
+            <Route path="/admin/travel/cars" element={<AdminTravelCars />} />
+            <Route path="/admin/travel/bookings" element={<AdminTravelBookings />} />
+            <Route path="/admin/travel/storage" element={<AdminTravelStorage />} />
+            
+            {/* Partner Cabinet Routes */}
+            <Route path="/partner" element={<PartnerDashboard />} />
+            <Route path="/partner/cars" element={<PartnerCars />} />
+            <Route path="/partner/bookings" element={<PartnerBookings />} />
+            <Route path="/partner/storage" element={<PartnerStorage />} />
           </Routes>
         </Suspense>
       </main>

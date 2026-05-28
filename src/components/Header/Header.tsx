@@ -10,7 +10,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toggleTheme, isDark } = useTheme();
-  const { user, logout, hasAdminAccess } = useAuth();
+  const { user, logout, hasAdminAccess, isPartner } = useAuth();
   const { favorites } = useFavorites();
   const navigate = useNavigate();
 
@@ -40,6 +40,7 @@ export function Header() {
           <nav className={styles.nav} aria-label="Главное меню">
             <NavLink to="/" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Главная</NavLink>
             <NavLink to="/catalog" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Каталог</NavLink>
+            <NavLink to="/travel" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>На море</NavLink>
           </nav>
 
           {/* Desktop actions */}
@@ -59,6 +60,9 @@ export function Header() {
                   <Link to="/dashboard"><Button variant="ghost" size="small">Личный кабинет</Button></Link>
                   {hasAdminAccess && (
                     <Link to="/admin"><Button variant="outline" size="small">Админка</Button></Link>
+                  )}
+                  {isPartner && (
+                    <Link to="/partner"><Button variant="outline" size="small">Кабинет</Button></Link>
                   )}
                   <Button variant="secondary" size="small" onClick={handleLogout}>Выйти</Button>
                 </div>
@@ -102,12 +106,18 @@ export function Header() {
               <NavLink to="/catalog" className={({ isActive }) => isActive ? styles.mobileNavLinkActive : styles.mobileNavLink}>
                 Каталог парковок
               </NavLink>
+              <NavLink to="/travel" className={({ isActive }) => isActive ? styles.mobileNavLinkActive : styles.mobileNavLink}>
+                Поездки на море
+              </NavLink>
               {user && (
                 <>
                   <Link to="/dashboard" className={styles.mobileNavLink}>Личный кабинет</Link>
                   <Link to="/profile" className={styles.mobileNavLink}>Избранное</Link>
                   {hasAdminAccess && (
                     <Link to="/admin" className={styles.mobileNavLink}>Админ-панель</Link>
+                  )}
+                  {isPartner && (
+                    <Link to="/partner" className={styles.mobileNavLink}>Кабинет партнёра</Link>
                   )}
                   <button onClick={handleLogout} className={styles.mobileNavLink}>Выйти</button>
                 </>

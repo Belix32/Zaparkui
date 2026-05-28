@@ -1,0 +1,312 @@
+/* Travel Booking Page Styles */
+
+.page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--container-padding);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.title {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Car Details Card */
+.carCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+}
+
+.carImage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--bg-secondary), var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.carImage svg {
+  width: 80px;
+  height: 80px;
+}
+
+.carInfo {
+  padding: var(--spacing-lg);
+}
+
+.carName {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.carSpecs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.carSpec {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+.carSpec svg {
+  width: 18px;
+  height: 18px;
+}
+
+.carPartner {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.carPrice {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.carPriceLabel {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Date display */
+.dateDisplay {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.dateBox {
+  flex: 1;
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.dateLabel {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.dateValue {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Section */
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md);
+}
+
+/* Your Car Form */
+.carFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.carFormFull {
+  grid-column: 1 / -1;
+}
+
+/* Storage Toggle */
+.storageToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: var(--spacing-md);
+}
+
+.storageToggle:hover {
+  border-color: var(--accent);
+}
+
+.storageToggleActive {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-secondary));
+}
+
+.storageCheckbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.storageCheckboxChecked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.storageCheckboxChecked svg {
+  color: #fff;
+}
+
+.storageInfo {
+  flex: 1;
+}
+
+.storageTitle {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.storagePrice {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+/* Price Breakdown */
+.priceBreakdown {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+.priceRow:last-of-type {
+  border-bottom: none;
+}
+
+.priceRowValue {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.priceTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  border-top: 2px solid var(--border);
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.priceTotalValue {
+  color: var(--success);
+  font-size: 24px;
+}
+
+/* Form actions */
+.formActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.submitButton {
+  width: 100%;
+  padding: var(--spacing-md) !important;
+  font-size: var(--font-size-body) !important;
+  font-weight: 600 !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .carFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .carInfo {
+    padding: var(--spacing-md);
+  }
+
+  .carName {
+    font-size: var(--font-size-h3);
+  }
+
+  .dateDisplay {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: var(--spacing-md);
+  }
+
+  .carPrice {
+    font-size: 24px;
+  }
+
+  .priceTotalValue {
+    font-size: 20px;
+  }
+}

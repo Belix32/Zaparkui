@@ -1,0 +1,255 @@
+/* Travel Booking Success Styles */
+
+.page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--container-padding);
+}
+
+.successHeader {
+  text-align: center;
+  padding: var(--spacing-2xl) var(--spacing-md);
+  background: linear-gradient(135deg, #0c4a6e, #0369a1);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-md);
+  color: var(--success);
+}
+
+.successIcon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.title {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 var(--spacing-sm);
+}
+
+.subtitle {
+  font-size: var(--font-size-body);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.bookingId {
+  display: inline-block;
+  margin-top: var(--spacing-md);
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  font-size: var(--font-size-small);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: monospace;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* QR Code Card */
+.qrCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+.cardTitle {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.qrDesc {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg);
+}
+
+.qrWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.qrPlaceholder {
+  width: 200px;
+  height: 200px;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+}
+
+.qrPlaceholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.4;
+}
+
+.qrPlaceholderText {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+}
+
+/* Details Card */
+.detailsCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.detailRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.detailContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailLabel {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.detailHighlight {
+  font-size: 18px;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.carPlate {
+  font-size: var(--font-size-small);
+  color: var(--accent);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* Status Badge */
+.statusBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--success);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.actionButton {
+  width: 100%;
+  padding: var(--spacing-md) !important;
+  font-size: var(--font-size-body) !important;
+  font-weight: 600 !important;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .successHeader {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+
+  .successIcon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .successIcon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .qrPlaceholder {
+    width: 160px;
+    height: 160px;
+  }
+
+  .detailsCard {
+    padding: var(--spacing-md);
+  }
+
+  .actions {
+    gap: var(--spacing-sm);
+  }
+}
