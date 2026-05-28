@@ -6,9 +6,9 @@
 }
 
 .pageHeader {
-  background: linear-gradient(135deg, #0c4a6e, #0369a1);
+  background: var(--ocean-gradient);
   padding: var(--spacing-xl) 0;
-  color: #fff;
+  color: var(--ocean-text);
 }
 
 .pageHeaderContent {
@@ -21,12 +21,12 @@
   font-size: var(--font-size-h2);
   font-weight: 700;
   margin: 0 0 var(--spacing-sm);
-  color: #fff;
+  color: var(--ocean-text);
 }
 
 .pageSubtitle {
   font-size: var(--font-size-body);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--ocean-text-secondary);
   margin: 0;
 }
 
@@ -216,7 +216,7 @@
 
 .carCard:hover {
   border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card-hover);
   transform: translateY(-2px);
 }
 

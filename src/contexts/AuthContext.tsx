@@ -503,85 +503,111 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Supabase is configured - use real auth
     console.log('Using Supabase auth');
-    try {
-      const supabaseClient = getSupabaseClient();
-      console.log('Attempting login');
-      
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password,
-      });
+    
+    // Retry logic for transient network errors
+    const maxRetries = 2;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const supabaseClient = getSupabaseClient();
+        
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password,
+        });
 
-      if (error) {
-        console.error('Supabase auth error:', error);
-        
-        // Check for specific errors
-        if (error.message.includes('Invalid login credentials')) {
-          return { success: false, error: 'Неверный email или пароль. Проверьте данные.' };
+        if (error) {
+          console.error('Supabase auth error:', error);
+          
+          // Network-related errors — retry
+          if (
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('NetworkError') ||
+            error.message.includes('ERR_CONNECTION') ||
+            error.message.includes('retryable')
+          ) {
+            if (attempt < maxRetries) {
+              console.log(`Retrying login (attempt ${attempt + 2}/${maxRetries + 1})...`);
+              await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+              continue;
+            }
+            return { success: false, error: 'Ошибка сети. Проверьте подключение к интернету и попробуйте снова.' };
+          }
+          
+          // Check for specific errors (non-retryable)
+          if (error.message.includes('Invalid login credentials')) {
+            return { success: false, error: 'Неверный email или пароль. Проверьте данные.' };
+          }
+          if (error.message.includes('Email not confirmed')) {
+            return { success: false, error: 'Email не подтверждён. Проверьте почту.' };
+          }
+          if (error.message.includes('User already registered')) {
+            return { success: false, error: 'Пользователь с таким email уже существует.' };
+          }
+          if (error.message.includes('Invalid email')) {
+            return { success: false, error: 'Неверный формат email.' };
+          }
+          // Default Russian error message
+          return { success: false, error: 'Ошибка входа. Попробуйте позже.' };
         }
-        if (error.message.includes('Email not confirmed')) {
-          return { success: false, error: 'Email не подтверждён. Проверьте почту.' };
-        }
-        if (error.message.includes('User already registered')) {
-          return { success: false, error: 'Пользователь с таким email уже существует.' };
-        }
-        if (error.message.includes('Invalid email')) {
-          return { success: false, error: 'Неверный формат email.' };
-        }
-        // Default Russian error message
-        return { success: false, error: 'Ошибка входа. Попробуйте позже.' };
-      }
 
-      if (data?.user) {
-        // Fetch user profile from users table - try multiple methods
-        let userData = null;
-        
-        const { data: userByAuthId } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('auth_id', data.user.id)
-          .single();
-        
-        if (userByAuthId) {
-          userData = userByAuthId;
-        } else {
-          // Fallback: try by email
-          const { data: userByEmail } = await supabaseClient
+        // ─── Success ──────────────────────────────────────────
+        if (data?.user) {
+          let userData = null;
+          
+          const { data: userByAuthId } = await supabaseClient
             .from('profiles')
             .select('*')
-            .eq('email', data.user.email)
+            .eq('auth_id', data.user.id)
             .single();
           
-          if (userByEmail) {
-            userData = userByEmail;
+          if (userByAuthId) {
+            userData = userByAuthId;
+          } else {
+            const { data: userByEmail } = await supabaseClient
+              .from('profiles')
+              .select('*')
+              .eq('email', data.user.email)
+              .single();
+            
+            if (userByEmail) {
+              userData = userByEmail;
+            }
           }
+
+          const userObj: User = userData ? {
+            id: data.user.id,
+            name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
+            email: userData.email || data.user.email || email,
+            phone: userData.phone || '',
+            created_at: userData.created_at,
+            role: userData?.role ? normalizeRole(userData.role) : (isAdminEmail(email) ? 'admin' as const : 'user' as const),
+          } : {
+            id: data.user.id,
+            name: data.user.email?.split('@')[0] || 'User',
+            email: data.user.email || email,
+            phone: '',
+            role: isAdminEmail(email) ? 'admin' as const : 'user' as const,
+          };
+          
+          setUser(userObj);
+          saveUserSession(userObj);
         }
 
-        const userObj: User = userData ? {
-          id: data.user.id,
-          name: userData.name || data.user.email?.split('@')[0] || 'Пользователь',
-          email: userData.email || data.user.email || email,
-          phone: userData.phone || '',
-          created_at: userData.created_at,
-          role: userData?.role ? normalizeRole(userData.role) : (isAdminEmail(email) ? 'admin' as const : 'user' as const),
-        } : {
-          id: data.user.id,
-          name: data.user.email?.split('@')[0] || 'User',
-          email: data.user.email || email,
-          phone: '',
-          role: isAdminEmail(email) ? 'admin' as const : 'user' as const,
-        };
+        return { success: true, role: data?.user ? (isAdminEmail(email) ? 'admin' : 'user') : undefined };
         
-        setUser(userObj);
-        saveUserSession(userObj);
+      } catch (networkError) {
+        console.error(`Login error (attempt ${attempt + 1}/${maxRetries + 1}):`, networkError);
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        return { success: false, error: 'Ошибка сети. Проверьте подключение к интернету и попробуйте снова.' };
       }
-
-      return { success: true, role: data?.user ? (isAdminEmail(email) ? 'admin' : 'user') : undefined };
-    } catch (supabaseError) {
-      console.error('Supabase login error:', supabaseError);
-      // Don't fallback to demo mode in production - show error instead
-      return { success: false, error: 'Ошибка подключения к серверу. Попробуйте позже.' };
     }
+    
+    // Fallback (shouldn't reach here)
+    return { success: false, error: 'Ошибка входа. Попробуйте позже.' };
   };
 
   const register = async (
@@ -634,73 +660,108 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true };
     }
 
-    try {
-      const supabaseClient = getSupabaseClient();
-      const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    // Retry logic for transient network errors
+    const maxRetries = 2;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const supabaseClient = getSupabaseClient();
 
-      // Sign up with Supabase Auth - bypass email confirmation
-      const { data, error } = await supabaseClient.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          data: {
-            name: sanitizeInput(name.trim()),
-            phone: phone.trim(),
+        // Sign up with Supabase Auth
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            data: {
+              name: sanitizeInput(name.trim()),
+              phone: phone.trim(),
+            },
+            emailRedirectTo: window.location.origin,
           },
-          emailRedirectTo: window.location.origin,
-        },
-      });
+        });
 
-      // If user is automatically confirmed (or disable confirmation)
-      // Also manually create/update user profile in users table
-      // Note: trigger on_auth_user_created already inserted a profile with defaults,
-      // so we use upsert to update it with name/phone/role
-      if (data?.user) {
-        const { error: profileError } = await supabaseClient
-          .from('profiles')
-          .upsert({
-            auth_id: data.user.id,
-            email: normalizedEmail,
-            name: sanitizeInput(name.trim()),
-            phone: phone.trim(),
-            role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
-          }, { onConflict: 'auth_id' });
+        if (error) {
+          console.error('Supabase signup error:', error);
+          
+          // Network-related errors — retry
+          if (
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('NetworkError') ||
+            error.message.includes('ERR_CONNECTION') ||
+            error.message.includes('retryable')
+          ) {
+            if (attempt < maxRetries) {
+              console.log(`Retrying signup (attempt ${attempt + 2}/${maxRetries + 1})...`);
+              await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+              continue;
+            }
+            return { success: false, error: 'Ошибка сети. Проверьте подключение к интернету и попробуйте снова.' };
+          }
+          
+          // Non-retryable errors
+          if (error.message.includes('User already registered')) {
+            return { success: false, error: 'Пользователь с таким email уже существует.' };
+          }
+          if (error.message.includes('Password')) {
+            return { success: false, error: 'Пароль слишком простой. Используйте минимум 8 символов.' };
+          }
+          if (error.message.includes('Invalid email') || error.message.includes('email_address_invalid')) {
+            return { success: false, error: 'Неверный формат email.' };
+          }
+          return { success: false, error: 'Ошибка регистрации. Попробуйте позже.' };
+        }
 
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-          // Fallback: try direct update if upsert fails
-          await supabaseClient
+        // If user is automatically confirmed (or disable confirmation)
+        if (data?.user) {
+          const { error: profileError } = await supabaseClient
             .from('profiles')
-            .update({
+            .upsert({
+              auth_id: data.user.id,
+              email: normalizedEmail,
               name: sanitizeInput(name.trim()),
               phone: phone.trim(),
               role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
-            })
-            .eq('auth_id', data.user.id);
+            }, { onConflict: 'auth_id' });
+
+          if (profileError) {
+            console.error('Error creating user profile:', profileError);
+            await supabaseClient
+              .from('profiles')
+              .update({
+                name: sanitizeInput(name.trim()),
+                phone: phone.trim(),
+                role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
+              })
+              .eq('auth_id', data.user.id);
+          }
+
+          setUser({
+            id: data.user.id,
+            name: sanitizeInput(name.trim()),
+            email: normalizedEmail,
+            phone: phone.trim(),
+            role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
+          });
+
+          return { success: true };
         }
 
-        // Set user in state
-        setUser({
-          id: data.user.id,
-          name: sanitizeInput(name.trim()),
-          email: normalizedEmail,
-          phone: phone.trim(),
-          role: isAdminEmail(normalizedEmail) ? 'admin' : 'user',
-        });
-
+        // Email confirmation required
         return { success: true };
+        
+      } catch (networkError) {
+        console.error(`Registration error (attempt ${attempt + 1}/${maxRetries + 1}):`, networkError);
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        return { success: false, error: 'Ошибка сети. Проверьте подключение к интернету и попробуйте снова.' };
       }
-
-      // Check if email confirmation is required
-      if (data?.user === null) {
-        return { success: true };
-      }
-
-      return { success: true };
-    } catch (supabaseError) {
-      console.error('Registration error:', supabaseError);
-      return { success: false, error: 'Ошибка регистрации. Попробуйте позже.' };
     }
+    
+    return { success: false, error: 'Ошибка регистрации. Попробуйте позже.' };
   };
 
   const logout = async () => {

@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLayout } from './components/AdminLayout';
+import { TravelModal, ModalButtons } from './components/TravelModal';
+import modalStyles from './components/TravelModal.module.css';
 import styles from './AdminTravel.module.css';
 import type { RentalPartner } from '../../lib/travel/types';
 
@@ -312,298 +314,317 @@ export function AdminTravelPartners() {
         )}
 
         {/* View Modal */}
-        {viewItem && (
-          <div className="modal-overlay" onClick={() => setViewItem(null)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Информация о партнёре</h2>
-                <button className="modal-close" onClick={() => setViewItem(null)}>×</button>
-              </div>
-              <div className="modal-body">
-                {viewItem.logo && (
-                  <div className="parking-image-preview">
-                    <img src={viewItem.logo} alt={viewItem.name} />
-                  </div>
-                )}
-                <div className="detail-row">
-                  <span className="detail-label">ID:</span>
-                  <span className="detail-value">{viewItem.id}</span>
+        <TravelModal
+          isOpen={!!viewItem}
+          onClose={() => setViewItem(null)}
+          title={viewItem?.name || 'Информация о партнёре'}
+          subtitle="Детальная информация о партнёре"
+          icon="🏢"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.close(() => setViewItem(null))}
+            </div>
+          }
+        >
+          {viewItem && (
+            <>
+              {viewItem.logo && (
+                <div className={modalStyles.imagePreview}>
+                  <img src={viewItem.logo} alt={viewItem.name} />
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Название:</span>
-                  <span className="detail-value">{viewItem.name}</span>
+              )}
+              <div className={modalStyles.detailGrid}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>ID</span>
+                  <span className={modalStyles.detailValue}>{viewItem.id}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Slug:</span>
-                  <span className="detail-value">{viewItem.slug}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Название</span>
+                  <span className={modalStyles.detailValue}>{viewItem.name}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Телефон:</span>
-                  <span className="detail-value">{viewItem.phone || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Slug</span>
+                  <span className={modalStyles.detailValue}>{viewItem.slug}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Email:</span>
-                  <span className="detail-value">{viewItem.email || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Телефон</span>
+                  <span className={modalStyles.detailValue}>{viewItem.phone || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Вебсайт:</span>
-                  <span className="detail-value">{viewItem.website || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Email</span>
+                  <span className={modalStyles.detailValue}>{viewItem.email || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Рейтинг:</span>
-                  <span className="detail-value">
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Вебсайт</span>
+                  <span className={modalStyles.detailValue}>{viewItem.website || '-'}</span>
+                </div>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Рейтинг</span>
+                  <span className={modalStyles.detailValue}>
                     <span className={styles.travelRating}>
                       {viewItem.rating > 0 ? '★'.repeat(Math.round(viewItem.rating)) + ' ' + viewItem.rating.toFixed(1) : 'Нет'}
                     </span>
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Комиссия:</span>
-                  <span className="detail-value">{viewItem.commission_rate}%</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Комиссия</span>
+                  <span className={modalStyles.detailValue}>{viewItem.commission_rate}%</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Статус:</span>
-                  <span className={`status-badge ${viewItem.is_active ? 'status-active' : 'status-inactive'}`}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Статус</span>
+                  <span className={`${modalStyles.badge} ${viewItem.is_active ? modalStyles.badgeActive : modalStyles.badgeCancelled}`}>
                     {viewItem.is_active ? 'Активен' : 'Неактивен'}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Описание:</span>
-                  <span className="detail-value">{viewItem.description || '-'}</span>
+                <div className={`${modalStyles.detailItem} ${modalStyles.detailItemFull}`}>
+                  <span className={modalStyles.detailLabel}>Описание</span>
+                  <span className={modalStyles.detailValue}>{viewItem.description || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Дата создания:</span>
-                  <span className="detail-value">{formatDate(viewItem.created_at)}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Дата создания</span>
+                  <span className={modalStyles.detailValue}>{formatDate(viewItem.created_at)}</span>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button className="modal-btn" onClick={() => setViewItem(null)}>Закрыть</button>
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </TravelModal>
 
         {/* Edit Modal */}
-        {editItem && (
-          <div className="modal-overlay" onClick={() => setEditItem(null)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Редактирование партнёра</h2>
-                <button className="modal-close" onClick={() => setEditItem(null)}>×</button>
+        <TravelModal
+          isOpen={!!editItem}
+          onClose={() => setEditItem(null)}
+          title="Редактирование партнёра"
+          subtitle="Измените данные партнёра"
+          icon="✏️"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setEditItem(null))}
+              {ModalButtons.save(handleUpdateItem)}
+            </div>
+          }
+        >
+          {editItem && (
+            <div className={modalStyles.formGrid}>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Название <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.name}
+                  onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
+                />
               </div>
-              <div className="modal-body">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Название *</label>
-                    <input
-                      type="text"
-                      value={editItem.name}
-                      onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Slug *</label>
-                    <input
-                      type="text"
-                      value={editItem.slug}
-                      onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Телефон</label>
-                    <input
-                      type="text"
-                      value={editItem.phone || ''}
-                      onChange={(e) => setEditItem({ ...editItem, phone: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input
-                      type="text"
-                      value={editItem.email || ''}
-                      onChange={(e) => setEditItem({ ...editItem, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Вебсайт</label>
-                    <input
-                      type="text"
-                      value={editItem.website || ''}
-                      onChange={(e) => setEditItem({ ...editItem, website: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL логотипа</label>
-                    <input
-                      type="text"
-                      value={editItem.logo || ''}
-                      onChange={(e) => setEditItem({ ...editItem, logo: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Комиссия (%)</label>
-                    <input
-                      type="number"
-                      value={editItem.commission_rate}
-                      onChange={(e) => setEditItem({ ...editItem, commission_rate: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Статус</label>
-                    <select
-                      value={editItem.is_active ? 'active' : 'inactive'}
-                      onChange={(e) => setEditItem({ ...editItem, is_active: e.target.value === 'active' })}
-                    >
-                      <option value="active">Активен</option>
-                      <option value="inactive">Неактивен</option>
-                    </select>
-                  </div>
-                  <div className="form-group form-group-full">
-                    <label>Описание</label>
-                    <textarea
-                      value={editItem.description || ''}
-                      onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Slug <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.slug}
+                  onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })}
+                />
               </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setEditItem(null)}>Отмена</button>
-                <button className="modal-btn save-btn" onClick={handleUpdateItem}>Сохранить</button>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Телефон</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.phone || ''}
+                  onChange={(e) => setEditItem({ ...editItem, phone: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Email</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.email || ''}
+                  onChange={(e) => setEditItem({ ...editItem, email: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Вебсайт</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.website || ''}
+                  onChange={(e) => setEditItem({ ...editItem, website: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>URL логотипа</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.logo || ''}
+                  onChange={(e) => setEditItem({ ...editItem, logo: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Комиссия (%)</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="number"
+                  value={editItem.commission_rate}
+                  onChange={(e) => setEditItem({ ...editItem, commission_rate: Number(e.target.value) })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Статус</label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.is_active ? 'active' : 'inactive'}
+                  onChange={(e) => setEditItem({ ...editItem, is_active: e.target.value === 'active' })}
+                >
+                  <option value="active">Активен</option>
+                  <option value="inactive">Неактивен</option>
+                </select>
+              </div>
+              <div className={`${modalStyles.formGroup} ${modalStyles.formGroupFull}`}>
+                <label className={modalStyles.formLabel}>Описание</label>
+                <textarea
+                  className={modalStyles.formTextarea}
+                  value={editItem.description || ''}
+                  onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
+                  rows={3}
+                />
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </TravelModal>
 
         {/* Delete Confirmation */}
-        {deleteConfirmId && (
-          <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Подтверждение удаления</h2>
-                <button className="modal-close" onClick={() => setDeleteConfirmId(null)}>×</button>
-              </div>
-              <div className="modal-body">
-                <p className="confirm-text">
-                  Вы уверены, что хотите удалить партнёра <strong>{partners.find((p) => p.id === deleteConfirmId)?.name}</strong>?
-                </p>
-                <p className="confirm-warning">Это действие нельзя отменить!</p>
-              </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setDeleteConfirmId(null)}>Отмена</button>
-                <button className="modal-btn delete-confirm-btn" onClick={handleDeleteItem}>Удалить</button>
-              </div>
+        <TravelModal
+          isOpen={!!deleteConfirmId}
+          onClose={() => setDeleteConfirmId(null)}
+          title="Подтверждение удаления"
+          subtitle="Это действие нельзя отменить"
+          icon="🗑️"
+          size="default"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setDeleteConfirmId(null))}
+              {ModalButtons.delete(handleDeleteItem)}
             </div>
-          </div>
-        )}
+          }
+        >
+          <div className={modalStyles.confirmIcon}>🗑️</div>
+          <p className={modalStyles.confirmText}>
+            Вы уверены, что хотите удалить партнёра <strong>{partners.find((p) => p.id === deleteConfirmId)?.name}</strong>?
+          </p>
+          <p className={modalStyles.confirmWarning}>Это действие нельзя отменить!</p>
+        </TravelModal>
 
         {/* Add Modal */}
-        {addModalOpen && (
-          <div className="modal-overlay" onClick={() => setAddModalOpen(false)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Добавить партнёра</h2>
-                <button className="modal-close" onClick={() => setAddModalOpen(false)}>×</button>
-              </div>
-              <div className="modal-body">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Название *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => handleFormChange('name', e.target.value)}
-                      placeholder="Название компании"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Slug *</label>
-                    <input
-                      type="text"
-                      value={formData.slug}
-                      onChange={(e) => handleFormChange('slug', e.target.value)}
-                      placeholder="company-name"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Телефон</label>
-                    <input
-                      type="text"
-                      value={formData.phone}
-                      onChange={(e) => handleFormChange('phone', e.target.value)}
-                      placeholder="+7 (XXX) XXX-XX-XX"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input
-                      type="text"
-                      value={formData.email}
-                      onChange={(e) => handleFormChange('email', e.target.value)}
-                      placeholder="info@example.ru"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Вебсайт</label>
-                    <input
-                      type="text"
-                      value={formData.website}
-                      onChange={(e) => handleFormChange('website', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL логотипа</label>
-                    <input
-                      type="text"
-                      value={formData.logo}
-                      onChange={(e) => handleFormChange('logo', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Комиссия (%) *</label>
-                    <input
-                      type="number"
-                      value={formData.commission_rate}
-                      onChange={(e) => handleFormChange('commission_rate', Number(e.target.value))}
-                      placeholder="10"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <label className="checkbox-label" style={{ marginTop: 24 }}>
-                        <input
-                          type="checkbox"
-                          checked={formData.is_active}
-                          onChange={(e) => handleFormChange('is_active', e.target.checked)}
-                        />
-                        Активен
-                      </label>
-                    </label>
-                  </div>
-                  <div className="form-group form-group-full">
-                    <label>Описание</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => handleFormChange('description', e.target.value)}
-                      rows={3}
-                      placeholder="Описание партнёра..."
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setAddModalOpen(false)}>Отмена</button>
-                <button className="modal-btn save-btn" onClick={handleAddItem} disabled={!formData.name || !formData.slug}>
-                  Добавить
-                </button>
-              </div>
+        <TravelModal
+          isOpen={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          title="Добавить партнёра"
+          subtitle="Зарегистрируйте нового партнёра"
+          icon="➕"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setAddModalOpen(false))}
+              {ModalButtons.add(handleAddItem, !formData.name || !formData.slug)}
+            </div>
+          }
+        >
+          <div className={modalStyles.formGrid}>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Название <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleFormChange('name', e.target.value)}
+                placeholder="Название компании"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Slug <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.slug}
+                onChange={(e) => handleFormChange('slug', e.target.value)}
+                placeholder="company-name"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Телефон</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.phone}
+                onChange={(e) => handleFormChange('phone', e.target.value)}
+                placeholder="+7 (XXX) XXX-XX-XX"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Email</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.email}
+                onChange={(e) => handleFormChange('email', e.target.value)}
+                placeholder="info@example.ru"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Вебсайт</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.website}
+                onChange={(e) => handleFormChange('website', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>URL логотипа</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.logo}
+                onChange={(e) => handleFormChange('logo', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Комиссия (%) <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="number"
+                value={formData.commission_rate}
+                onChange={(e) => handleFormChange('commission_rate', Number(e.target.value))}
+                placeholder="10"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Статус</label>
+              <label className={modalStyles.formCheckbox}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => handleFormChange('is_active', e.target.checked)}
+                />
+                <span className={modalStyles.formCheckboxLabel}>Активен</span>
+              </label>
+            </div>
+            <div className={`${modalStyles.formGroup} ${modalStyles.formGroupFull}`}>
+              <label className={modalStyles.formLabel}>Описание</label>
+              <textarea
+                className={modalStyles.formTextarea}
+                value={formData.description}
+                onChange={(e) => handleFormChange('description', e.target.value)}
+                rows={3}
+                placeholder="Описание партнёра..."
+              />
             </div>
           </div>
-        )}
+        </TravelModal>
       </div>
     </AdminLayout>
   );

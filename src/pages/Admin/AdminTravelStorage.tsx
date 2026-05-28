@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLayout } from './components/AdminLayout';
+import { TravelModal, ModalButtons } from './components/TravelModal';
+import modalStyles from './components/TravelModal.module.css';
 import styles from './AdminTravel.module.css';
 import type { CarStorage, RentalPartner } from '../../lib/travel/types';
 
@@ -98,6 +100,8 @@ export function AdminTravelStorage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewItem, setViewItem] = useState<CarStorage | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [editStatusItem, setEditStatusItem] = useState<CarStorage | null>(null);
+  const [editStatusValue, setEditStatusValue] = useState<string>('');
 
   if (!hasAdminAccess) {
     return <Navigate to="/admin-login" />;
@@ -302,16 +306,13 @@ export function AdminTravelStorage() {
                           >
                             Детали
                           </button>
-                          <select
-                            className="admin-status-select"
-                            value={item.status}
-                            onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                          <button
+                            className="admin-action-btn admin-action-view"
+                            onClick={() => { setEditStatusItem(item); setEditStatusValue(item.status); }}
+                            title="Изменить статус"
                           >
-                            <option value="pending">Ожидает</option>
-                            <option value="in_storage">На хранении</option>
-                            <option value="completed">Завершено</option>
-                            <option value="cancelled">Отменено</option>
-                          </select>
+                            Статус
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -344,79 +345,140 @@ export function AdminTravelStorage() {
           )}
         </div>
 
-        {/* View Modal */}
-        {showModal && viewItem && (
-          <div className="admin-modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="admin-modal-header">
-                <h3>Детали хранения</h3>
-                <button className="admin-modal-close" onClick={() => setShowModal(false)}>✕</button>
+        {/* View Storage Details Modal */}
+        <TravelModal
+          isOpen={showModal && !!viewItem}
+          onClose={() => setShowModal(false)}
+          title="Детали хранения"
+          subtitle={`Запись: ${viewItem?.id || ''}`}
+          icon="🏗️"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.close(() => setShowModal(false))}
+            </div>
+          }
+        >
+          {viewItem && (
+            <div className={modalStyles.detailGrid}>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>ID записи</span>
+                <span className={modalStyles.detailValue}>{viewItem.id}</span>
               </div>
-              <div className="admin-modal-content">
-                <div className="admin-modal-grid">
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">ID записи</span>
-                    <span className="admin-modal-value">{viewItem.id}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">ID бронирования</span>
-                    <span className="admin-modal-value">{viewItem.travel_booking_id}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Автомобиль</span>
-                    <span className="admin-modal-value">{getDisplayCar(viewItem)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Госномер</span>
-                    <span className="admin-modal-value">{viewItem.car_license_plate}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Цвет</span>
-                    <span className="admin-modal-value">{viewItem.car_color || '-'}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Партнёр</span>
-                    <span className="admin-modal-value">{getPartnerName(viewItem.partner_id)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">План заезда</span>
-                    <span className="admin-modal-value">{formatDateTime(viewItem.check_in_date)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">План выезда</span>
-                    <span className="admin-modal-value">{formatDateTime(viewItem.check_out_date)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Факт. заезд</span>
-                    <span className="admin-modal-value">{viewItem.actual_check_in ? formatDateTime(viewItem.actual_check_in) : '—'}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Факт. выезд</span>
-                    <span className="admin-modal-value">{viewItem.actual_check_out ? formatDateTime(viewItem.actual_check_out) : '—'}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Статус</span>
-                    <span className={`${styles.travelBadge} ${
-                      viewItem.status === 'in_storage'
-                        ? styles.travelBadgeInStorage
-                        : styles['travelBadge' + viewItem.status.charAt(0).toUpperCase() + viewItem.status.slice(1)]
-                    }`}>
-                      {STATUS_LABELS[viewItem.status]}
-                    </span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Примечания</span>
-                    <span className="admin-modal-value">{viewItem.notes || '-'}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Дата создания</span>
-                    <span className="admin-modal-value">{formatDateTime(viewItem.created_at)}</span>
-                  </div>
-                </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>ID бронирования</span>
+                <span className={modalStyles.detailValue}>{viewItem.travel_booking_id}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Автомобиль</span>
+                <span className={modalStyles.detailValue}>{getDisplayCar(viewItem)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Госномер</span>
+                <span className={modalStyles.detailValue}>{viewItem.car_license_plate}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Цвет</span>
+                <span className={modalStyles.detailValue}>{viewItem.car_color || '-'}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Партнёр</span>
+                <span className={modalStyles.detailValue}>{getPartnerName(viewItem.partner_id)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>План заезда</span>
+                <span className={modalStyles.detailValue}>{formatDateTime(viewItem.check_in_date)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>План выезда</span>
+                <span className={modalStyles.detailValue}>{formatDateTime(viewItem.check_out_date)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Факт. заезд</span>
+                <span className={modalStyles.detailValue}>{viewItem.actual_check_in ? formatDateTime(viewItem.actual_check_in) : '—'}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Факт. выезд</span>
+                <span className={modalStyles.detailValue}>{viewItem.actual_check_out ? formatDateTime(viewItem.actual_check_out) : '—'}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Статус</span>
+                <span className={`${modalStyles.badge} ${
+                  viewItem.status === 'in_storage' ? modalStyles.badgeInStorage :
+                  modalStyles['badge' + viewItem.status.charAt(0).toUpperCase() + viewItem.status.slice(1)]
+                }`}>
+                  {STATUS_LABELS[viewItem.status]}
+                </span>
+              </div>
+              <div className={`${modalStyles.detailItem} ${modalStyles.detailItemFull}`}>
+                <span className={modalStyles.detailLabel}>Примечания</span>
+                <span className={modalStyles.detailValue}>{viewItem.notes || '-'}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Дата создания</span>
+                <span className={modalStyles.detailValue}>{formatDateTime(viewItem.created_at)}</span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </TravelModal>
+
+        {/* Edit Status Modal */}
+        <TravelModal
+          isOpen={!!editStatusItem}
+          onClose={() => setEditStatusItem(null)}
+          title="Изменение статуса хранения"
+          subtitle={editStatusItem ? `Авто: ${getDisplayCar(editStatusItem)}` : ''}
+          icon="🔄"
+          size="default"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setEditStatusItem(null))}
+              {ModalButtons.save(
+                () => {
+                  if (editStatusItem) {
+                    handleStatusChange(editStatusItem.id, editStatusValue);
+                    setEditStatusItem(null);
+                  }
+                },
+                false,
+                'Изменить статус'
+              )}
+            </div>
+          }
+        >
+          {editStatusItem && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className={modalStyles.detailGrid}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Текущий статус</span>
+                  <span className={`${modalStyles.badge} ${
+                    editStatusItem.status === 'in_storage' ? modalStyles.badgeInStorage :
+                    modalStyles['badge' + editStatusItem.status.charAt(0).toUpperCase() + editStatusItem.status.slice(1)]
+                  }`}>
+                    {STATUS_LABELS[editStatusItem.status]}
+                  </span>
+                </div>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Госномер</span>
+                  <span className={modalStyles.detailValue}>{editStatusItem.car_license_plate}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className={modalStyles.formLabel}>Новый статус</label>
+                <select
+                  className={modalStyles.statusSelect}
+                  value={editStatusValue}
+                  onChange={(e) => setEditStatusValue(e.target.value)}
+                >
+                  <option value="pending">Ожидает</option>
+                  <option value="in_storage">На хранении</option>
+                  <option value="completed">Завершено</option>
+                  <option value="cancelled">Отменено</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </TravelModal>
       </div>
     </AdminLayout>
   );

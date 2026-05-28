@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLayout } from './components/AdminLayout';
+import { TravelModal, ModalButtons } from './components/TravelModal';
+import modalStyles from './components/TravelModal.module.css';
 import styles from './AdminTravel.module.css';
 import type { TravelDestination } from '../../lib/travel/types';
 
@@ -317,290 +319,309 @@ export function AdminTravelDestinations() {
         )}
 
         {/* View Modal */}
-        {viewItem && (
-          <div className="modal-overlay" onClick={() => setViewItem(null)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Информация о направлении</h2>
-                <button className="modal-close" onClick={() => setViewItem(null)}>×</button>
-              </div>
-              <div className="modal-body">
-                {viewItem.image && (
-                  <div className="parking-image-preview">
-                    <img src={viewItem.image} alt={viewItem.name} />
-                  </div>
-                )}
-                <div className="detail-row">
-                  <span className="detail-label">ID:</span>
-                  <span className="detail-value">{viewItem.id}</span>
+        <TravelModal
+          isOpen={!!viewItem}
+          onClose={() => setViewItem(null)}
+          title={viewItem?.name || 'Информация о направлении'}
+          subtitle="Детальная информация о направлении"
+          icon="📍"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.close(() => setViewItem(null))}
+            </div>
+          }
+        >
+          {viewItem && (
+            <>
+              {viewItem.image && (
+                <div className={modalStyles.imagePreview}>
+                  <img src={viewItem.image} alt={viewItem.name} />
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Название:</span>
-                  <span className="detail-value">{viewItem.name}</span>
+              )}
+              <div className={modalStyles.detailGrid}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>ID</span>
+                  <span className={modalStyles.detailValue}>{viewItem.id}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Slug:</span>
-                  <span className="detail-value">{viewItem.slug}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Название</span>
+                  <span className={modalStyles.detailValue}>{viewItem.name}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Регион:</span>
-                  <span className="detail-value">{viewItem.region || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Slug</span>
+                  <span className={modalStyles.detailValue}>{viewItem.slug}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Описание:</span>
-                  <span className="detail-value">{viewItem.description || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Регион</span>
+                  <span className={modalStyles.detailValue}>{viewItem.region || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Координаты:</span>
-                  <span className="detail-value">
+                <div className={`${modalStyles.detailItem} ${modalStyles.detailItemFull}`}>
+                  <span className={modalStyles.detailLabel}>Описание</span>
+                  <span className={modalStyles.detailValue}>{viewItem.description || '-'}</span>
+                </div>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Координаты</span>
+                  <span className={modalStyles.detailValue}>
                     {viewItem.latitude && viewItem.longitude
                       ? `${viewItem.latitude}, ${viewItem.longitude}`
                       : '-'}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Порядок сортировки:</span>
-                  <span className="detail-value">{viewItem.sort_order}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Порядок сортировки</span>
+                  <span className={modalStyles.detailValue}>{viewItem.sort_order}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Статус:</span>
-                  <span className={`status-badge ${viewItem.is_active ? 'status-active' : 'status-inactive'}`}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Статус</span>
+                  <span className={`${modalStyles.badge} ${viewItem.is_active ? modalStyles.badgeActive : modalStyles.badgeCancelled}`}>
                     {viewItem.is_active ? 'Активно' : 'Неактивно'}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Дата создания:</span>
-                  <span className="detail-value">{formatDate(viewItem.created_at)}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Дата создания</span>
+                  <span className={modalStyles.detailValue}>{formatDate(viewItem.created_at)}</span>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button className="modal-btn" onClick={() => setViewItem(null)}>Закрыть</button>
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </TravelModal>
 
         {/* Edit Modal */}
-        {editItem && (
-          <div className="modal-overlay" onClick={() => setEditItem(null)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Редактирование направления</h2>
-                <button className="modal-close" onClick={() => setEditItem(null)}>×</button>
+        <TravelModal
+          isOpen={!!editItem}
+          onClose={() => setEditItem(null)}
+          title="Редактирование направления"
+          subtitle="Измените данные направления"
+          icon="✏️"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setEditItem(null))}
+              {ModalButtons.save(handleUpdateItem)}
+            </div>
+          }
+        >
+          {editItem && (
+            <div className={modalStyles.formGrid}>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Название <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.name}
+                  onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
+                />
               </div>
-              <div className="modal-body">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Название *</label>
-                    <input
-                      type="text"
-                      value={editItem.name}
-                      onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Slug *</label>
-                    <input
-                      type="text"
-                      value={editItem.slug}
-                      onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Регион</label>
-                    <input
-                      type="text"
-                      value={editItem.region || ''}
-                      onChange={(e) => setEditItem({ ...editItem, region: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Порядок сортировки</label>
-                    <input
-                      type="number"
-                      value={editItem.sort_order}
-                      onChange={(e) => setEditItem({ ...editItem, sort_order: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL изображения</label>
-                    <input
-                      type="text"
-                      value={editItem.image || ''}
-                      onChange={(e) => setEditItem({ ...editItem, image: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Статус</label>
-                    <select
-                      value={editItem.is_active ? 'active' : 'inactive'}
-                      onChange={(e) => setEditItem({ ...editItem, is_active: e.target.value === 'active' })}
-                    >
-                      <option value="active">Активно</option>
-                      <option value="inactive">Неактивно</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Широта</label>
-                    <input
-                      type="text"
-                      value={editItem.latitude || ''}
-                      onChange={(e) => setEditItem({ ...editItem, latitude: Number(e.target.value) || null })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Долгота</label>
-                    <input
-                      type="text"
-                      value={editItem.longitude || ''}
-                      onChange={(e) => setEditItem({ ...editItem, longitude: Number(e.target.value) || null })}
-                    />
-                  </div>
-                  <div className="form-group form-group-full">
-                    <label>Описание</label>
-                    <textarea
-                      value={editItem.description || ''}
-                      onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Slug <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.slug}
+                  onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })}
+                />
               </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setEditItem(null)}>Отмена</button>
-                <button className="modal-btn save-btn" onClick={handleUpdateItem}>Сохранить</button>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Регион</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.region || ''}
+                  onChange={(e) => setEditItem({ ...editItem, region: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Порядок сортировки</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="number"
+                  value={editItem.sort_order}
+                  onChange={(e) => setEditItem({ ...editItem, sort_order: Number(e.target.value) })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>URL изображения</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.image || ''}
+                  onChange={(e) => setEditItem({ ...editItem, image: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Статус</label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.is_active ? 'active' : 'inactive'}
+                  onChange={(e) => setEditItem({ ...editItem, is_active: e.target.value === 'active' })}
+                >
+                  <option value="active">Активно</option>
+                  <option value="inactive">Неактивно</option>
+                </select>
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Широта</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.latitude || ''}
+                  onChange={(e) => setEditItem({ ...editItem, latitude: Number(e.target.value) || null })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Долгота</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.longitude || ''}
+                  onChange={(e) => setEditItem({ ...editItem, longitude: Number(e.target.value) || null })}
+                />
+              </div>
+              <div className={`${modalStyles.formGroup} ${modalStyles.formGroupFull}`}>
+                <label className={modalStyles.formLabel}>Описание</label>
+                <textarea
+                  className={modalStyles.formTextarea}
+                  value={editItem.description || ''}
+                  onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
+                  rows={3}
+                />
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </TravelModal>
 
         {/* Delete Confirmation */}
-        {deleteConfirmId && (
-          <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Подтверждение удаления</h2>
-                <button className="modal-close" onClick={() => setDeleteConfirmId(null)}>×</button>
-              </div>
-              <div className="modal-body">
-                <p className="confirm-text">
-                  Вы уверены, что хотите удалить направление <strong>{destinations.find((d) => d.id === deleteConfirmId)?.name}</strong>?
-                </p>
-                <p className="confirm-warning">Это действие нельзя отменить!</p>
-              </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setDeleteConfirmId(null)}>Отмена</button>
-                <button className="modal-btn delete-confirm-btn" onClick={handleDeleteItem}>Удалить</button>
-              </div>
+        <TravelModal
+          isOpen={!!deleteConfirmId}
+          onClose={() => setDeleteConfirmId(null)}
+          title="Подтверждение удаления"
+          subtitle="Это действие нельзя отменить"
+          icon="🗑️"
+          size="default"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setDeleteConfirmId(null))}
+              {ModalButtons.delete(handleDeleteItem)}
             </div>
-          </div>
-        )}
+          }
+        >
+          <div className={modalStyles.confirmIcon}>🗑️</div>
+          <p className={modalStyles.confirmText}>
+            Вы уверены, что хотите удалить направление <strong>{destinations.find((d) => d.id === deleteConfirmId)?.name}</strong>?
+          </p>
+          <p className={modalStyles.confirmWarning}>Это действие нельзя отменить!</p>
+        </TravelModal>
 
         {/* Add Modal */}
-        {addModalOpen && (
-          <div className="modal-overlay" onClick={() => setAddModalOpen(false)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Добавить направление</h2>
-                <button className="modal-close" onClick={() => setAddModalOpen(false)}>×</button>
-              </div>
-              <div className="modal-body">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Название *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => handleFormChange('name', e.target.value)}
-                      placeholder="Например: Сочи"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Slug *</label>
-                    <input
-                      type="text"
-                      value={formData.slug}
-                      onChange={(e) => handleFormChange('slug', e.target.value)}
-                      placeholder="sochi"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Регион</label>
-                    <input
-                      type="text"
-                      value={formData.region}
-                      onChange={(e) => handleFormChange('region', e.target.value)}
-                      placeholder="Краснодарский край"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Порядок сортировки</label>
-                    <input
-                      type="number"
-                      value={formData.sort_order}
-                      onChange={(e) => handleFormChange('sort_order', Number(e.target.value))}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL изображения</label>
-                    <input
-                      type="text"
-                      value={formData.image}
-                      onChange={(e) => handleFormChange('image', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <label className="checkbox-label" style={{ marginTop: 24 }}>
-                        <input
-                          type="checkbox"
-                          checked={formData.is_active}
-                          onChange={(e) => handleFormChange('is_active', e.target.checked)}
-                        />
-                        Активно
-                      </label>
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>Широта</label>
-                    <input
-                      type="text"
-                      value={formData.latitude}
-                      onChange={(e) => handleFormChange('latitude', e.target.value)}
-                      placeholder="43.5855"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Долгота</label>
-                    <input
-                      type="text"
-                      value={formData.longitude}
-                      onChange={(e) => handleFormChange('longitude', e.target.value)}
-                      placeholder="39.7231"
-                    />
-                  </div>
-                  <div className="form-group form-group-full">
-                    <label>Описание</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => handleFormChange('description', e.target.value)}
-                      rows={3}
-                      placeholder="Описание направления..."
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setAddModalOpen(false)}>Отмена</button>
-                <button className="modal-btn save-btn" onClick={handleAddItem} disabled={!formData.name || !formData.slug}>
-                  Добавить
-                </button>
-              </div>
+        <TravelModal
+          isOpen={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          title="Добавить направление"
+          subtitle="Создайте новое направление для поездок"
+          icon="➕"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setAddModalOpen(false))}
+              {ModalButtons.add(handleAddItem, !formData.name || !formData.slug)}
+            </div>
+          }
+        >
+          <div className={modalStyles.formGrid}>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Название <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleFormChange('name', e.target.value)}
+                placeholder="Например: Сочи"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Slug <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.slug}
+                onChange={(e) => handleFormChange('slug', e.target.value)}
+                placeholder="sochi"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Регион</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.region}
+                onChange={(e) => handleFormChange('region', e.target.value)}
+                placeholder="Краснодарский край"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Порядок сортировки</label>
+              <input
+                className={modalStyles.formInput}
+                type="number"
+                value={formData.sort_order}
+                onChange={(e) => handleFormChange('sort_order', Number(e.target.value))}
+                placeholder="0"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>URL изображения</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.image}
+                onChange={(e) => handleFormChange('image', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Статус</label>
+              <label className={modalStyles.formCheckbox}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => handleFormChange('is_active', e.target.checked)}
+                />
+                <span className={modalStyles.formCheckboxLabel}>Активно</span>
+              </label>
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Широта</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.latitude}
+                onChange={(e) => handleFormChange('latitude', e.target.value)}
+                placeholder="43.5855"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Долгота</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.longitude}
+                onChange={(e) => handleFormChange('longitude', e.target.value)}
+                placeholder="39.7231"
+              />
+            </div>
+            <div className={`${modalStyles.formGroup} ${modalStyles.formGroupFull}`}>
+              <label className={modalStyles.formLabel}>Описание</label>
+              <textarea
+                className={modalStyles.formTextarea}
+                value={formData.description}
+                onChange={(e) => handleFormChange('description', e.target.value)}
+                rows={3}
+                placeholder="Описание направления..."
+              />
             </div>
           </div>
-        )}
+        </TravelModal>
       </div>
     </AdminLayout>
   );

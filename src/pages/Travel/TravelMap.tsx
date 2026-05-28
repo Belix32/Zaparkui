@@ -461,6 +461,7 @@ export function TravelMap() {
           className={styles.map}
           scrollWheelZoom={true}
           zoomControl={true}
+          attributionControl={false}
         >
           <TileLayer attribution="" url={TILE_URL} />
 

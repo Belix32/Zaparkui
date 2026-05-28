@@ -26,11 +26,11 @@
 
 /* Ocean gradient backgrounds */
 .gradientBg {
-  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 30%, #0284c7 60%, #0ea5e9 100%);
+  background: var(--ocean-gradient);
 }
 
 .gradientText {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  background: var(--ocean-gradient-text);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -48,7 +48,7 @@
 .card:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* Loading state */

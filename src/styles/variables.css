@@ -12,6 +12,22 @@
   --success: #059669;
   --error: #dc2626;
 
+  /* Ocean/Sea theme — Light */
+  --ocean-deep: #0c4a6e;
+  --ocean-mid: #0369a1;
+  --ocean-light: #0284c7;
+  --ocean-accent: #0ea5e9;
+  --ocean-gradient: linear-gradient(135deg, #0c4a6e 0%, #0369a1 30%, #0284c7 60%, #0ea5e9 100%);
+  --ocean-gradient-text: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  --ocean-text: #ffffff;
+  --ocean-text-secondary: rgba(255, 255, 255, 0.85);
+  --ocean-btn-bg: #ffffff;
+  --ocean-btn-text: #0369a1;
+  --ocean-btn-hover-bg: #f0f9ff;
+  --ocean-card-bg: rgba(255, 255, 255, 0.15);
+  --ocean-step-bg: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
@@ -58,6 +74,22 @@
   --border: #374151;
   --success: #10b981;
   --error: #ef4444;
+
+  /* Ocean/Sea theme — Dark Midnight Ocean */
+  --ocean-deep: #051e34;
+  --ocean-mid: #0a3a5a;
+  --ocean-light: #0c5480;
+  --ocean-accent: #38bdf8;
+  --ocean-gradient: linear-gradient(135deg, #051e34 0%, #0a3a5a 30%, #0c5480 60%, #0e6ba0 100%);
+  --ocean-gradient-text: linear-gradient(135deg, #60a5fa, #38bdf8);
+  --ocean-text: rgba(255, 255, 255, 0.92);
+  --ocean-text-secondary: rgba(255, 255, 255, 0.7);
+  --ocean-btn-bg: rgba(255, 255, 255, 0.12);
+  --ocean-btn-text: #60a5fa;
+  --ocean-btn-hover-bg: rgba(255, 255, 255, 0.18);
+  --ocean-card-bg: rgba(255, 255, 255, 0.08);
+  --ocean-step-bg: linear-gradient(135deg, #2563eb, #3b82f6);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* Smooth theme transition */

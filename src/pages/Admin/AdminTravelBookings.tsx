@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLayout } from './components/AdminLayout';
+import { TravelModal, ModalButtons } from './components/TravelModal';
+import modalStyles from './components/TravelModal.module.css';
 import styles from './AdminTravel.module.css';
 import type { TravelBooking, TravelDestination, RentalPartner, PartnerCar } from '../../lib/travel/types';
 
@@ -159,6 +161,8 @@ export function AdminTravelBookings() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState<TravelBooking | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [editStatusBooking, setEditStatusBooking] = useState<TravelBooking | null>(null);
+  const [editStatusValue, setEditStatusValue] = useState<string>('');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -469,17 +473,13 @@ export function AdminTravelBookings() {
                           >
                             Детали
                           </button>
-                          <select
-                            className="admin-status-select"
-                            value={booking.status}
-                            onChange={(e) => handleStatusChange(booking.id, e.target.value)}
+                          <button
+                            className="admin-action-btn admin-action-view"
+                            onClick={() => { setEditStatusBooking(booking); setEditStatusValue(booking.status); }}
+                            title="Изменить статус"
                           >
-                            <option value="pending">Ожидает</option>
-                            <option value="confirmed">Подтвердить</option>
-                            <option value="active">Активировать</option>
-                            <option value="completed">Завершить</option>
-                            <option value="cancelled">Отменить</option>
-                          </select>
+                            Статус
+                          </button>
                           {booking.status !== 'cancelled' && booking.status !== 'completed' && (
                             <button
                               className="admin-action-btn admin-action-cancel"
@@ -530,111 +530,179 @@ export function AdminTravelBookings() {
           )}
         </div>
 
-        {/* View Modal */}
-        {showModal && selectedBooking && (
-          <div className="admin-modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="admin-modal-header">
-                <h3>Детали бронирования</h3>
-                <button className="admin-modal-close" onClick={() => setShowModal(false)}>✕</button>
+        {/* View Booking Details Modal */}
+        <TravelModal
+          isOpen={showModal && !!selectedBooking}
+          onClose={() => setShowModal(false)}
+          title="Детали бронирования"
+          subtitle={`ID: ${selectedBooking?.id || ''}`}
+          icon="📋"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.close(() => setShowModal(false))}
+            </div>
+          }
+        >
+          {selectedBooking && (
+            <div className={modalStyles.detailGrid}>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>ID бронирования</span>
+                <span className={modalStyles.detailValue}>{selectedBooking.id}</span>
               </div>
-              <div className="admin-modal-content">
-                <div className="admin-modal-grid">
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">ID</span>
-                    <span className="admin-modal-value">{selectedBooking.id}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Направление</span>
-                    <span className="admin-modal-value">{getDestinationName(selectedBooking)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Партнёр</span>
-                    <span className="admin-modal-value">{getPartnerName(selectedBooking)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Автомобиль</span>
-                    <span className="admin-modal-value">{getCarDisplay(selectedBooking)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Дата заезда</span>
-                    <span className="admin-modal-value">{formatDateTime(selectedBooking.start_date)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Дата выезда</span>
-                    <span className="admin-modal-value">{formatDateTime(selectedBooking.end_date)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Дней аренды</span>
-                    <span className="admin-modal-value">{selectedBooking.total_rental_days}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Цена аренды</span>
-                    <span className="admin-modal-value">{formatCurrency(selectedBooking.total_rental_price)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Хранение авто</span>
-                    <span className="admin-modal-value">
-                      {selectedBooking.has_storage ? `Да (${selectedBooking.total_storage_days} дн.)` : 'Нет'}
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Направление</span>
+                <span className={modalStyles.detailValue}>{getDestinationName(selectedBooking)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Партнёр</span>
+                <span className={modalStyles.detailValue}>{getPartnerName(selectedBooking)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Автомобиль</span>
+                <span className={modalStyles.detailValue}>{getCarDisplay(selectedBooking)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Дата заезда</span>
+                <span className={modalStyles.detailValue}>{formatDateTime(selectedBooking.start_date)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Дата выезда</span>
+                <span className={modalStyles.detailValue}>{formatDateTime(selectedBooking.end_date)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Дней аренды</span>
+                <span className={modalStyles.detailValue}>{selectedBooking.total_rental_days}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Цена аренды</span>
+                <span className={`${modalStyles.detailValue} ${modalStyles.detailValueHighlight}`}>{formatCurrency(selectedBooking.total_rental_price)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Хранение авто</span>
+                <span className={modalStyles.detailValue}>
+                  {selectedBooking.has_storage ? `Да (${selectedBooking.total_storage_days} дн.)` : 'Нет'}
+                </span>
+              </div>
+              {selectedBooking.has_storage && (
+                <>
+                  <div className={modalStyles.detailItem}>
+                    <span className={modalStyles.detailLabel}>Своё авто</span>
+                    <span className={modalStyles.detailValue}>
+                      {[selectedBooking.own_car_brand, selectedBooking.own_car_model].filter(Boolean).join(' ') || '-'}
                     </span>
                   </div>
-                  {selectedBooking.has_storage && (
-                    <>
-                      <div className="admin-modal-item">
-                        <span className="admin-modal-label">Своё авто</span>
-                        <span className="admin-modal-value">
-                          {[selectedBooking.own_car_brand, selectedBooking.own_car_model].filter(Boolean).join(' ') || '-'}
-                        </span>
-                      </div>
-                      <div className="admin-modal-item">
-                        <span className="admin-modal-label">Госномер</span>
-                        <span className="admin-modal-value">{selectedBooking.own_car_license_plate || '-'}</span>
-                      </div>
-                      <div className="admin-modal-item">
-                        <span className="admin-modal-label">Цвет</span>
-                        <span className="admin-modal-value">{selectedBooking.own_car_color || '-'}</span>
-                      </div>
-                    </>
-                  )}
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Статус</span>
-                    <span className={`${styles.travelBadge} ${styles['travelBadge' + selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)]}`}>
-                      {STATUS_LABELS[selectedBooking.status]}
-                    </span>
+                  <div className={modalStyles.detailItem}>
+                    <span className={modalStyles.detailLabel}>Госномер</span>
+                    <span className={modalStyles.detailValue}>{selectedBooking.own_car_license_plate || '-'}</span>
                   </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Статус оплаты</span>
-                    <span className={`${styles.travelPaymentBadge} ${styles['travelPaymentBadge' + selectedBooking.payment_status.charAt(0).toUpperCase() + selectedBooking.payment_status.slice(1)]}`}>
-                      {PAYMENT_LABELS[selectedBooking.payment_status]}
-                    </span>
+                  <div className={modalStyles.detailItem}>
+                    <span className={modalStyles.detailLabel}>Цвет</span>
+                    <span className={modalStyles.detailValue}>{selectedBooking.own_car_color || '-'}</span>
                   </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Сумма</span>
-                    <span className="admin-modal-value" style={{ color: '#059669', fontWeight: 600 }}>
-                      {formatCurrency(selectedBooking.total_price || 0)}
-                    </span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Комиссия</span>
-                    <span className="admin-modal-value">{formatCurrency(selectedBooking.commission_price)}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Метод оплаты</span>
-                    <span className="admin-modal-value">{selectedBooking.payment_method || '-'}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Примечания</span>
-                    <span className="admin-modal-value">{selectedBooking.notes || '-'}</span>
-                  </div>
-                  <div className="admin-modal-item">
-                    <span className="admin-modal-label">Дата создания</span>
-                    <span className="admin-modal-value">{formatDateTime(selectedBooking.created_at)}</span>
-                  </div>
-                </div>
+                </>
+              )}
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Статус</span>
+                <span className={`${modalStyles.badge} ${modalStyles['badge' + selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)]}`}>
+                  {STATUS_LABELS[selectedBooking.status]}
+                </span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Статус оплаты</span>
+                <span className={`${modalStyles.badge} ${
+                  selectedBooking.payment_status === 'paid' ? modalStyles.badgePaid :
+                  selectedBooking.payment_status === 'refunded' ? modalStyles.badgeRefunded :
+                  modalStyles.badgePending
+                }`}>
+                  {PAYMENT_LABELS[selectedBooking.payment_status]}
+                </span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Общая сумма</span>
+                <span className={modalStyles.priceValue}>{formatCurrency(selectedBooking.total_price || 0)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Комиссия</span>
+                <span className={modalStyles.detailValue}>{formatCurrency(selectedBooking.commission_price)}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Метод оплаты</span>
+                <span className={modalStyles.detailValue}>{selectedBooking.payment_method || '-'}</span>
+              </div>
+              <div className={`${modalStyles.detailItem} ${modalStyles.detailItemFull}`}>
+                <span className={modalStyles.detailLabel}>Примечания</span>
+                <span className={modalStyles.detailValue}>{selectedBooking.notes || '-'}</span>
+              </div>
+              <div className={modalStyles.detailItem}>
+                <span className={modalStyles.detailLabel}>Дата создания</span>
+                <span className={modalStyles.detailValue}>{formatDateTime(selectedBooking.created_at)}</span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </TravelModal>
+
+        {/* Edit Status Modal */}
+        <TravelModal
+          isOpen={!!editStatusBooking}
+          onClose={() => setEditStatusBooking(null)}
+          title="Изменение статуса"
+          subtitle={editStatusBooking ? `Бронирование #${editStatusBooking.id.slice(0, 8)}` : ''}
+          icon="🔄"
+          size="default"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setEditStatusBooking(null))}
+              {ModalButtons.save(
+                () => {
+                  if (editStatusBooking) {
+                    handleStatusChange(editStatusBooking.id, editStatusValue);
+                    setEditStatusBooking(null);
+                  }
+                },
+                false,
+                'Изменить статус'
+              )}
+            </div>
+          }
+        >
+          {editStatusBooking && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className={modalStyles.detailGrid}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Текущий статус</span>
+                  <span className={`${modalStyles.badge} ${modalStyles['badge' + editStatusBooking.status.charAt(0).toUpperCase() + editStatusBooking.status.slice(1)]}`}>
+                    {STATUS_LABELS[editStatusBooking.status]}
+                  </span>
+                </div>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Оплата</span>
+                  <span className={`${modalStyles.badge} ${
+                    editStatusBooking.payment_status === 'paid' ? modalStyles.badgePaid :
+                    editStatusBooking.payment_status === 'refunded' ? modalStyles.badgeRefunded :
+                    modalStyles.badgePending
+                  }`}>
+                    {PAYMENT_LABELS[editStatusBooking.payment_status]}
+                  </span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className={modalStyles.formLabel}>Новый статус</label>
+                <select
+                  className={modalStyles.statusSelect}
+                  value={editStatusValue}
+                  onChange={(e) => setEditStatusValue(e.target.value)}
+                >
+                  <option value="pending">Ожидает</option>
+                  <option value="confirmed">Подтверждено</option>
+                  <option value="active">Активно</option>
+                  <option value="completed">Завершено</option>
+                  <option value="cancelled">Отменено</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </TravelModal>
       </div>
     </AdminLayout>
   );

@@ -1,0 +1,561 @@
+/* ============================================================================
+   TravelModal — Beautiful, animated modal for Sea Trips admin section
+   ============================================================================ */
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal base */
+.modal {
+  background: var(--bg-modal, #ffffff);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.24),
+    0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: modalSlideUp 0.25s ease-out;
+  position: relative;
+}
+
+.modalWide {
+  max-width: 720px;
+}
+
+.modalFull {
+  max-width: 900px;
+}
+
+/* Header with gradient */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 40%, #0284c7 70%, #0ea5e9 100%);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.headerIcon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+}
+
+.headerTitle {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.headerSubtitle {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* Close button */
+.closeBtn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(4px);
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+/* Body */
+.body {
+  padding: 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.bodyNoPadding {
+  padding: 0;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 28px;
+  border-top: 1px solid var(--border, #e5e7eb);
+  flex-shrink: 0;
+  background: var(--bg-modal-footer, #fafafa);
+}
+
+.footerBetween {
+  justify-content: space-between;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(3, 105, 161, 0.4);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: var(--bg-btn-secondary, #f3f4f6);
+  color: var(--text-secondary, #374151);
+}
+
+.btnSecondary:hover {
+  background: var(--bg-btn-secondary-hover, #e5e7eb);
+}
+
+.btnDanger {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btnDanger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btnSuccess {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btnSuccess:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btnWarning {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btnWarning:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Detail rows (for view mode) */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: var(--bg-detail-item, #f8fafc);
+  border-radius: 12px;
+  border: 1px solid var(--border-detail, #f1f5f9);
+}
+
+.detailItemFull {
+  grid-column: 1 / -1;
+}
+
+.detailLabel {
+  font-size: 0.7rem;
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+
+.detailValue {
+  font-size: 0.95rem;
+  color: var(--text-primary, #1a1a2e);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.detailValueHighlight {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* Form styles */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroupFull {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary, #374151);
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--text-primary, #1a1a2e);
+  background: var(--bg-input, #ffffff);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+  outline: none;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formInput::placeholder,
+.formTextarea::placeholder {
+  color: #9ca3af;
+}
+
+.formCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 14px;
+  background: var(--bg-detail-item, #f8fafc);
+  border-radius: 10px;
+  border: 1px solid var(--border-detail, #f1f5f9);
+  user-select: none;
+}
+
+.formCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.formCheckboxLabel {
+  font-size: 0.9rem;
+  color: var(--text-primary, #1a1a2e);
+  font-weight: 500;
+}
+
+.formRequired {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+/* Image preview in modals */
+.imagePreview {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 180px;
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.imagePreview img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Confirmation styles */
+.confirmIcon {
+  width: 56px;
+  height: 56px;
+  background: #fee2e2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 1.5rem;
+  color: #dc2626;
+}
+
+.confirmText {
+  text-align: center;
+  color: var(--text-primary, #1a1a2e);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.confirmWarning {
+  text-align: center;
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Badge styles for status display */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badgePending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badgeConfirmed {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.badgeActive {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.badgeCompleted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.badgeCancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.badgeInStorage {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.badgePaid {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.badgeRefunded {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+/* Price highlight */
+.priceValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Status select in modal */
+.statusSelect {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--text-primary, #1a1a2e);
+  background: var(--bg-input, #ffffff);
+  cursor: pointer;
+  width: 100%;
+}
+
+.statusSelect:focus {
+  outline: none;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .modal {
+    border-radius: 16px;
+    max-height: 92vh;
+  }
+
+  .header {
+    padding: 16px 20px;
+  }
+
+  .headerIcon {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+
+  .headerTitle {
+    font-size: 1rem;
+  }
+
+  .body {
+    padding: 20px;
+  }
+
+  .footer {
+    padding: 16px 20px;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGroupFull {
+    grid-column: span 1;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+  }
+}

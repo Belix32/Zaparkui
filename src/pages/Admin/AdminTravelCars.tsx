@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLayout } from './components/AdminLayout';
+import { TravelModal, ModalButtons } from './components/TravelModal';
+import modalStyles from './components/TravelModal.module.css';
 import styles from './AdminTravel.module.css';
 import type { PartnerCar, RentalPartner, PartnerLocation } from '../../lib/travel/types';
 
@@ -382,468 +384,499 @@ export function AdminTravelCars() {
         )}
 
         {/* View Modal */}
-        {viewItem && (
-          <div className="modal-overlay" onClick={() => setViewItem(null)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Информация об автомобиле</h2>
-                <button className="modal-close" onClick={() => setViewItem(null)}>×</button>
-              </div>
-              <div className="modal-body">
-                {viewItem.image && (
-                  <div className="parking-image-preview">
-                    <img src={viewItem.image} alt={`${viewItem.brand} ${viewItem.model}`} />
-                  </div>
-                )}
-                <div className="detail-row">
-                  <span className="detail-label">ID:</span>
-                  <span className="detail-value">{viewItem.id}</span>
+        <TravelModal
+          isOpen={!!viewItem}
+          onClose={() => setViewItem(null)}
+          title={viewItem ? `${viewItem.brand} ${viewItem.model}` : 'Информация об автомобиле'}
+          subtitle="Детальная информация об автомобиле"
+          icon="🚗"
+          size="wide"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.close(() => setViewItem(null))}
+            </div>
+          }
+        >
+          {viewItem && (
+            <>
+              {viewItem.image && (
+                <div className={modalStyles.imagePreview}>
+                  <img src={viewItem.image} alt={`${viewItem.brand} ${viewItem.model}`} />
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Марка:</span>
-                  <span className="detail-value">{viewItem.brand}</span>
+              )}
+              <div className={modalStyles.detailGrid}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>ID</span>
+                  <span className={modalStyles.detailValue}>{viewItem.id}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Модель:</span>
-                  <span className="detail-value">{viewItem.model}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Марка</span>
+                  <span className={modalStyles.detailValue}>{viewItem.brand}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Год выпуска:</span>
-                  <span className="detail-value">{viewItem.year || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Модель</span>
+                  <span className={modalStyles.detailValue}>{viewItem.model}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Цвет:</span>
-                  <span className="detail-value">{viewItem.color || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Год выпуска</span>
+                  <span className={modalStyles.detailValue}>{viewItem.year || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Госномер:</span>
-                  <span className="detail-value">{viewItem.license_plate || '-'}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Цвет</span>
+                  <span className={modalStyles.detailValue}>{viewItem.color || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Коробка передач:</span>
-                  <span className="detail-value">{TRANSMISSION_LABELS[viewItem.transmission]}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Госномер</span>
+                  <span className={modalStyles.detailValue}>{viewItem.license_plate || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Топливо:</span>
-                  <span className="detail-value">{FUEL_LABELS[viewItem.fuel_type]}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Коробка передач</span>
+                  <span className={modalStyles.detailValue}>{TRANSMISSION_LABELS[viewItem.transmission]}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Кол-во мест:</span>
-                  <span className="detail-value">{viewItem.seats}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Топливо</span>
+                  <span className={modalStyles.detailValue}>{FUEL_LABELS[viewItem.fuel_type]}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Цена за день:</span>
-                  <span className="detail-value">{formatCurrency(viewItem.price_per_day)}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Кол-во мест</span>
+                  <span className={modalStyles.detailValue}>{viewItem.seats}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Депозит:</span>
-                  <span className="detail-value">{formatCurrency(viewItem.deposit)}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Цена за день</span>
+                  <span className={`${modalStyles.detailValue} ${modalStyles.detailValueHighlight}`}>{formatCurrency(viewItem.price_per_day)}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Партнёр:</span>
-                  <span className="detail-value">{getPartnerName(viewItem.partner_id)}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Депозит</span>
+                  <span className={modalStyles.detailValue}>{formatCurrency(viewItem.deposit)}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Локация:</span>
-                  <span className="detail-value">{getLocationName(viewItem.location_id)}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Партнёр</span>
+                  <span className={modalStyles.detailValue}>{getPartnerName(viewItem.partner_id)}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Статус:</span>
-                  <span className={`status-badge ${viewItem.is_active ? 'status-active' : 'status-inactive'}`}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Локация</span>
+                  <span className={modalStyles.detailValue}>{getLocationName(viewItem.location_id)}</span>
+                </div>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Статус</span>
+                  <span className={`${modalStyles.badge} ${viewItem.is_active ? modalStyles.badgeActive : modalStyles.badgeCancelled}`}>
                     {viewItem.is_active ? 'Активен' : 'Неактивен'}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Доступен:</span>
-                  <span className={`status-badge ${viewItem.is_available ? 'status-active' : 'status-inactive'}`}>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Доступен</span>
+                  <span className={`${modalStyles.badge} ${viewItem.is_available ? modalStyles.badgeActive : modalStyles.badgeCancelled}`}>
                     {viewItem.is_available ? 'Да' : 'Нет'}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Описание:</span>
-                  <span className="detail-value">{viewItem.description || '-'}</span>
+                <div className={`${modalStyles.detailItem} ${modalStyles.detailItemFull}`}>
+                  <span className={modalStyles.detailLabel}>Описание</span>
+                  <span className={modalStyles.detailValue}>{viewItem.description || '-'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Дата создания:</span>
-                  <span className="detail-value">{new Date(viewItem.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                <div className={modalStyles.detailItem}>
+                  <span className={modalStyles.detailLabel}>Дата создания</span>
+                  <span className={modalStyles.detailValue}>
+                    {new Date(viewItem.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button className="modal-btn" onClick={() => setViewItem(null)}>Закрыть</button>
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </TravelModal>
 
         {/* Edit Modal */}
-        {editItem && (
-          <div className="modal-overlay" onClick={() => setEditItem(null)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Редактирование автомобиля</h2>
-                <button className="modal-close" onClick={() => setEditItem(null)}>×</button>
+        <TravelModal
+          isOpen={!!editItem}
+          onClose={() => setEditItem(null)}
+          title="Редактирование автомобиля"
+          subtitle="Измените данные автомобиля"
+          icon="✏️"
+          size="full"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setEditItem(null))}
+              {ModalButtons.save(handleUpdateItem)}
+            </div>
+          }
+        >
+          {editItem && (
+            <div className={modalStyles.formGrid}>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Партнёр <span className={modalStyles.formRequired}>*</span></label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.partner_id}
+                  onChange={(e) => setEditItem({ ...editItem, partner_id: e.target.value })}
+                >
+                  <option value="">Выберите партнёра</option>
+                  {partners.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
               </div>
-              <div className="modal-body">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Партнёр *</label>
-                    <select
-                      value={editItem.partner_id}
-                      onChange={(e) => setEditItem({ ...editItem, partner_id: e.target.value })}
-                    >
-                      <option value="">Выберите партнёра</option>
-                      {partners.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Локация</label>
-                    <select
-                      value={editItem.location_id || ''}
-                      onChange={(e) => setEditItem({ ...editItem, location_id: e.target.value || null })}
-                    >
-                      <option value="">Без локации</option>
-                      {locations.map((l) => (
-                        <option key={l.id} value={l.id}>{l.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Марка *</label>
-                    <input
-                      type="text"
-                      value={editItem.brand}
-                      onChange={(e) => setEditItem({ ...editItem, brand: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Модель *</label>
-                    <input
-                      type="text"
-                      value={editItem.model}
-                      onChange={(e) => setEditItem({ ...editItem, model: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Год выпуска</label>
-                    <input
-                      type="number"
-                      value={editItem.year || ''}
-                      onChange={(e) => setEditItem({ ...editItem, year: Number(e.target.value) || null })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Цвет</label>
-                    <input
-                      type="text"
-                      value={editItem.color || ''}
-                      onChange={(e) => setEditItem({ ...editItem, color: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Госномер</label>
-                    <input
-                      type="text"
-                      value={editItem.license_plate || ''}
-                      onChange={(e) => setEditItem({ ...editItem, license_plate: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Коробка передач</label>
-                    <select
-                      value={editItem.transmission}
-                      onChange={(e) => setEditItem({ ...editItem, transmission: e.target.value as 'manual' | 'automatic' })}
-                    >
-                      <option value="manual">Механика</option>
-                      <option value="automatic">Автомат</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Тип топлива</label>
-                    <select
-                      value={editItem.fuel_type}
-                      onChange={(e) => setEditItem({ ...editItem, fuel_type: e.target.value as any })}
-                    >
-                      <option value="gasoline">Бензин</option>
-                      <option value="diesel">Дизель</option>
-                      <option value="electric">Электро</option>
-                      <option value="hybrid">Гибрид</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Кол-во мест</label>
-                    <input
-                      type="number"
-                      value={editItem.seats}
-                      onChange={(e) => setEditItem({ ...editItem, seats: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Цена за день (₽)</label>
-                    <input
-                      type="number"
-                      value={editItem.price_per_day}
-                      onChange={(e) => setEditItem({ ...editItem, price_per_day: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Депозит (₽)</label>
-                    <input
-                      type="number"
-                      value={editItem.deposit}
-                      onChange={(e) => setEditItem({ ...editItem, deposit: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL изображения</label>
-                    <input
-                      type="text"
-                      value={editItem.image || ''}
-                      onChange={(e) => setEditItem({ ...editItem, image: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Статус</label>
-                    <select
-                      value={editItem.is_active ? 'active' : 'inactive'}
-                      onChange={(e) => setEditItem({ ...editItem, is_active: e.target.value === 'active' })}
-                    >
-                      <option value="active">Активен</option>
-                      <option value="inactive">Неактивен</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={editItem.is_available}
-                        onChange={(e) => setEditItem({ ...editItem, is_available: e.target.checked })}
-                      />
-                      Доступен для бронирования
-                    </label>
-                  </div>
-                  <div className="form-group form-group-full">
-                    <label>Описание</label>
-                    <textarea
-                      value={editItem.description || ''}
-                      onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Локация</label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.location_id || ''}
+                  onChange={(e) => setEditItem({ ...editItem, location_id: e.target.value || null })}
+                >
+                  <option value="">Без локации</option>
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </select>
               </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setEditItem(null)}>Отмена</button>
-                <button className="modal-btn save-btn" onClick={handleUpdateItem}>Сохранить</button>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Марка <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.brand}
+                  onChange={(e) => setEditItem({ ...editItem, brand: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Модель <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.model}
+                  onChange={(e) => setEditItem({ ...editItem, model: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Год выпуска</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="number"
+                  value={editItem.year || ''}
+                  onChange={(e) => setEditItem({ ...editItem, year: Number(e.target.value) || null })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Цвет</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.color || ''}
+                  onChange={(e) => setEditItem({ ...editItem, color: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Госномер</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.license_plate || ''}
+                  onChange={(e) => setEditItem({ ...editItem, license_plate: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Коробка передач</label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.transmission}
+                  onChange={(e) => setEditItem({ ...editItem, transmission: e.target.value as 'manual' | 'automatic' })}
+                >
+                  <option value="manual">Механика</option>
+                  <option value="automatic">Автомат</option>
+                </select>
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Тип топлива</label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.fuel_type}
+                  onChange={(e) => setEditItem({ ...editItem, fuel_type: e.target.value as any })}
+                >
+                  <option value="gasoline">Бензин</option>
+                  <option value="diesel">Дизель</option>
+                  <option value="electric">Электро</option>
+                  <option value="hybrid">Гибрид</option>
+                </select>
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Кол-во мест</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="number"
+                  value={editItem.seats}
+                  onChange={(e) => setEditItem({ ...editItem, seats: Number(e.target.value) })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Цена за день (₽) <span className={modalStyles.formRequired}>*</span></label>
+                <input
+                  className={modalStyles.formInput}
+                  type="number"
+                  value={editItem.price_per_day}
+                  onChange={(e) => setEditItem({ ...editItem, price_per_day: Number(e.target.value) })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Депозит (₽)</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="number"
+                  value={editItem.deposit}
+                  onChange={(e) => setEditItem({ ...editItem, deposit: Number(e.target.value) })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>URL изображения</label>
+                <input
+                  className={modalStyles.formInput}
+                  type="text"
+                  value={editItem.image || ''}
+                  onChange={(e) => setEditItem({ ...editItem, image: e.target.value })}
+                />
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formLabel}>Статус</label>
+                <select
+                  className={modalStyles.formSelect}
+                  value={editItem.is_active ? 'active' : 'inactive'}
+                  onChange={(e) => setEditItem({ ...editItem, is_active: e.target.value === 'active' })}
+                >
+                  <option value="active">Активен</option>
+                  <option value="inactive">Неактивен</option>
+                </select>
+              </div>
+              <div className={modalStyles.formGroup}>
+                <label className={modalStyles.formCheckbox}>
+                  <input
+                    type="checkbox"
+                    checked={editItem.is_available}
+                    onChange={(e) => setEditItem({ ...editItem, is_available: e.target.checked })}
+                  />
+                  <span className={modalStyles.formCheckboxLabel}>Доступен для бронирования</span>
+                </label>
+              </div>
+              <div className={`${modalStyles.formGroup} ${modalStyles.formGroupFull}`}>
+                <label className={modalStyles.formLabel}>Описание</label>
+                <textarea
+                  className={modalStyles.formTextarea}
+                  value={editItem.description || ''}
+                  onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
+                  rows={3}
+                />
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </TravelModal>
 
         {/* Delete Confirmation */}
-        {deleteConfirmId && (
-          <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Подтверждение удаления</h2>
-                <button className="modal-close" onClick={() => setDeleteConfirmId(null)}>×</button>
-              </div>
-              <div className="modal-body">
-                <p className="confirm-text">
-                  Вы уверены, что хотите удалить автомобиль <strong>{cars.find((c) => c.id === deleteConfirmId)?.brand} {cars.find((c) => c.id === deleteConfirmId)?.model}</strong>?
-                </p>
-                <p className="confirm-warning">Это действие нельзя отменить!</p>
-              </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setDeleteConfirmId(null)}>Отмена</button>
-                <button className="modal-btn delete-confirm-btn" onClick={handleDeleteItem}>Удалить</button>
-              </div>
+        <TravelModal
+          isOpen={!!deleteConfirmId}
+          onClose={() => setDeleteConfirmId(null)}
+          title="Подтверждение удаления"
+          subtitle="Это действие нельзя отменить"
+          icon="🗑️"
+          size="default"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setDeleteConfirmId(null))}
+              {ModalButtons.delete(handleDeleteItem)}
             </div>
-          </div>
-        )}
+          }
+        >
+          <div className={modalStyles.confirmIcon}>🗑️</div>
+          <p className={modalStyles.confirmText}>
+            Вы уверены, что хотите удалить автомобиль <strong>{cars.find((c) => c.id === deleteConfirmId)?.brand} {cars.find((c) => c.id === deleteConfirmId)?.model}</strong>?
+          </p>
+          <p className={modalStyles.confirmWarning}>Это действие нельзя отменить!</p>
+        </TravelModal>
 
         {/* Add Modal */}
-        {addModalOpen && (
-          <div className="modal-overlay" onClick={() => setAddModalOpen(false)}>
-            <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Добавить автомобиль</h2>
-                <button className="modal-close" onClick={() => setAddModalOpen(false)}>×</button>
-              </div>
-              <div className="modal-body">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Партнёр *</label>
-                    <select
-                      value={formData.partner_id}
-                      onChange={(e) => handleFormChange('partner_id', e.target.value)}
-                    >
-                      <option value="">Выберите партнёра</option>
-                      {partners.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Локация</label>
-                    <select
-                      value={formData.location_id}
-                      onChange={(e) => handleFormChange('location_id', e.target.value)}
-                    >
-                      <option value="">Без локации</option>
-                      {locations.map((l) => (
-                        <option key={l.id} value={l.id}>{l.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Марка *</label>
-                    <input
-                      type="text"
-                      value={formData.brand}
-                      onChange={(e) => handleFormChange('brand', e.target.value)}
-                      placeholder="Например: Toyota"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Модель *</label>
-                    <input
-                      type="text"
-                      value={formData.model}
-                      onChange={(e) => handleFormChange('model', e.target.value)}
-                      placeholder="Например: Camry"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Год выпуска</label>
-                    <input
-                      type="number"
-                      value={formData.year}
-                      onChange={(e) => handleFormChange('year', e.target.value)}
-                      placeholder="2024"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Цвет</label>
-                    <input
-                      type="text"
-                      value={formData.color}
-                      onChange={(e) => handleFormChange('color', e.target.value)}
-                      placeholder="Белый"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Госномер</label>
-                    <input
-                      type="text"
-                      value={formData.license_plate}
-                      onChange={(e) => handleFormChange('license_plate', e.target.value)}
-                      placeholder="А123ВВ"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Коробка передач</label>
-                    <select
-                      value={formData.transmission}
-                      onChange={(e) => handleFormChange('transmission', e.target.value)}
-                    >
-                      <option value="manual">Механика</option>
-                      <option value="automatic">Автомат</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Тип топлива</label>
-                    <select
-                      value={formData.fuel_type}
-                      onChange={(e) => handleFormChange('fuel_type', e.target.value)}
-                    >
-                      <option value="gasoline">Бензин</option>
-                      <option value="diesel">Дизель</option>
-                      <option value="electric">Электро</option>
-                      <option value="hybrid">Гибрид</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Кол-во мест</label>
-                    <input
-                      type="number"
-                      value={formData.seats}
-                      onChange={(e) => handleFormChange('seats', Number(e.target.value))}
-                      placeholder="5"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Цена за день (₽) *</label>
-                    <input
-                      type="number"
-                      value={formData.price_per_day}
-                      onChange={(e) => handleFormChange('price_per_day', Number(e.target.value))}
-                      placeholder="2500"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Депозит (₽)</label>
-                    <input
-                      type="number"
-                      value={formData.deposit}
-                      onChange={(e) => handleFormChange('deposit', Number(e.target.value))}
-                      placeholder="10000"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL изображения</label>
-                    <input
-                      type="text"
-                      value={formData.image}
-                      onChange={(e) => handleFormChange('image', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Статус</label>
-                    <select
-                      value={formData.is_active ? 'active' : 'inactive'}
-                      onChange={(e) => handleFormChange('is_active', e.target.value === 'active')}
-                    >
-                      <option value="active">Активен</option>
-                      <option value="inactive">Неактивен</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="checkbox-label" style={{ marginTop: 24 }}>
-                      <input
-                        type="checkbox"
-                        checked={formData.is_available}
-                        onChange={(e) => handleFormChange('is_available', e.target.checked)}
-                      />
-                      Доступен для бронирования
-                    </label>
-                  </div>
-                  <div className="form-group form-group-full">
-                    <label>Описание</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => handleFormChange('description', e.target.value)}
-                      rows={3}
-                      placeholder="Описание автомобиля..."
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="modal-btn cancel-btn" onClick={() => setAddModalOpen(false)}>Отмена</button>
-                <button
-                  className="modal-btn save-btn"
-                  onClick={handleAddItem}
-                  disabled={!formData.partner_id || !formData.brand || !formData.model || !formData.price_per_day}
-                >
-                  Добавить
-                </button>
-              </div>
+        <TravelModal
+          isOpen={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          title="Добавить автомобиль"
+          subtitle="Добавьте новый автомобиль в систему"
+          icon="➕"
+          size="full"
+          footer={
+            <div style={{ display: 'flex', gap: 12 }}>
+              {ModalButtons.cancel(() => setAddModalOpen(false))}
+              {ModalButtons.add(handleAddItem, !formData.partner_id || !formData.brand || !formData.model || !formData.price_per_day)}
+            </div>
+          }
+        >
+          <div className={modalStyles.formGrid}>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Партнёр <span className={modalStyles.formRequired}>*</span></label>
+              <select
+                className={modalStyles.formSelect}
+                value={formData.partner_id}
+                onChange={(e) => handleFormChange('partner_id', e.target.value)}
+              >
+                <option value="">Выберите партнёра</option>
+                {partners.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Локация</label>
+              <select
+                className={modalStyles.formSelect}
+                value={formData.location_id}
+                onChange={(e) => handleFormChange('location_id', e.target.value)}
+              >
+                <option value="">Без локации</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Марка <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.brand}
+                onChange={(e) => handleFormChange('brand', e.target.value)}
+                placeholder="Например: Toyota"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Модель <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.model}
+                onChange={(e) => handleFormChange('model', e.target.value)}
+                placeholder="Например: Camry"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Год выпуска</label>
+              <input
+                className={modalStyles.formInput}
+                type="number"
+                value={formData.year}
+                onChange={(e) => handleFormChange('year', e.target.value)}
+                placeholder="2024"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Цвет</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.color}
+                onChange={(e) => handleFormChange('color', e.target.value)}
+                placeholder="Белый"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Госномер</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.license_plate}
+                onChange={(e) => handleFormChange('license_plate', e.target.value)}
+                placeholder="А123ВВ"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Коробка передач</label>
+              <select
+                className={modalStyles.formSelect}
+                value={formData.transmission}
+                onChange={(e) => handleFormChange('transmission', e.target.value)}
+              >
+                <option value="manual">Механика</option>
+                <option value="automatic">Автомат</option>
+              </select>
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Тип топлива</label>
+              <select
+                className={modalStyles.formSelect}
+                value={formData.fuel_type}
+                onChange={(e) => handleFormChange('fuel_type', e.target.value)}
+              >
+                <option value="gasoline">Бензин</option>
+                <option value="diesel">Дизель</option>
+                <option value="electric">Электро</option>
+                <option value="hybrid">Гибрид</option>
+              </select>
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Кол-во мест</label>
+              <input
+                className={modalStyles.formInput}
+                type="number"
+                value={formData.seats}
+                onChange={(e) => handleFormChange('seats', Number(e.target.value))}
+                placeholder="5"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Цена за день (₽) <span className={modalStyles.formRequired}>*</span></label>
+              <input
+                className={modalStyles.formInput}
+                type="number"
+                value={formData.price_per_day}
+                onChange={(e) => handleFormChange('price_per_day', Number(e.target.value))}
+                placeholder="2500"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Депозит (₽)</label>
+              <input
+                className={modalStyles.formInput}
+                type="number"
+                value={formData.deposit}
+                onChange={(e) => handleFormChange('deposit', Number(e.target.value))}
+                placeholder="10000"
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>URL изображения</label>
+              <input
+                className={modalStyles.formInput}
+                type="text"
+                value={formData.image}
+                onChange={(e) => handleFormChange('image', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formLabel}>Статус</label>
+              <select
+                className={modalStyles.formSelect}
+                value={formData.is_active ? 'active' : 'inactive'}
+                onChange={(e) => handleFormChange('is_active', e.target.value === 'active')}
+              >
+                <option value="active">Активен</option>
+                <option value="inactive">Неактивен</option>
+              </select>
+            </div>
+            <div className={modalStyles.formGroup}>
+              <label className={modalStyles.formCheckbox}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_available}
+                  onChange={(e) => handleFormChange('is_available', e.target.checked)}
+                />
+                <span className={modalStyles.formCheckboxLabel}>Доступен для бронирования</span>
+              </label>
+            </div>
+            <div className={`${modalStyles.formGroup} ${modalStyles.formGroupFull}`}>
+              <label className={modalStyles.formLabel}>Описание</label>
+              <textarea
+                className={modalStyles.formTextarea}
+                value={formData.description}
+                onChange={(e) => handleFormChange('description', e.target.value)}
+                rows={3}
+                placeholder="Описание автомобиля..."
+              />
             </div>
           </div>
-        )}
+        </TravelModal>
       </div>
     </AdminLayout>
   );
