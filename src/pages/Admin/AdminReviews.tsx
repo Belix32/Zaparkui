@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { getAllReviewsAdmin, updateReviewStatus as updateReviewStatusDb, deleteReview, Review as SupabaseReview } from '../../lib/supabase';
-import { getAllParkingsAdmin } from '../../lib/supabase';
+import { useState, useEffect, useMemo } from 'react'; import { AdminLayout } from './components/AdminLayout'; import { getAllReviewsAdmin } from '../../lib/repositories';
+import { updateReviewStatus as updateReviewStatusDb, Review as SupabaseReview } from '../../lib/repositories';
+import { deleteReview } from '../../lib/repositories';
+import { getAllParkingsAdmin } from '../../lib/repositories';
 import './AdminReviews.css';
 
 interface Review extends SupabaseReview {

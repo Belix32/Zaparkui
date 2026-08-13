@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { getUserBookings, Booking, getParkingById, Parking, updateBookingStatus, isSupabaseConfigured } from '../../lib/supabase';
+import { useState, useEffect, useCallback } from 'react'; import { Link } from 'react-router-dom'; import { getUserBookings, isSupabaseConfigured } from '../../lib/repositories';
+import { getParkingById, Parking } from '../../lib/repositories';
+import { Booking, updateBookingStatus } from '../../lib/repositories';
 import { parkings as staticParkings } from '../../data/parkings';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button/Button';

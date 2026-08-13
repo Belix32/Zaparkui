@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Button } from '../../components/Button/Button';
-import { Booking, Parking, getParkingById } from '../../lib/supabase';
+import { useState, useEffect } from 'react'; import { useSearchParams, useNavigate } from 'react-router-dom'; import { Button } from '../../components/Button/Button'; import { Booking } from '../../lib/repositories';
+import { Parking, getParkingById } from '../../lib/repositories';
 import styles from './PaymentComingSoon.module.css';
 
 export function PaymentComingSoon() {

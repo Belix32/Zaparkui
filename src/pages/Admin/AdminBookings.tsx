@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { getAllBookingsAdmin, updateBookingAdmin, Booking as SupabaseBooking } from '../../lib/supabase';
+import { useState, useEffect, useMemo } from 'react'; import { AdminLayout } from './components/AdminLayout'; import { getAllBookingsAdmin, updateBookingAdmin } from '../../lib/repositories';
+import { Booking as SupabaseBooking } from '../../lib/repositories';
 import './AdminBookings.css';
 
 interface Booking extends SupabaseBooking {

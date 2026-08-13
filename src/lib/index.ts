@@ -13,9 +13,3 @@ export * from './notifications/geofence';
  * Security utilities
  */
 export * from './security';
-
-/**
- * Travel module (sea trips) exports
- */
-export * from './travel';
-export * from './travel/types';

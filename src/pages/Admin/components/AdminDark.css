@@ -199,7 +199,6 @@
   background: #374151;
 }
 
-/* ── Travel Modal dark theme ── */
 [data-theme="dark"] {
   --bg-modal: #1a1a1a;
   --bg-modal-footer: #151515;

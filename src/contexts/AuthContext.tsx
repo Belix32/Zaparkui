@@ -14,14 +14,9 @@
  * SECURITY AUDIT DATE: 2026-05
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  getSupabaseClient,
-  Profile as SupabaseUser,
-  isSupabaseConfigured,
-  createParking as createParkingDb,
-  geocodeAddress
-} from '../lib/supabase';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'; import {    getSupabaseClient, isSupabaseConfigured } from '../lib/repositories';
+import { Profile as SupabaseUser } from '../lib/repositories';
+import { createParking as createParkingDb, geocodeAddress } from '../lib/repositories';
 
 export interface User {
   id: string;
@@ -29,10 +24,10 @@ export interface User {
   email: string;
   phone: string;
   created_at?: string;
-  role?: 'user' | 'moderator' | 'admin' | 'partner';
+  role?: 'user' | 'moderator' | 'admin';
 }
 
-export type UserRole = 'user' | 'moderator' | 'admin' | 'partner';
+export type UserRole = 'user' | 'moderator' | 'admin';
 
 interface AuthContextType {
   user: User | null;
@@ -40,8 +35,6 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   isModerator: boolean;
-  isPartner: boolean;
-  partnerId: string | null;
   hasAdminAccess: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -210,8 +203,8 @@ function clearSession(): void {
 }
 
 // Normalize role string to valid values
-function normalizeRole(role: string | undefined | null): 'user' | 'moderator' | 'admin' | 'partner' {
-  if (role === 'admin' || role === 'moderator' || role === 'partner') return role;
+function normalizeRole(role: string | undefined | null): 'user' | 'moderator' | 'admin' {
+  if (role === 'admin' || role === 'moderator') return role;
   return 'user';
 }
 function isValidEmail(email: string): boolean {
@@ -860,8 +853,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAdmin: user?.role === 'admin',
         isModerator: user?.role === 'admin' || user?.role === 'moderator',
-        isPartner: user?.role === 'partner',
-        partnerId: user?.role === 'partner' ? user.id : null,
         hasAdminAccess: user?.role === 'admin' || user?.role === 'moderator',
         login,
         register,

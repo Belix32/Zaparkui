@@ -1,7 +1,4 @@
-import { Link } from 'react-router-dom';
-import { useState, useCallback } from 'react';
-import { Button } from '../Button/Button';
-import { Parking } from '../../lib/supabase';
+import { Link } from 'react-router-dom'; import { useState, useCallback } from 'react'; import { Button } from '../Button/Button'; import { Parking } from '../../lib/repositories';
 import { useFavorites } from '../../hooks';
 import styles from './ParkingCard.module.css';
 

@@ -1,8 +1,4 @@
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Parking } from '../../lib/supabase';
+import { useEffect } from 'react'; import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'; import L from 'leaflet'; import 'leaflet/dist/leaflet.css'; import { Parking } from '../../lib/repositories';
 import styles from './Map.module.css';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';

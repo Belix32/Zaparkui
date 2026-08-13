@@ -1,15 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import {
-  getAllParkingsAdmin,
-  updateParkingStatus,
-  deleteParking as deleteParkingFromSupabase,
-  createParking as createParkingSupabase,
-  updateParking as updateParkingSupabase,
-  isSupabaseConfigured,
-  getAllUsers as getAllUsersSupabase,
-  Parking as SupabaseParking,
-} from '../../lib/supabase';
+import { useState, useEffect, useMemo } from 'react'; import { AdminLayout } from './components/AdminLayout'; import {   getAllParkingsAdmin, isSupabaseConfigured } from '../../lib/repositories';
+import { updateParkingStatus, deleteParking as deleteParkingFromSupabase, createParking as createParkingSupabase, updateParking as updateParkingSupabase, Parking as SupabaseParking } from '../../lib/repositories';
+import { getAllUsers as getAllUsersSupabase } from '../../lib/repositories';
 import { useAuth } from '../../contexts/AuthContext';
 import './AdminParkings.css';
 

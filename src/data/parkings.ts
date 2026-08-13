@@ -1,4 +1,4 @@
-import { Parking } from '../lib/supabase';
+import { Parking } from '../lib/repositories';
 
 // Static fallback data for development/demo mode with extended fields
 export const parkings: Parking[] = [

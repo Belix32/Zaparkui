@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getActivePromotions, Promotion } from '../../lib/supabase';
+import { useState, useEffect, useCallback } from 'react'; import { getActivePromotions } from '../../lib/repositories';
+import { Promotion } from '../../lib/repositories';
 import styles from './PromotionsBanner.module.css';
 
 const AUTO_ROTATE_INTERVAL = 6000; // 6 seconds

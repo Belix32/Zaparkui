@@ -1,7 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ParkingCard, FilterPanel, FilterValues, ParkingMap } from '../../components';
-import { parkings as staticParkings } from '../../data/parkings';
-import { searchParkings, Parking, ParkingFilters } from '../../lib/supabase';
+import { useState, useEffect, useCallback } from 'react'; import { ParkingCard, FilterPanel, FilterValues, ParkingMap } from '../../components'; import { parkings as staticParkings } from '../../data/parkings'; import { searchParkings } from '../../lib/repositories';
+import { Parking, ParkingFilters } from '../../lib/repositories';
 import { useGeolocation, useSearchHistory, sortByDistance } from '../../hooks';
 import styles from './Catalog.module.css';
 

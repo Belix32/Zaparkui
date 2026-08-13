@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { getAllUsers, updateUserRole, setUserBlocked, deleteUser } from '../../lib/supabase';
+import { useState, useEffect, useMemo } from 'react'; import { AdminLayout } from './components/AdminLayout'; import { getAllUsers } from '../../lib/repositories';
+import { updateUserRole, setUserBlocked, deleteUser } from '../../lib/repositories';
 import './AdminUsers.css';
 
 interface User {

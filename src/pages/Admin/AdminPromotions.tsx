@@ -1,12 +1,5 @@
-import { useState, useEffect } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import {
-  Promotion,
-  getAllPromotionsAdmin,
-  createPromotion,
-  updatePromotion,
-  deletePromotion,
-} from '../../lib/supabase';
+import { useState, useEffect } from 'react'; import { AdminLayout } from './components/AdminLayout'; import {   Promotion } from '../../lib/repositories';
+import { getAllPromotionsAdmin, createPromotion, updatePromotion, deletePromotion } from '../../lib/repositories';
 import './AdminPromotions.css';
 
 const defaultBgColor = '#2563eb';

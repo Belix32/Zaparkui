@@ -1,12 +1,6 @@
-import { useState, useEffect } from 'react';
-import { AdminLayout } from './components/AdminLayout';
-import { 
-  getAdminStats, 
-  getRecentBookings, 
-  getRecentParkings, 
-  getRecentUsers,
-  isSupabaseConfigured,
-} from '../../lib/supabase';
+import { useState, useEffect } from 'react'; import { AdminLayout } from './components/AdminLayout'; import {    getAdminStats, getRecentBookings, isSupabaseConfigured } from '../../lib/repositories';
+import { getRecentParkings } from '../../lib/repositories';
+import { getRecentUsers } from '../../lib/repositories';
 import './AdminDashboard.css';
 
 interface Stats {

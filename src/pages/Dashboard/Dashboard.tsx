@@ -1,8 +1,4 @@
-import { useState, useCallback } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { Button, Input, Textarea } from '../../components';
-import { useAuth } from '../../contexts/AuthContext';
-import { uploadParkingImage } from '../../lib/supabase';
+import { useState, useCallback } from 'react'; import { Navigate, Link } from 'react-router-dom'; import { Button, Input, Textarea } from '../../components'; import { useAuth } from '../../contexts/AuthContext'; import { uploadParkingImage } from '../../lib/repositories';
 import styles from './Dashboard.module.css';
 
 type Tab = 'parkings' | 'add' | 'history';
