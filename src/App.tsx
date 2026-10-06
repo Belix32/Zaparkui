@@ -41,21 +41,21 @@ function PageLoader() {
       alignItems: 'center', 
       justifyContent: 'center', 
       minHeight: '100vh',
-      background: '#1a1a2e',
-      color: '#fff'
+      background: 'var(--bg-primary)',
+      color: 'var(--text-primary)'
     }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ 
           width: 40, 
           height: 40, 
-          border: '3px solid #00d9ff',
+          border: '3px solid var(--accent)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
+          animation: 'spin 0.8s linear infinite',
           margin: '0 auto 16px'
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        Загрузка...
+        <span style={{ fontSize: '15px', fontWeight: 500, letterSpacing: '-0.01em' }}>Загрузка...</span>
       </div>
     </div>
   );
