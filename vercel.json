@@ -18,10 +18,5 @@
       "destination": "https://zaparkui.vercel.app/$1",
       "permanent": true
     }
-  ],
-  "env": {
-    "VITE_SUPABASE_URL": "https://pzshfcwyuezyfiuvsave.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6c2hmY3d5dWV6eWZpdXZzYXZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTQ1MDUsImV4cCI6MjA5NTA3MDUwNX0.jtFRg6ZOf1M1AgyLva5b57I_mhLJrOQ5m7u3thvW_yA",
-    "VITE_ADMIN_EMAIL": "ilya.cheplya@yandex.ru"
-  }
+  ]
 }
