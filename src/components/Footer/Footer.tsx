@@ -31,7 +31,6 @@ export function Footer() {
             <h4>Для арендаторов</h4>
             <ul>
               <li><Link to="/catalog">Найти парковку</Link></li>
-              <li><Link to="/register">Зарегистрироваться</Link></li>
               <li><Link to="/faq">Вопросы</Link></li>
             </ul>
           </div>
@@ -39,7 +38,6 @@ export function Footer() {
           <div className={styles.column}>
             <h4>Для собственников</h4>
             <ul>
-              <li><Link to="/register">Сдать место</Link></li>
               <li><Link to="/how-it-works">Как это работает</Link></li>
               <li><Link to="/support">Поддержка</Link></li>
             </ul>

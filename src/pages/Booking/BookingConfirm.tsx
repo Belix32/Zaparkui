@@ -85,7 +85,11 @@ export function BookingConfirm() {
   }, [bookingId]);
 
   const handlePayment = useCallback(async () => {
-    if (!booking || !user) return;
+    if (!booking || !user) {
+      setError('Оплата бронирования будет доступна после подключения авторизации.');
+      setProcessingPayment(false);
+      return;
+    }
 
     setProcessingPayment(true);
     setError(null);

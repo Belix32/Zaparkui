@@ -65,8 +65,7 @@ export function Header() {
               </>
             ) : (
               <div className={styles.desktopButtons}>
-                <Link to="/login"><Button variant="ghost" size="small">Вход</Button></Link>
-                <Link to="/register"><Button variant="primary" size="small">Регистрация</Button></Link>
+                <Link to="/catalog"><Button variant="primary" size="small">Смотреть парковки</Button></Link>
               </div>
             )}
           </div>
@@ -113,10 +112,7 @@ export function Header() {
                 </>
               )}
               {!user && (
-                <>
-                  <Link to="/login" className={styles.mobileNavLink}>Вход</Link>
-                  <Link to="/register" className={styles.mobileNavLinkPrimary}>Регистрация</Link>
-                </>
+                <Link to="/catalog" className={styles.mobileNavLinkPrimary}>Смотреть парковки</Link>
               )}
             </nav>
           </div>

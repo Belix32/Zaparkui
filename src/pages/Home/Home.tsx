@@ -193,8 +193,8 @@ export function Home() {
               </p>
             </div>
             <div className={styles.ctaActions}>
-              <Link to="/register">
-                <Button variant="accent" size="large">Сдать парковку</Button>
+              <Link to="/catalog">
+                <Button variant="accent" size="large">Смотреть парковки</Button>
               </Link>
               <span className={styles.ctaNote}>Бесплатное размещение</span>
             </div>

@@ -159,7 +159,11 @@ export function BookingPage() {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !parking) return;
+    if (!user || !parking) {
+      setError('Бронирование будет доступно после подключения авторизации. Сейчас можно посмотреть каталог парковок.');
+      setSubmitting(false);
+      return;
+    }
     
     if (!startDate || !endDate) {
       setError('Выберите даты бронирования');

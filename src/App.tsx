@@ -78,10 +78,10 @@ function App() {
             <Route path="/booking/confirm" element={<BookingConfirm />} />
             <Route path="/booking/success" element={<BookingSuccess />} />
             <Route path="/my-bookings" element={<BookingsHistory />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/login" element={<Home />} />
+            <Route path="/register" element={<Home />} />
+            <Route path="/dashboard" element={<Home />} />
+            <Route path="/profile" element={<Home />} />
             {/* Admin routes - lazy loaded */}
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
